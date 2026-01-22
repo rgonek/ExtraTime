@@ -1,0 +1,64 @@
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+bld/
+*.log
+
+# NuGet
+*.nupkg
+**/packages/*
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# Visual Studio
+.vscode/
+*.code-workspace
+
+# Node.js / Next.js
+web/node_modules/
+web/.next/
+web/out/
+web/.env*.local
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Test results
+TestResults/
+coverage/
+
+# Misc
+*.tmp
+*.temp
