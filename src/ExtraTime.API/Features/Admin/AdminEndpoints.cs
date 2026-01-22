@@ -15,7 +15,6 @@ public static class AdminEndpoints
     {
         var group = app.MapGroup("/api/admin")
             .WithTags("Admin")
-            .WithOpenApi()
             .RequireAuthorization("AdminOnly");
 
         group.MapGet("/jobs", GetJobsAsync)

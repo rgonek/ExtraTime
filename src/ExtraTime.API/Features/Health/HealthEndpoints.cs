@@ -10,8 +10,7 @@ public static class HealthEndpoints
             Version: "1.0.0"
         )))
         .WithName("GetHealth")
-        .WithTags("Health")
-        .WithOpenApi();
+        .WithTags("Health");
     }
 }
 
