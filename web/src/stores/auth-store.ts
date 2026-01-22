@@ -1,29 +1,43 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface User {
-  id: string;
-  email: string;
-  username: string;
-}
+import type { User } from '@/types';
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, token: string) => void;
+  isLoading: boolean;
+  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
+  setTokens: (accessToken: string, refreshToken: string) => void;
   clearAuth: () => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
+      accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
-      setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
-      clearAuth: () => set({ user: null, token: null, isAuthenticated: false }),
+      isLoading: true,
+      setAuth: (user, accessToken, refreshToken) =>
+        set({ user, accessToken, refreshToken, isAuthenticated: true, isLoading: false }),
+      setTokens: (accessToken, refreshToken) =>
+        set({ accessToken, refreshToken }),
+      clearAuth: () =>
+        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, isLoading: false }),
+      setLoading: (isLoading) => set({ isLoading }),
     }),
-    { name: 'auth-storage' }
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
   )
 );
