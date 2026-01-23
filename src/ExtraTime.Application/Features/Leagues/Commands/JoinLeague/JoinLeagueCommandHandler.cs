@@ -17,7 +17,7 @@ public sealed class JoinLeagueCommandHandler(
     {
         var userId = currentUserService.UserId!.Value;
 
-        // Use a transaction with serializable isolation to prevent race conditions
+        // Use a transaction to prevent race conditions on member count check
         var strategy = context.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
         {
@@ -76,11 +76,18 @@ public sealed class JoinLeagueCommandHandler(
 
                 return Result.Success();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                // If unique constraint violation occurs (user already member),
-                // return appropriate error
-                return Result.Failure(LeagueErrors.AlreadyAMember);
+                // Check if it's a unique constraint violation (duplicate LeagueId + UserId)
+                // This can happen if concurrent requests slip through
+                if (ex.InnerException?.Message.Contains("IX_league_members_LeagueId_UserId") == true ||
+                    ex.InnerException?.Message.Contains("unique constraint", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return Result.Failure(LeagueErrors.AlreadyAMember);
+                }
+                
+                // Re-throw if it's a different database error
+                throw;
             }
         });
     }
