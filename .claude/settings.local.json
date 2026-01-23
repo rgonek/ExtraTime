@@ -22,7 +22,10 @@
       "Bash(bun install:*)",
       "Bash(bun run build)",
       "Bash(tree:*)",
-      "Bash(ls -la \"D:\\\\Dev\\\\ExtraTime\\\\.claude\\\\plan\"\" 2>&1 || echo \"Directory check \")"
+      "Bash(ls -la \"D:\\\\Dev\\\\ExtraTime\\\\.claude\\\\plan\"\" 2>&1 || echo \"Directory check \")",
+      "Bash(grep:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
