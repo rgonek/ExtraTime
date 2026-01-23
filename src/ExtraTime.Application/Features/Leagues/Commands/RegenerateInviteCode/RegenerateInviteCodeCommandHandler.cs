@@ -40,7 +40,7 @@ public sealed class RegenerateInviteCodeCommandHandler(
         league.InviteCode = newInviteCode;
         league.InviteCodeExpiresAt = request.ExpiresAt;
         league.UpdatedAt = DateTime.UtcNow;
-        league.UpdatedBy = userId;
+        league.UpdatedBy = userId.ToString();
 
         await context.SaveChangesAsync(cancellationToken);
 
