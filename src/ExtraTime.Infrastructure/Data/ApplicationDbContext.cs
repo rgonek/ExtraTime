@@ -1,4 +1,5 @@
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,10 +26,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         // Apply global query filter for soft delete
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            if (typeof(ExtraTime.Domain.Common.BaseAuditableEntity).IsAssignableFrom(entityType.ClrType))
+            if (typeof(BaseAuditableEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
-                var property = System.Linq.Expressions.Expression.Property(parameter, nameof(ExtraTime.Domain.Common.BaseAuditableEntity.DeletedAt));
+                var property = System.Linq.Expressions.Expression.Property(parameter, nameof(BaseAuditableEntity.DeletedAt));
                 var nullConstant = System.Linq.Expressions.Expression.Constant(null, typeof(DateTime?));
                 var filter = System.Linq.Expressions.Expression.Equal(property, nullConstant);
                 var lambda = System.Linq.Expressions.Expression.Lambda(filter, parameter);

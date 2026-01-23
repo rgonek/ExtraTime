@@ -51,7 +51,8 @@ public sealed class CreateLeagueCommandHandler(
                 : null,
             InviteCode = inviteCode,
             InviteCodeExpiresAt = request.InviteCodeExpiresAt,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = userId.ToString()
         };
 
         // Add owner as member
