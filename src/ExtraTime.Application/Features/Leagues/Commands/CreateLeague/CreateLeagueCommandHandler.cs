@@ -24,18 +24,16 @@ public sealed class CreateLeagueCommandHandler(
         Guid[]? allowedCompetitionIds = null;
         if (request.AllowedCompetitionIds is { Length: > 0 })
         {
-            var distinctCompetitionIds = request.AllowedCompetitionIds.Distinct().ToArray();
+            allowedCompetitionIds = request.AllowedCompetitionIds.Distinct().ToArray();
             
             var validCompetitionCount = await context.Competitions
-                .Where(c => distinctCompetitionIds.Contains(c.Id))
+                .Where(c => allowedCompetitionIds.Contains(c.Id))
                 .CountAsync(cancellationToken);
 
-            if (validCompetitionCount != distinctCompetitionIds.Length)
+            if (validCompetitionCount != allowedCompetitionIds.Length)
             {
                 return Result<LeagueDto>.Failure("One or more competition IDs are invalid");
             }
-
-            allowedCompetitionIds = distinctCompetitionIds;
         }
 
         // Generate unique invite code
