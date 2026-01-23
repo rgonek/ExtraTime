@@ -76,16 +76,20 @@ public sealed class JoinLeagueCommandHandler(
         catch (DbUpdateException ex)
         {
             // Check if it's a unique constraint violation (duplicate LeagueId + UserId)
-            // PostgreSQL: error code 23505 (unique_violation)
-            // The unique constraint is on (LeagueId, UserId) pair
+            // PostgreSQL returns error code 23505 for unique_violation
+            // Note: This code is PostgreSQL-specific. If changing database providers,
+            // update this exception handling logic accordingly.
             var innerException = ex.InnerException;
             if (innerException != null)
             {
                 var exceptionMessage = innerException.Message;
-                // Check for PostgreSQL unique constraint violation or general unique constraint error
-                if (exceptionMessage.Contains("23505") || // PostgreSQL unique violation error code
-                    exceptionMessage.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) ||
-                    exceptionMessage.Contains("IX_league_members_LeagueId_UserId", StringComparison.OrdinalIgnoreCase))
+                // Check for unique constraint violation indicators
+                // - "23505": PostgreSQL unique violation error code
+                // - "duplicate key": Common message across databases for unique violations
+                // - "league_members": Our table name to ensure it's the right constraint
+                if ((exceptionMessage.Contains("23505") || 
+                     exceptionMessage.Contains("duplicate key", StringComparison.OrdinalIgnoreCase)) &&
+                    exceptionMessage.Contains("league_members", StringComparison.OrdinalIgnoreCase))
                 {
                     return Result.Failure(LeagueErrors.AlreadyAMember);
                 }
