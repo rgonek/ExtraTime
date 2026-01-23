@@ -10,6 +10,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<BackgroundJob> BackgroundJobs => Set<BackgroundJob>();
+    public DbSet<Competition> Competitions => Set<Competition>();
+    public DbSet<Team> Teams => Set<Team>();
+    public DbSet<CompetitionTeam> CompetitionTeams => Set<CompetitionTeam>();
+    public DbSet<Match> Matches => Set<Match>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

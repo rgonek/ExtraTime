@@ -12,7 +12,7 @@
 | Phase 2 | ✅ Complete | Authentication System (Backend + Frontend) |
 | Phase 2.1 | ✅ Complete | User Roles (Admin Panel Backend) |
 | Phase 2.2 | ✅ Complete | BackgroundJob Tracking System |
-| Phase 3 | 🔲 Pending | Football Data Integration |
+| Phase 3 | ✅ Complete | Football Data Integration |
 
 ## Project Overview
 A social betting app (no real money) where friends create leagues, bet on football matches, and compete for points. Portfolio project showcasing frontend skills.
@@ -172,24 +172,35 @@ When adding Azure Functions/Service Bus:
 
 ---
 
-## Phase 3: Football Data Integration
+## Phase 3: Football Data Integration ✅
 **Goal**: Fetch and store match data from Football-Data.org
+**Status**: Complete
 
 ### Backend
-- [ ] Competition entity (leagues)
-- [ ] Team entity
-- [ ] Match entity (with status, score, date)
-- [ ] Football-Data.org API client service
-- [ ] Sync service to import competitions, teams, matches
+- [x] Competition entity (leagues)
+- [x] Team entity
+- [x] CompetitionTeam entity (many-to-many join)
+- [x] Match entity (with status, score, date)
+- [x] MatchStatus enum
+- [x] Football-Data.org API client service (with rate limiting)
+- [x] Sync service to import competitions, teams, matches
 
-### Azure Function
-- [ ] Daily trigger function to sync upcoming matches
-- [ ] Function to update match results (runs every hour on match days)
+### Background Sync (HostedService for local dev)
+- [x] Initial full sync on startup
+- [x] Daily sync for upcoming matches (next 14 days)
+- [x] Live sync every 5 minutes during match hours (10:00-23:00 UTC)
+- [ ] Azure Functions (deferred to Phase 8: Deployment)
 
 ### Backend API
-- [ ] GET /competitions - list available competitions
-- [ ] GET /matches - list matches (with filters: date, competition, status)
-- [ ] GET /matches/{id} - match details
+- [x] GET /api/competitions - list available competitions
+- [x] GET /api/matches - list matches (with filters: date, competition, status)
+- [x] GET /api/matches/{id} - match details
+
+### Admin Sync Endpoints
+- [x] POST /api/admin/sync/competitions - trigger competition sync
+- [x] POST /api/admin/sync/teams/{competitionId} - trigger team sync
+- [x] POST /api/admin/sync/matches - trigger match sync
+- [x] POST /api/admin/sync/live - trigger live match sync
 
 ---
 
@@ -360,14 +371,21 @@ BackgroundJobs
 - ScheduledAt, CreatedByUserId, CorrelationId
 
 Competitions
-- Id, ExternalId, Name, Country, LogoUrl
+- Id, ExternalId, Name, Code, Country, LogoUrl
+- CurrentMatchday, CurrentSeasonStart, CurrentSeasonEnd, LastSyncedAt
 
 Teams
-- Id, ExternalId, Name, ShortName, LogoUrl
+- Id, ExternalId, Name, ShortName, Tla, LogoUrl
+- ClubColors, Venue, LastSyncedAt
+
+CompetitionTeams (many-to-many)
+- Id, CompetitionId, TeamId, Season
 
 Matches
 - Id, ExternalId, CompetitionId, HomeTeamId, AwayTeamId
-- MatchDate, Status, HomeScore, AwayScore
+- MatchDateUtc, Status, Matchday, Stage, Group
+- HomeScore, AwayScore, HomeHalfTimeScore, AwayHalfTimeScore
+- Venue, LastSyncedAt
 
 Leagues
 - Id, Name, InviteCode, OwnerId, CreatedAt, Settings(JSON)

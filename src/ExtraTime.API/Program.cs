@@ -3,6 +3,7 @@ using ExtraTime.Infrastructure;
 using ExtraTime.Infrastructure.Data;
 using ExtraTime.API.Features.Admin;
 using ExtraTime.API.Features.Auth;
+using ExtraTime.API.Features.Football;
 using ExtraTime.API.Features.Health;
 using Microsoft.OpenApi;
 
@@ -62,6 +63,8 @@ app.UseAuthorization();
 app.MapHealthEndpoints();
 app.MapAuthEndpoints();
 app.MapAdminEndpoints();
+app.MapFootballEndpoints();
+app.MapFootballSyncEndpoints();
 app.MapHealthChecks("/health");
 
 app.Run();

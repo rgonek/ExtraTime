@@ -3,6 +3,7 @@ using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Infrastructure.Configuration;
 using ExtraTime.Infrastructure.Data;
 using ExtraTime.Infrastructure.Services;
+using ExtraTime.Infrastructure.Services.Football;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -65,6 +66,19 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IJobDispatcher, InMemoryJobDispatcher>();
+
+        // Football Data Services
+        services.Configure<FootballDataSettings>(configuration.GetSection(FootballDataSettings.SectionName));
+        services.AddTransient<RateLimitingHandler>();
+        services.AddHttpClient<IFootballDataService, FootballDataService>((serviceProvider, client) =>
+        {
+            var footballSettings = configuration.GetSection(FootballDataSettings.SectionName).Get<FootballDataSettings>();
+            client.BaseAddress = new Uri(footballSettings?.BaseUrl ?? "https://api.football-data.org/v4/");
+            client.DefaultRequestHeaders.Add("X-Auth-Token", footballSettings?.ApiKey ?? string.Empty);
+        })
+        .AddHttpMessageHandler<RateLimitingHandler>();
+        services.AddScoped<IFootballSyncService, FootballSyncService>();
+        services.AddHostedService<FootballSyncHostedService>();
 
         return services;
     }

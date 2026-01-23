@@ -295,51 +295,51 @@ For local development, use a BackgroundService that:
 ## Implementation Order
 
 ### Step 1: Domain Layer
-- [ ] Create MatchStatus enum
-- [ ] Create Competition entity
-- [ ] Create Team entity
-- [ ] Create CompetitionTeam entity
-- [ ] Create Match entity
+- [x] Create MatchStatus enum
+- [x] Create Competition entity
+- [x] Create Team entity
+- [x] Create CompetitionTeam entity
+- [x] Create Match entity
 
 ### Step 2: Application Interfaces & DTOs
-- [ ] Create IFootballDataService interface
-- [ ] Create IFootballSyncService interface
-- [ ] Update IApplicationDbContext with new DbSets
-- [ ] Create CompetitionDtos.cs
-- [ ] Create TeamDtos.cs
-- [ ] Create MatchDtos.cs
-- [ ] Create FootballErrors.cs
+- [x] Create IFootballDataService interface
+- [x] Create IFootballSyncService interface
+- [x] Update IApplicationDbContext with new DbSets
+- [x] Create CompetitionDtos.cs
+- [x] Create TeamDtos.cs
+- [x] Create MatchDtos.cs
+- [x] Create FootballErrors.cs
 
 ### Step 3: Application Queries
-- [ ] Create GetCompetitionsQuery + Handler
-- [ ] Create GetMatchesQuery + Handler (with pagination)
-- [ ] Create GetMatchByIdQuery + Handler
+- [x] Create GetCompetitionsQuery + Handler
+- [x] Create GetMatchesQuery + Handler (with pagination)
+- [x] Create GetMatchByIdQuery + Handler
 
 ### Step 4: Infrastructure Configuration
-- [ ] Create FootballDataSettings.cs
-- [ ] Update appsettings.json
+- [x] Create FootballDataSettings.cs
+- [x] Update appsettings.json
 
 ### Step 5: Infrastructure EF Core
-- [ ] Create CompetitionConfiguration.cs
-- [ ] Create TeamConfiguration.cs
-- [ ] Create CompetitionTeamConfiguration.cs
-- [ ] Create MatchConfiguration.cs
-- [ ] Update ApplicationDbContext with new DbSets
+- [x] Create CompetitionConfiguration.cs
+- [x] Create TeamConfiguration.cs
+- [x] Create CompetitionTeamConfiguration.cs
+- [x] Create MatchConfiguration.cs
+- [x] Update ApplicationDbContext with new DbSets
 
 ### Step 6: Infrastructure Services
-- [ ] Create RateLimitingHandler.cs
-- [ ] Create FootballDataService.cs
-- [ ] Create FootballSyncService.cs
-- [ ] Create FootballSyncHostedService.cs
-- [ ] Update DependencyInjection.cs
+- [x] Create RateLimitingHandler.cs
+- [x] Create FootballDataService.cs
+- [x] Create FootballSyncService.cs
+- [x] Create FootballSyncHostedService.cs
+- [x] Update DependencyInjection.cs
 
 ### Step 7: API Layer
-- [ ] Create FootballEndpoints.cs
-- [ ] Create FootballSyncEndpoints.cs
-- [ ] Update Program.cs with endpoint mappings
+- [x] Create FootballEndpoints.cs
+- [x] Create FootballSyncEndpoints.cs
+- [x] Update Program.cs with endpoint mappings
 
 ### Step 8: Database Migration
-- [ ] Create migration: `dotnet ef migrations add AddFootballEntities`
+- [x] Create migration: `dotnet ef migrations add AddFootballEntities`
 - [ ] Apply migration: `dotnet ef database update`
 
 ---
