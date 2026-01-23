@@ -57,7 +57,7 @@ public sealed class CreateLeagueCommandHandler(
         // Add owner as member
         var ownerMember = new LeagueMember
         {
-            LeagueId = league.Id,
+            League = league,
             UserId = userId,
             Role = MemberRole.Owner,
             JoinedAt = DateTime.UtcNow
