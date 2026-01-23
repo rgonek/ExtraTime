@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
@@ -28,11 +29,11 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         {
             if (typeof(BaseAuditableEntity).IsAssignableFrom(entityType.ClrType))
             {
-                var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
-                var property = System.Linq.Expressions.Expression.Property(parameter, nameof(BaseAuditableEntity.DeletedAt));
-                var nullConstant = System.Linq.Expressions.Expression.Constant(null, typeof(DateTime?));
-                var filter = System.Linq.Expressions.Expression.Equal(property, nullConstant);
-                var lambda = System.Linq.Expressions.Expression.Lambda(filter, parameter);
+                var parameter = Expression.Parameter(entityType.ClrType, "e");
+                var property = Expression.Property(parameter, nameof(BaseAuditableEntity.DeletedAt));
+                var nullConstant = Expression.Constant(null, typeof(DateTime?));
+                var filter = Expression.Equal(property, nullConstant);
+                var lambda = Expression.Lambda(filter, parameter);
                 
                 modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
             }
