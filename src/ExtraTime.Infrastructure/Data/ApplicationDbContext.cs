@@ -21,5 +21,20 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        
+        // Apply global query filter for soft delete
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(ExtraTime.Domain.Common.BaseAuditableEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
+                var property = System.Linq.Expressions.Expression.Property(parameter, nameof(ExtraTime.Domain.Common.BaseAuditableEntity.DeletedAt));
+                var nullConstant = System.Linq.Expressions.Expression.Constant(null, typeof(DateTime?));
+                var filter = System.Linq.Expressions.Expression.Equal(property, nullConstant);
+                var lambda = System.Linq.Expressions.Expression.Lambda(filter, parameter);
+                
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+            }
+        }
     }
 }

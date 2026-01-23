@@ -29,7 +29,10 @@ public sealed class DeleteLeagueCommandHandler(
             return Result.Failure(LeagueErrors.NotTheOwner);
         }
 
-        context.Leagues.Remove(league);
+        // Perform soft delete
+        league.DeletedAt = DateTime.UtcNow;
+        league.DeletedBy = userId.ToString();
+        
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
