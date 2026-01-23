@@ -681,5 +681,5 @@ dotnet ef database update --project src/ExtraTime.Infrastructure --startup-proje
 - Frontend implementation deferred to Phase 6
 - Bet placement and scoring functionality deferred to Phase 5
 - AllowedCompetitionIds stored as JSON string for simplicity (could be normalized to junction table in future)
-- InviteCode collisions handled with retry logic (probabilty is extremely low with 36^8 combinations)
+- InviteCode collisions handled with retry logic (probability is extremely low with 36^8 combinations)
 - Leagues are soft-deletable via BaseAuditableEntity (DeletedAt, DeletedBy)
