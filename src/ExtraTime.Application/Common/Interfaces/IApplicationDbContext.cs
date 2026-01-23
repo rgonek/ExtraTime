@@ -1,5 +1,6 @@
 using ExtraTime.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace ExtraTime.Application.Common.Interfaces;
 
@@ -14,5 +15,6 @@ public interface IApplicationDbContext
     DbSet<Match> Matches { get; }
     DbSet<League> Leagues { get; }
     DbSet<LeagueMember> LeagueMembers { get; }
+    DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
