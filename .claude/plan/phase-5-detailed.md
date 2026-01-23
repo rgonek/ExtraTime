@@ -85,14 +85,14 @@ public sealed class LeagueStanding : BaseEntity
 
 ## API Endpoints
 
-| Method | Path | Description | Auth | Authorization |
-|--------|------|-------------|------|---------------|
-| POST | `/api/leagues/{leagueId}/bets` | Place or update bet | Yes | League member, before deadline |
-| DELETE | `/api/leagues/{leagueId}/bets/{betId}` | Delete bet | Yes | Bet owner, before deadline |
-| GET | `/api/leagues/{leagueId}/bets/my` | Get user's bets in league | Yes | League member |
-| GET | `/api/leagues/{leagueId}/matches/{matchId}/bets` | Get all bets for match (after deadline) | Yes | League member, after deadline passes |
-| GET | `/api/leagues/{leagueId}/standings` | Get league leaderboard | Yes | League member |
-| GET | `/api/leagues/{leagueId}/users/{userId}/stats` | Get user stats in league | Yes | League member |
+| Method | Path | Description | Auth | Authorization | Response Codes |
+|--------|------|-------------|------|---------------|----------------|
+| POST | `/api/leagues/{leagueId}/bets` | Place or update bet | Yes | League member, before deadline | 201 (new), 200 (update), 400, 403 |
+| DELETE | `/api/leagues/{leagueId}/bets/{betId}` | Delete bet | Yes | Bet owner, before deadline | 204, 400, 403, 404 |
+| GET | `/api/leagues/{leagueId}/bets/my` | Get user's bets in league | Yes | League member | 200, 403 |
+| GET | `/api/leagues/{leagueId}/matches/{matchId}/bets` | Get all bets for match (after deadline) | Yes | League member, after deadline passes | 200, 403, 404 |
+| GET | `/api/leagues/{leagueId}/standings` | Get league leaderboard | Yes | League member | 200, 403 |
+| GET | `/api/leagues/{leagueId}/users/{userId}/stats` | Get user stats in league | Yes | League member | 200, 403, 404 |
 
 ---
 
@@ -199,9 +199,9 @@ public sealed class BetCalculator : IBetCalculator
 
     private enum MatchResult { HomeWin, Draw, AwayWin }
 }
-
-public sealed record BetResultDto(int Points, bool IsExactMatch, bool IsCorrectResult);
 ```
+
+**Note:** `BetCalculator` uses `BetResultDto` from `ExtraTime.Application.Features.Bets.DTOs` (defined in Application DTOs section below). Do not define a separate DTO in Infrastructure.
 
 ### StandingsCalculator (`src/ExtraTime.Infrastructure/Services/StandingsCalculator.cs`)
 ```csharp
@@ -522,7 +522,7 @@ public sealed record UserStatsDto(
 
 ### Bet Calculation
 1. **Automatic Trigger:**
-   - Triggered when match status changes to `FullTime`
+   - Triggered when match status changes to `Finished`
    - Runs as background job via `CalculateBetResultsCommand`
 
 2. **Scoring Logic:**
@@ -671,7 +671,7 @@ public sealed class LeagueStandingConfiguration : IEntityTypeConfiguration<Leagu
 ## Triggering Background Jobs from Match Sync
 
 ### Update MatchSyncService
-When match status changes to `FullTime`, enqueue bet calculation job:
+When match status changes to `Finished`, enqueue bet calculation job:
 
 ```csharp
 // In MatchSyncService.cs
@@ -688,7 +688,7 @@ private async Task UpdateMatchAsync(Match existingMatch, FootballDataMatch apiMa
     await _context.SaveChangesAsync();
 
     // If match just finished, trigger bet calculation
-    if (previousStatus != MatchStatus.FullTime && existingMatch.Status == MatchStatus.FullTime)
+    if (previousStatus != MatchStatus.Finished && existingMatch.Status == MatchStatus.Finished)
     {
         await _jobDispatcher.EnqueueAsync(
             jobType: "CalculateBetResults",
@@ -1037,6 +1037,7 @@ Verify ranking:
      - `GetLeagueStandingsQueryHandler` MUST filter standings by current league membership
      - Implement via a JOIN (or equivalent) with `LeagueMembers` so only active/current members are returned
      - Historical bets/results for kicked users remain in the database but do not appear in standings
+   - **User-facing behavior:** When a user is kicked, their points and stats disappear from the visible leaderboard. If they rejoin later, their historical bets are still in the database but standings are recalculated only from bets placed while they were a member. This behavior should be documented in user-facing help text if needed.
 
 6. **Missing Match Score:**
    - Don't calculate results if `HomeScore` or `AwayScore` is null

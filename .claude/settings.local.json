@@ -25,7 +25,9 @@
       "Bash(ls -la \"D:\\\\Dev\\\\ExtraTime\\\\.claude\\\\plan\"\" 2>&1 || echo \"Directory check \")",
       "Bash(grep:*)",
       "Bash(git restore:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(ln:*)",
+      "Bash(cmd //c \"mklink D:\\\\Dev\\\\ExtraTime\\\\CLAUDE.md AGENTS.md\")"
     ]
   }
 }
