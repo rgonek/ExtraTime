@@ -39,9 +39,9 @@ public sealed class Bet : BaseAuditableEntity
 
 #### BetResult (`src/ExtraTime.Domain/Entities/BetResult.cs`)
 ```csharp
-public sealed class BetResult : BaseEntity
+public sealed class BetResult
 {
-    public Guid BetId { get; set; }
+    public Guid BetId { get; set; }  // Primary key (one-to-one with Bet)
     public Bet Bet { get; set; } = null!;
 
     // Scoring
@@ -53,6 +53,8 @@ public sealed class BetResult : BaseEntity
     public DateTime CalculatedAt { get; set; }
 }
 ```
+
+**Note:** `BetResult` uses `BetId` as the primary key (not `BaseEntity.Id`) since it has a one-to-one relationship with `Bet` and cannot exist independently.
 
 #### LeagueStanding (`src/ExtraTime.Domain/Entities/LeagueStanding.cs`)
 ```csharp
@@ -85,10 +87,10 @@ public sealed class LeagueStanding : BaseEntity
 
 | Method | Path | Description | Auth | Authorization |
 |--------|------|-------------|------|---------------|
-| POST | `/api/leagues/{leagueId}/bets` | Place or update bet | Yes | League member |
+| POST | `/api/leagues/{leagueId}/bets` | Place or update bet | Yes | League member, before deadline |
 | DELETE | `/api/leagues/{leagueId}/bets/{betId}` | Delete bet | Yes | Bet owner, before deadline |
 | GET | `/api/leagues/{leagueId}/bets/my` | Get user's bets in league | Yes | League member |
-| GET | `/api/leagues/{leagueId}/matches/{matchId}/bets` | Get all bets for match (after deadline) | Yes | League member |
+| GET | `/api/leagues/{leagueId}/matches/{matchId}/bets` | Get all bets for match (after deadline) | Yes | League member, after deadline passes |
 | GET | `/api/leagues/{leagueId}/standings` | Get league leaderboard | Yes | League member |
 | GET | `/api/leagues/{leagueId}/users/{userId}/stats` | Get user stats in league | Yes | League member |
 
@@ -260,6 +262,8 @@ public sealed class StandingsCalculator(IApplicationDbContext context) : IStandi
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    // PRECONDITION: All bets in the list must have non-null Result property
+    // (ensured by filtering with 'b.Result != null' in the calling method)
     private static (int CurrentStreak, int BestStreak) CalculateStreaks(List<Bet> bets)
     {
         var currentStreak = 0;
@@ -268,6 +272,7 @@ public sealed class StandingsCalculator(IApplicationDbContext context) : IStandi
 
         foreach (var bet in bets)
         {
+            // Null-forgiving operator safe due to precondition
             if (bet.Result!.IsCorrectResult)
             {
                 tempStreak++;
@@ -302,7 +307,7 @@ public sealed class StandingsCalculator(IApplicationDbContext context) : IStandi
 ## Background Jobs
 
 ### BetCalculationJob
-**Trigger:** When match status changes to `FullTime` (via Football-Data.org sync)
+**Trigger:** When match status changes to `Finished` (via Football-Data.org sync)
 
 **Job Type:** `"CalculateBetResults"`
 
@@ -320,8 +325,9 @@ public sealed class StandingsCalculator(IApplicationDbContext context) : IStandi
 3. For each bet:
    - Calculate result using `IBetCalculator`
    - Create or update `BetResult` entity
-4. Trigger `RecalculateLeagueStandingsJob` for affected leagues
-5. Update job status to `Completed`
+4. Determine affected leagues by collecting distinct `LeagueId` values from the bets processed in step 2-3
+5. Enqueue a `RecalculateLeagueStandingsJob` with payload `{ "leagueIds": [...] }` for those leagues (executed as a separate background job)
+6. Update `CalculateBetResults` job status to `Completed` once bet results are persisted and the standings job is enqueued
 
 **Handler:** `CalculateBetResultsCommandHandler`
 
@@ -444,7 +450,7 @@ public sealed record UserStatsDto(
     int CorrectResults,
     int CurrentStreak,
     int BestStreak,
-    double AccuracyPercentage,  // (ExactMatches + CorrectResults) / BetsPlaced * 100
+    double AccuracyPercentage,  // CorrectResults / BetsPlaced * 100 (CorrectResults already includes exact matches)
     int Rank,
     DateTime LastUpdatedAt
 );
@@ -458,8 +464,11 @@ public sealed record UserStatsDto(
 - **LeagueId:** Must exist and user must be a member
 - **MatchId:** Must exist
 - **Match Competition:** Must be in league's `AllowedCompetitionIds` (if set)
+  - Note: `AllowedCompetitionIds` is stored as a JSON string in the `League` entity
+  - Implementation must deserialize the JSON array to check if match's `CompetitionId` is in the allowed list
+  - If `AllowedCompetitionIds` is null, all competitions are allowed
 - **Match Deadline:** Current time must be before `match.MatchDateUtc - league.BettingDeadlineMinutes`
-- **Match Status:** Must be `Scheduled` or `Timed` (not started)
+- **Match Status:** Must be `Scheduled` or `Timed`
 - **PredictedHomeScore:** Must be >= 0 and <= 99
 - **PredictedAwayScore:** Must be >= 0 and <= 99
 
@@ -490,7 +499,9 @@ public sealed record UserStatsDto(
 4. **Upsert Behavior:**
    - If user has existing bet for match in league, update it
    - Otherwise, create new bet
-   - Track both `PlacedAt` (first bet) and `LastUpdatedAt` (last edit)
+   - Track both `PlacedAt` (first bet) and `LastUpdatedAt` (last edit):
+     - On initial bet placement: set `PlacedAt` to current time and leave `LastUpdatedAt` as `null`
+     - On subsequent bet updates: do not change `PlacedAt`; set `LastUpdatedAt` to current time
 
 5. **Match Status Check:**
    - Only allow bets on matches with status `Scheduled` or `Timed`
@@ -536,10 +547,10 @@ public sealed record UserStatsDto(
    - Update `LeagueStanding` entity (cached leaderboard)
 
 3. **Streak Rules:**
-   - **Current Streak:** Most recent consecutive correct results
-   - **Best Streak:** Longest ever consecutive correct results
+   - **Current Streak:** Most recent consecutive correct results on placed bets
+   - **Best Streak:** Longest ever consecutive correct results on placed bets
    - Streaks only count correct results (exact match or correct result)
-   - Missing a bet breaks the streak (user must bet to maintain streak)
+   - Missing a bet does not affect the streak; only placed bets are considered
    - Wrong prediction breaks the streak
 
 4. **Ranking:**
@@ -579,6 +590,8 @@ public sealed class BetConfiguration : IEntityTypeConfiguration<Bet>
 {
     public void Configure(EntityTypeBuilder<Bet> builder)
     {
+        builder.ToTable("bets");
+
         builder.HasOne(b => b.League)
             .WithMany()
             .HasForeignKey(b => b.LeagueId)
@@ -611,13 +624,15 @@ public sealed class BetResultConfiguration : IEntityTypeConfiguration<BetResult>
 {
     public void Configure(EntityTypeBuilder<BetResult> builder)
     {
+        builder.ToTable("bet_results");
+
+        // Use BetId as the primary key for the one-to-one dependent
+        builder.HasKey(br => br.BetId);
+
         builder.HasOne(br => br.Bet)
             .WithOne(b => b.Result)
             .HasForeignKey<BetResult>(br => br.BetId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasIndex(br => br.BetId)
-            .IsUnique();
     }
 }
 ```
@@ -628,6 +643,8 @@ public sealed class LeagueStandingConfiguration : IEntityTypeConfiguration<Leagu
 {
     public void Configure(EntityTypeBuilder<LeagueStanding> builder)
     {
+        builder.ToTable("league_standings");
+
         builder.HasOne(ls => ls.League)
             .WithMany()
             .HasForeignKey(ls => ls.LeagueId)
@@ -643,7 +660,8 @@ public sealed class LeagueStandingConfiguration : IEntityTypeConfiguration<Leagu
             .IsUnique();
 
         // Performance index for leaderboard queries
-        builder.HasIndex(ls => new { ls.LeagueId, ls.TotalPoints, ls.ExactMatches, ls.BetsPlaced });
+        // Includes UserId to support the full ORDER BY clause: TotalPoints DESC, ExactMatches DESC, BetsPlaced ASC, UserId ASC
+        builder.HasIndex(ls => new { ls.LeagueId, ls.TotalPoints, ls.ExactMatches, ls.BetsPlaced, ls.UserId });
     }
 }
 ```
@@ -860,16 +878,18 @@ Authorization: Bearer {user2_token}
 GET /api/leagues/{leagueId}/matches/{matchId}/bets
 Authorization: Bearer {user1_token}
 ```
-- Verify 200 OK but returns empty array (bets hidden before deadline)
+- Verify 200 OK with an empty array response
+- Bets are intentionally hidden before the bet-visibility deadline; this endpoint MUST return an empty list (rather than an error) until the deadline has passed
+- (Optional extension) If response metadata is added, include fields such as `betsVisible: false` and `betsVisibleAfter: <timestamp>` to indicate why the array is empty and when bets will become visible
 
 #### Test 7: Simulate Match Finish
 1. Manually update match in database:
    ```sql
-   UPDATE "Matches"
-   SET "Status" = 4,  -- FullTime
-       "HomeScore" = 2,
-       "AwayScore" = 1
-   WHERE "Id" = '{matchId}';
+   UPDATE "matches"
+   SET "status" = 4,  -- Finished
+       "home_score" = 2,
+       "away_score" = 1
+   WHERE "id" = '{matchId}';
    ```
 2. Trigger bet calculation job:
    ```json
@@ -881,6 +901,8 @@ Authorization: Bearer {user1_token}
    ```
 3. Wait for job to complete
 4. Check `BackgroundJobs` table for status
+
+> **Note:** In a real scenario, the match status would be updated by `MatchSyncService` when it detects that a match has finished, and that service would automatically enqueue the `CalculateBetResults` background job. The direct database update and manual `/api/admin/jobs` call in this test are only needed when simulating a finished match by bypassing the normal sync process.
 
 #### Test 8: View Match Bets (After Match Finishes)
 ```
@@ -947,15 +969,15 @@ POST /api/leagues/{leagueId}/bets
 
 #### Test 12: Deadline Enforcement
 
-**Place bet after deadline:**
-1. Update match `MatchDateUtc` to 2 minutes from now
-2. Wait 3 minutes
-3. Try to place bet
+**Place bet after deadline (respecting league betting deadline):**
+1. Configure the league's `BettingDeadlineMinutes` to a known value (e.g., 5 minutes)
+2. Update match `MatchDateUtc` to 2 minutes from now (so the betting deadline = `MatchDateUtc - BettingDeadlineMinutes` = -3 minutes, which is in the past)
+3. Try to place bet immediately (current time is past the computed deadline)
 4. Verify 400 Bad Request with "DeadlinePassed"
 
-**Delete bet after deadline:**
-1. Place bet on match
-2. Update match `MatchDateUtc` to past
+**Delete bet after deadline (respecting league betting deadline):**
+1. Place bet on match while its betting deadline (`MatchDateUtc - league.BettingDeadlineMinutes`) is still in the future
+2. Update match `MatchDateUtc` so that its betting deadline is now in the past (e.g., using the same setup as above: `BettingDeadlineMinutes = 5`, `MatchDateUtc = 2 minutes from now`)
 3. Try to delete bet
 4. Verify 400 Bad Request with "DeadlinePassed"
 
@@ -972,7 +994,7 @@ Verify standings show:
 - `CurrentStreak = 2`
 - `BestStreak = 2`
 
-#### Test 14: Leaderboard Ranking
+#### Test 14: Leaderboard
 
 **Create scenario:**
 - user1: 10 points (3 exact, 1 correct result)
@@ -991,6 +1013,10 @@ Verify ranking:
 1. **Concurrent Bet Placement:**
    - Two users bet on same match simultaneously
    - Use unique index to prevent duplicates per user/match/league
+   - For concurrent updates to the same bet, consider implementing proper concurrency handling:
+     - Option 1: Use optimistic concurrency with a version/timestamp token in the `Bet` entity
+     - Option 2: Use database-level locking to ensure sequential updates
+     - Without concurrency control, concurrent updates may result in one update overwriting the other
 
 2. **Match Status Changes:**
    - Match postponed after bets placed
@@ -1007,11 +1033,14 @@ Verify ranking:
 5. **User Kicked from League:**
    - Keep historical bets and results
    - User cannot place new bets
-   - User removed from standings query results
+   - User removed from standings query results:
+     - `GetLeagueStandingsQueryHandler` MUST filter standings by current league membership
+     - Implement via a JOIN (or equivalent) with `LeagueMembers` so only active/current members are returned
+     - Historical bets/results for kicked users remain in the database but do not appear in standings
 
 6. **Missing Match Score:**
    - Don't calculate results if `HomeScore` or `AwayScore` is null
-   - Edge case: match status is `FullTime` but scores not synced yet
+   - Edge case: match status is `Finished` but scores not synced yet
 
 7. **Recalculation Idempotency:**
    - `RecalculateLeagueStandings` should be idempotent
@@ -1019,7 +1048,13 @@ Verify ranking:
 
 8. **Partial Match Data:**
    - If match has half-time score but not full-time, don't calculate
-   - Only calculate when `Status = FullTime` AND scores present
+   - Only calculate when `Status = Finished` AND scores present
+
+9. **Missing Standings Entries:**
+   - `StandingsCalculator.RecalculateLeagueStandingsAsync` only updates standings for users who have placed bets
+   - League members who haven't placed any bets won't have standings entries created
+   - Query handlers should handle the case where standings don't exist (return empty/zero stats)
+   - Alternative: Consider creating/updating standings entries for all league members with zero stats for those without bets
 
 ---
 
