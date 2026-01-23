@@ -14,6 +14,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<CompetitionTeam> CompetitionTeams => Set<CompetitionTeam>();
     public DbSet<Match> Matches => Set<Match>();
+    public DbSet<League> Leagues => Set<League>();
+    public DbSet<LeagueMember> LeagueMembers => Set<LeagueMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
