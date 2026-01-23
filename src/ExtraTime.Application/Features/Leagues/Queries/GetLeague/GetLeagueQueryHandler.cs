@@ -48,7 +48,6 @@ public sealed class GetLeagueQueryHandler(
             .Select(m => new LeagueMemberDto(
                 UserId: m.UserId,
                 Username: m.User.Username,
-                Email: m.User.Email,
                 Role: m.Role,
                 JoinedAt: m.JoinedAt))
             .ToList();

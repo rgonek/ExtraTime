@@ -1,3 +1,4 @@
+using System.Data;
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Entities;
@@ -17,51 +18,55 @@ public sealed class JoinLeagueCommandHandler(
     {
         var userId = currentUserService.UserId!.Value;
 
-        var league = await context.Leagues
-            .Include(l => l.Members)
-            .FirstOrDefaultAsync(l => l.Id == request.LeagueId, cancellationToken);
-
-        if (league == null)
+        // Use Serializable isolation to prevent race conditions when multiple users join simultaneously
+        return await context.ExecuteInTransactionAsync(async ct =>
         {
-            return Result.Failure(LeagueErrors.LeagueNotFound);
-        }
+            var league = await context.Leagues
+                .Include(l => l.Members)
+                .FirstOrDefaultAsync(l => l.Id == request.LeagueId, ct);
 
-        // Validate invite code (case-insensitive)
-        if (!league.InviteCode.Equals(request.InviteCode, StringComparison.OrdinalIgnoreCase))
-        {
-            return Result.Failure(LeagueErrors.InvalidInviteCode);
-        }
+            if (league == null)
+            {
+                return Result.Failure(LeagueErrors.LeagueNotFound);
+            }
 
-        // Check if invite code is expired
-        if (league.InviteCodeExpiresAt.HasValue && league.InviteCodeExpiresAt.Value < DateTime.UtcNow)
-        {
-            return Result.Failure(LeagueErrors.InvalidInviteCode);
-        }
+            // Validate invite code (case-insensitive)
+            if (!league.InviteCode.Equals(request.InviteCode, StringComparison.OrdinalIgnoreCase))
+            {
+                return Result.Failure(LeagueErrors.InvalidInviteCode);
+            }
 
-        // Check if user is already a member
-        var isAlreadyMember = league.Members.Any(m => m.UserId == userId);
-        if (isAlreadyMember)
-        {
-            return Result.Failure(LeagueErrors.AlreadyAMember);
-        }
+            // Check if invite code is expired
+            if (league.InviteCodeExpiresAt.HasValue && league.InviteCodeExpiresAt.Value < DateTime.UtcNow)
+            {
+                return Result.Failure(LeagueErrors.InvalidInviteCode);
+            }
 
-        // Check if league is full
-        if (league.Members.Count >= league.MaxMembers)
-        {
-            return Result.Failure(LeagueErrors.LeagueFull);
-        }
+            // Check if user is already a member
+            var isAlreadyMember = league.Members.Any(m => m.UserId == userId);
+            if (isAlreadyMember)
+            {
+                return Result.Failure(LeagueErrors.AlreadyAMember);
+            }
 
-        var member = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+            // Check if league is full (protected by transaction isolation)
+            if (league.Members.Count >= league.MaxMembers)
+            {
+                return Result.Failure(LeagueErrors.LeagueFull);
+            }
 
-        context.LeagueMembers.Add(member);
-        await context.SaveChangesAsync(cancellationToken);
+            var member = new LeagueMember
+            {
+                LeagueId = league.Id,
+                UserId = userId,
+                Role = MemberRole.Member,
+                JoinedAt = DateTime.UtcNow
+            };
 
-        return Result.Success();
+            context.LeagueMembers.Add(member);
+            await context.SaveChangesAsync(ct);
+
+            return Result.Success();
+        }, IsolationLevel.Serializable, cancellationToken);
     }
 }

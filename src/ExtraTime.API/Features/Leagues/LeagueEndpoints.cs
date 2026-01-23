@@ -270,9 +270,17 @@ public static class LeagueEndpoints
         Guid id,
         RegenerateInviteCodeRequest request,
         IMediator mediator,
+        IValidator<RegenerateInviteCodeCommand> validator,
         CancellationToken cancellationToken)
     {
         var command = new RegenerateInviteCodeCommand(id, request.ExpiresAt);
+
+        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+
         var result = await mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)

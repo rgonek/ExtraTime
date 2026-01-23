@@ -37,7 +37,9 @@ public sealed class CreateLeagueCommandHandler(
         }
 
         // Generate unique invite code
-        var inviteCode = await GenerateUniqueInviteCodeAsync(cancellationToken);
+        var inviteCode = await inviteCodeGenerator.GenerateUniqueAsync(
+            async (code, ct) => await context.Leagues.AnyAsync(l => l.InviteCode == code, ct),
+            cancellationToken);
 
         var league = new League
         {
@@ -93,23 +95,5 @@ public sealed class CreateLeagueCommandHandler(
             InviteCode: league.InviteCode,
             InviteCodeExpiresAt: league.InviteCodeExpiresAt,
             CreatedAt: league.CreatedAt));
-    }
-
-    private async Task<string> GenerateUniqueInviteCodeAsync(CancellationToken cancellationToken)
-    {
-        const int maxAttempts = 10;
-        for (var i = 0; i < maxAttempts; i++)
-        {
-            var code = inviteCodeGenerator.Generate();
-            var exists = await context.Leagues
-                .AnyAsync(l => l.InviteCode == code, cancellationToken);
-
-            if (!exists)
-            {
-                return code;
-            }
-        }
-
-        throw new InvalidOperationException("Failed to generate unique invite code after multiple attempts");
     }
 }

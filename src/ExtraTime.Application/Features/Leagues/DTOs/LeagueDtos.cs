@@ -57,7 +57,6 @@ public sealed record LeagueSummaryDto(
 public sealed record LeagueMemberDto(
     Guid UserId,
     string Username,
-    string Email,
     MemberRole Role,
     DateTime JoinedAt);
 

@@ -1,3 +1,4 @@
+using System.Data;
 using ExtraTime.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,4 +16,9 @@ public interface IApplicationDbContext
     DbSet<League> Leagues { get; }
     DbSet<LeagueMember> LeagueMembers { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+
+    Task<T> ExecuteInTransactionAsync<T>(
+        Func<CancellationToken, Task<T>> operation,
+        IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+        CancellationToken cancellationToken = default);
 }

@@ -1,3 +1,4 @@
+using System.Data;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -21,5 +22,29 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+    }
+
+    public async Task<T> ExecuteInTransactionAsync<T>(
+        Func<CancellationToken, Task<T>> operation,
+        IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
+        CancellationToken cancellationToken = default)
+    {
+        var strategy = Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async ct =>
+        {
+            await using var transaction = await Database.BeginTransactionAsync(isolationLevel, ct);
+            try
+            {
+                var result = await operation(ct);
+                await transaction.CommitAsync(ct);
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(ct);
+                throw;
+            }
+        }, cancellationToken);
     }
 }
