@@ -36,11 +36,12 @@ public sealed class UpdateLeagueCommandHandler(
         // Validate competition IDs if provided
         if (request.AllowedCompetitionIds is { Length: > 0 })
         {
+            var distinctCompetitionIds = request.AllowedCompetitionIds.Distinct().ToArray();
             var validCompetitionCount = await context.Competitions
-                .Where(c => request.AllowedCompetitionIds.Contains(c.Id))
+                .Where(c => distinctCompetitionIds.Contains(c.Id))
                 .CountAsync(cancellationToken);
 
-            if (validCompetitionCount != request.AllowedCompetitionIds.Length)
+            if (validCompetitionCount != distinctCompetitionIds.Length)
             {
                 return Result<LeagueDto>.Failure("One or more competition IDs are invalid");
             }
