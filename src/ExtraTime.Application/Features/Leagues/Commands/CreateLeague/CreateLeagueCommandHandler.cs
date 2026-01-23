@@ -20,7 +20,8 @@ public sealed class CreateLeagueCommandHandler(
     {
         var userId = currentUserService.UserId!.Value;
 
-        // Validate competition IDs if provided
+        // Deduplicate and validate competition IDs if provided
+        Guid[]? allowedCompetitionIds = null;
         if (request.AllowedCompetitionIds is { Length: > 0 })
         {
             var distinctCompetitionIds = request.AllowedCompetitionIds.Distinct().ToArray();
@@ -33,6 +34,8 @@ public sealed class CreateLeagueCommandHandler(
             {
                 return Result<LeagueDto>.Failure("One or more competition IDs are invalid");
             }
+
+            allowedCompetitionIds = distinctCompetitionIds;
         }
 
         // Generate unique invite code
@@ -48,8 +51,8 @@ public sealed class CreateLeagueCommandHandler(
             ScoreExactMatch = request.ScoreExactMatch,
             ScoreCorrectResult = request.ScoreCorrectResult,
             BettingDeadlineMinutes = request.BettingDeadlineMinutes,
-            AllowedCompetitionIds = request.AllowedCompetitionIds != null
-                ? JsonSerializer.Serialize(request.AllowedCompetitionIds)
+            AllowedCompetitionIds = allowedCompetitionIds != null
+                ? JsonSerializer.Serialize(allowedCompetitionIds)
                 : null,
             InviteCode = inviteCode,
             InviteCodeExpiresAt = request.InviteCodeExpiresAt,
@@ -87,7 +90,7 @@ public sealed class CreateLeagueCommandHandler(
             ScoreExactMatch: league.ScoreExactMatch,
             ScoreCorrectResult: league.ScoreCorrectResult,
             BettingDeadlineMinutes: league.BettingDeadlineMinutes,
-            AllowedCompetitionIds: request.AllowedCompetitionIds,
+            AllowedCompetitionIds: allowedCompetitionIds,
             InviteCode: league.InviteCode,
             InviteCodeExpiresAt: league.InviteCodeExpiresAt,
             CreatedAt: league.CreatedAt));
