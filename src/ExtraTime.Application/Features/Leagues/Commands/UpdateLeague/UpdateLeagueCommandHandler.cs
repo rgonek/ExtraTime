@@ -65,7 +65,7 @@ public sealed class UpdateLeagueCommandHandler(
             ? JsonSerializer.Serialize(request.AllowedCompetitionIds)
             : null;
         league.UpdatedAt = DateTime.UtcNow;
-        league.UpdatedBy = userId;
+        league.UpdatedBy = userId.ToString();
 
         await context.SaveChangesAsync(cancellationToken);
 
