@@ -1,5 +1,7 @@
 # Phase 5: Betting System - Detailed Implementation Plan
 
+## Status: ✅ COMPLETE
+
 ## Overview
 Users can place, edit, and delete bets on football matches within their leagues. Bets are scored based on league-specific rules when matches complete. Leaderboards track member standings with points, streaks, and statistics. Following Clean Architecture patterns established in previous phases.
 
@@ -703,53 +705,53 @@ private async Task UpdateMatchAsync(Match existingMatch, FootballDataMatch apiMa
 
 ## Implementation Order
 
-### Step 1: Domain Layer
-1. Create `Bet` entity
-2. Create `BetResult` entity
-3. Create `LeagueStanding` entity
+### Step 1: Domain Layer ✅
+1. ✅ Create `Bet` entity
+2. ✅ Create `BetResult` entity
+3. ✅ Create `LeagueStanding` entity
 
-### Step 2: Application Common
-1. Create `IBetCalculator` interface
-2. Create `IStandingsCalculator` interface
-3. Update `IApplicationDbContext` with `Bets`, `BetResults`, `LeagueStandings` DbSets
+### Step 2: Application Common ✅
+1. ✅ Create `IBetCalculator` interface
+2. ✅ Create `IStandingsCalculator` interface
+3. ✅ Update `IApplicationDbContext` with `Bets`, `BetResults`, `LeagueStandings` DbSets
 
-### Step 3: Application Features - DTOs & Errors
-1. Create `BetDtos.cs` (all request/response DTOs)
-2. Create `BetErrors.cs`
+### Step 3: Application Features - DTOs & Errors ✅
+1. ✅ Create `BetDtos.cs` (all request/response DTOs)
+2. ✅ Create `BetErrors.cs`
 
-### Step 4: Application Features - Commands
-1. **PlaceBet** (command + handler + validator)
-2. **DeleteBet** (command + handler)
-3. **CalculateBetResults** (command + handler) - Background job
-4. **RecalculateLeagueStandings** (command + handler) - Background job
+### Step 4: Application Features - Commands ✅
+1. ✅ **PlaceBet** (command + handler + validator)
+2. ✅ **DeleteBet** (command + handler)
+3. ✅ **CalculateBetResults** (command + handler) - Background job
+4. ✅ **RecalculateLeagueStandings** (command + handler) - Background job
 
-### Step 5: Application Features - Queries
-1. **GetMyBets** (query + handler) - returns `MyBetDto[]`
-2. **GetMatchBets** (query + handler) - returns `MatchBetDto[]` (checks deadline)
-3. **GetLeagueStandings** (query + handler) - returns `LeagueStandingDto[]`
-4. **GetUserStats** (query + handler) - returns `UserStatsDto`
+### Step 5: Application Features - Queries ✅
+1. ✅ **GetMyBets** (query + handler) - returns `MyBetDto[]`
+2. ✅ **GetMatchBets** (query + handler) - returns `MatchBetDto[]` (checks deadline)
+3. ✅ **GetLeagueStandings** (query + handler) - returns `LeagueStandingDto[]`
+4. ✅ **GetUserStats** (query + handler) - returns `UserStatsDto`
 
-### Step 6: Infrastructure Services
-1. Create `BetCalculator` service
-2. Create `StandingsCalculator` service
-3. Update `DependencyInjection.cs` to register services
+### Step 6: Infrastructure Services ✅
+1. ✅ Create `BetCalculator` service
+2. ✅ Create `StandingsCalculator` service
+3. ✅ Update `DependencyInjection.cs` to register services
 
-### Step 7: Infrastructure EF Core
-1. Create `BetConfiguration`
-2. Create `BetResultConfiguration`
-3. Create `LeagueStandingConfiguration`
-4. Update `ApplicationDbContext` with new DbSets and configurations
+### Step 7: Infrastructure EF Core ✅
+1. ✅ Create `BetConfiguration`
+2. ✅ Create `BetResultConfiguration`
+3. ✅ Create `LeagueStandingConfiguration`
+4. ✅ Update `ApplicationDbContext` with new DbSets and configurations
 
-### Step 8: Infrastructure Match Sync
-1. Update `MatchSyncService` to enqueue `CalculateBetResults` job when match finishes
+### Step 8: Infrastructure Match Sync ✅
+1. ✅ Update `FootballSyncService` to enqueue `CalculateBetResults` job when match finishes
 
-### Step 9: API Layer
-1. Create `BetEndpoints.cs` with all 6 endpoints
-2. Update `Program.cs` to map endpoints
+### Step 9: API Layer ✅
+1. ✅ Create `BetEndpoints.cs` with all 6 endpoints
+2. ✅ Update `Program.cs` to map endpoints
 
-### Step 10: Database Migration
-1. Create migration: `dotnet ef migrations add AddBettingSystem`
-2. Apply migration: `dotnet ef database update`
+### Step 10: Database Migration ✅
+1. ✅ Create migration: `dotnet ef migrations add AddBettingSystem`
+2. ✅ Apply migration: `dotnet ef database update`
 
 ---
 

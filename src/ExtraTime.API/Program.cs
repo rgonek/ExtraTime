@@ -6,6 +6,7 @@ using ExtraTime.API.Features.Auth;
 using ExtraTime.API.Features.Football;
 using ExtraTime.API.Features.Health;
 using ExtraTime.API.Features.Leagues;
+using ExtraTime.API.Features.Bets;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,6 +68,7 @@ app.MapAdminEndpoints();
 app.MapFootballEndpoints();
 app.MapFootballSyncEndpoints();
 app.MapLeagueEndpoints();
+app.MapBetEndpoints();
 app.MapHealthChecks("/health");
 
 app.Run();

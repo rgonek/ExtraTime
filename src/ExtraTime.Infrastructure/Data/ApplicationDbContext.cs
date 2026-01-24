@@ -17,6 +17,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<League> Leagues => Set<League>();
     public DbSet<LeagueMember> LeagueMembers => Set<LeagueMember>();
+    public DbSet<Bet> Bets => Set<Bet>();
+    public DbSet<BetResult> BetResults => Set<BetResult>();
+    public DbSet<LeagueStanding> LeagueStandings => Set<LeagueStanding>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

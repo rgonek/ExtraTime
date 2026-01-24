@@ -12,6 +12,7 @@ namespace ExtraTime.Infrastructure.Services.Football;
 public sealed class FootballSyncService(
     IApplicationDbContext context,
     IFootballDataService footballDataService,
+    IJobDispatcher jobDispatcher,
     IOptions<FootballDataSettings> settings,
     ILogger<FootballSyncService> logger) : IFootballSyncService
 {
@@ -189,7 +190,10 @@ public sealed class FootballSyncService(
 
             if (match is not null)
             {
-                match.Status = ParseMatchStatus(apiMatch.Status);
+                var previousStatus = match.Status;
+                var newStatus = ParseMatchStatus(apiMatch.Status);
+
+                match.Status = newStatus;
                 match.HomeScore = apiMatch.Score.FullTime.Home;
                 match.AwayScore = apiMatch.Score.FullTime.Away;
                 match.HomeHalfTimeScore = apiMatch.Score.HalfTime.Home;
@@ -198,6 +202,16 @@ public sealed class FootballSyncService(
 
                 logger.LogInformation("Updated live match: {MatchId} - Score: {Home}-{Away}",
                     match.Id, match.HomeScore, match.AwayScore);
+
+                // If match just finished, trigger bet calculation
+                if (previousStatus != MatchStatus.Finished && newStatus == MatchStatus.Finished)
+                {
+                    await jobDispatcher.EnqueueAsync(
+                        "CalculateBetResults",
+                        new { matchId = match.Id, competitionId = match.CompetitionId },
+                        ct);
+                    logger.LogInformation("Enqueued bet calculation job for match {MatchId}", match.Id);
+                }
             }
         }
 
@@ -253,8 +267,11 @@ public sealed class FootballSyncService(
             }
             else
             {
+                var previousStatus = match.Status;
+                var newStatus = ParseMatchStatus(apiMatch.Status);
+
                 match.MatchDateUtc = apiMatch.UtcDate;
-                match.Status = ParseMatchStatus(apiMatch.Status);
+                match.Status = newStatus;
                 match.Matchday = apiMatch.Matchday;
                 match.Stage = apiMatch.Stage;
                 match.Group = apiMatch.Group;
@@ -264,6 +281,16 @@ public sealed class FootballSyncService(
                 match.AwayHalfTimeScore = apiMatch.Score.HalfTime.Away;
                 match.Venue = apiMatch.Venue;
                 match.LastSyncedAt = DateTime.UtcNow;
+
+                // If match just finished, trigger bet calculation
+                if (previousStatus != MatchStatus.Finished && newStatus == MatchStatus.Finished)
+                {
+                    await jobDispatcher.EnqueueAsync(
+                        "CalculateBetResults",
+                        new { matchId = match.Id, competitionId = match.CompetitionId },
+                        ct);
+                    logger.LogInformation("Enqueued bet calculation job for match {MatchId}", match.Id);
+                }
             }
         }
     }

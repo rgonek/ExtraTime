@@ -13,6 +13,8 @@
 | Phase 2.1 | ✅ Complete | User Roles (Admin Panel Backend) |
 | Phase 2.2 | ✅ Complete | BackgroundJob Tracking System |
 | Phase 3 | ✅ Complete | Football Data Integration |
+| Phase 4 | ✅ Complete | League System (Backend) |
+| Phase 5 | ✅ Complete | Betting System (Backend) |
 
 ## Project Overview
 A social betting app (no real money) where friends create leagues, bet on football matches, and compete for points. Portfolio project showcasing frontend skills.
@@ -204,20 +206,26 @@ When adding Azure Functions/Service Bus:
 
 ---
 
-## Phase 4: League System
+## Phase 4: League System ✅
 **Goal**: Users can create and join betting leagues
+**Status**: Complete (Backend)
 
 ### Backend Entities
-- [ ] League entity (name, code, settings, owner)
-- [ ] LeagueMember entity (user, league, role, joined date)
-- [ ] League invitation system (unique codes)
+- [x] League entity (name, code, settings, owner)
+- [x] LeagueMember entity (user, league, role, joined date)
+- [x] League invitation system (unique codes)
+- [x] MemberRole enum (Member, Owner)
 
 ### Backend API
-- [ ] POST /leagues - create league
-- [ ] GET /leagues - list user's leagues
-- [ ] GET /leagues/{id} - league details with members
-- [ ] POST /leagues/{id}/join - join via invite code
-- [ ] DELETE /leagues/{id}/members/{userId} - leave/remove member
+- [x] POST /api/leagues - create league
+- [x] GET /api/leagues - list user's leagues
+- [x] GET /api/leagues/{id} - league details with members
+- [x] PUT /api/leagues/{id} - update league settings
+- [x] DELETE /api/leagues/{id} - delete league
+- [x] POST /api/leagues/{id}/join - join via invite code
+- [x] DELETE /api/leagues/{id}/leave - leave league
+- [x] DELETE /api/leagues/{id}/members/{userId} - kick member
+- [x] POST /api/leagues/{id}/invite-code/regenerate - regenerate invite code
 
 ### Frontend
 - [ ] Create league form
@@ -228,26 +236,34 @@ When adding Azure Functions/Service Bus:
 
 ---
 
-## Phase 5: Betting System (Core MVP)
+## Phase 5: Betting System (Core MVP) ✅
 **Goal**: Users can place bets and earn points
+**Status**: Complete (Backend)
 
 ### Backend Entities
-- [ ] Bet entity (user, match, predicted score, points earned)
-- [ ] Scoring rules (configurable per league):
-  - Exact score: 3 points
-  - Correct result: 1 point
+- [x] Bet entity (user, match, predicted score, timestamps)
+- [x] BetResult entity (points earned, exact match, correct result)
+- [x] LeagueStanding entity (cached leaderboard with stats, streaks)
+- [x] Scoring rules (configurable per league):
+  - Exact score: league.ScoreExactMatch (default 3)
+  - Correct result: league.ScoreCorrectResult (default 1)
   - Wrong: 0 points
 
 ### Backend API
-- [ ] POST /leagues/{id}/bets - place/update bet
-- [ ] GET /leagues/{id}/bets - user's bets in league
-- [ ] GET /leagues/{id}/bets/match/{matchId} - all bets for a match (after deadline)
-- [ ] GET /leagues/{id}/leaderboard - rankings
+- [x] POST /api/leagues/{leagueId}/bets - place/update bet
+- [x] DELETE /api/leagues/{leagueId}/bets/{betId} - delete bet
+- [x] GET /api/leagues/{leagueId}/bets/my - user's bets in league
+- [x] GET /api/leagues/{leagueId}/matches/{matchId}/bets - all bets for a match (after deadline)
+- [x] GET /api/leagues/{leagueId}/standings - leaderboard
+- [x] GET /api/leagues/{leagueId}/users/{userId}/stats - user stats
 
-### Backend Service
-- [ ] Bet calculation service (triggered when match results update)
-- [ ] Leaderboard calculation
-- [ ] Streak tracking (consecutive correct predictions)
+### Backend Services
+- [x] BetCalculator service (calculates points based on league rules)
+- [x] StandingsCalculator service (recalculates leaderboard)
+- [x] Background job: CalculateBetResults (triggered when match finishes)
+- [x] Background job: RecalculateLeagueStandings (after bet results calculated)
+- [x] Streak tracking (current streak, best streak)
+- [x] FootballSyncService integration (auto-triggers bet calculation)
 
 ### Frontend
 - [ ] Match list with betting UI
@@ -357,48 +373,61 @@ When adding Azure Functions/Service Bus:
 ## Database Schema (Core Entities)
 
 ```
-Users
+Users ✅
 - Id, Email, Username, PasswordHash, Role, CreatedAt, LastLoginAt
 - CreatedBy, UpdatedAt, UpdatedBy (audit fields)
 
-RefreshTokens
+RefreshTokens ✅
 - Id, Token, ExpiresAt, CreatedAt, RevokedAt, ReplacedByToken
 - UserId (FK to Users)
 
-BackgroundJobs
+BackgroundJobs ✅
 - Id, JobType, Status, Payload(JSON), Result(JSON), Error
 - RetryCount, MaxRetries, CreatedAt, StartedAt, CompletedAt
 - ScheduledAt, CreatedByUserId, CorrelationId
 
-Competitions
+Competitions ✅
 - Id, ExternalId, Name, Code, Country, LogoUrl
 - CurrentMatchday, CurrentSeasonStart, CurrentSeasonEnd, LastSyncedAt
 
-Teams
+Teams ✅
 - Id, ExternalId, Name, ShortName, Tla, LogoUrl
 - ClubColors, Venue, LastSyncedAt
 
-CompetitionTeams (many-to-many)
+CompetitionTeams (many-to-many) ✅
 - Id, CompetitionId, TeamId, Season
 
-Matches
+Matches ✅
 - Id, ExternalId, CompetitionId, HomeTeamId, AwayTeamId
 - MatchDateUtc, Status, Matchday, Stage, Group
 - HomeScore, AwayScore, HomeHalfTimeScore, AwayHalfTimeScore
 - Venue, LastSyncedAt
 
-Leagues
-- Id, Name, InviteCode, OwnerId, CreatedAt, Settings(JSON)
+Leagues ✅
+- Id, Name, Description, OwnerId, IsPublic, MaxMembers
+- ScoreExactMatch, ScoreCorrectResult, BettingDeadlineMinutes
+- AllowedCompetitionIds (JSON), InviteCode, InviteCodeExpiresAt
+- CreatedAt, CreatedBy, UpdatedAt, UpdatedBy (audit fields)
 
-LeagueMembers
+LeagueMembers ✅
 - Id, LeagueId, UserId, Role, JoinedAt
 
-Bets
+Bets ✅
 - Id, LeagueId, UserId, MatchId
 - PredictedHomeScore, PredictedAwayScore
-- PointsEarned, CreatedAt, UpdatedAt
+- PlacedAt, LastUpdatedAt
+- CreatedAt, CreatedBy, UpdatedAt, UpdatedBy (audit fields)
 
-Bots
+BetResults ✅
+- BetId (PK, FK to Bets - one-to-one)
+- PointsEarned, IsExactMatch, IsCorrectResult, CalculatedAt
+
+LeagueStandings ✅
+- Id, LeagueId, UserId
+- TotalPoints, BetsPlaced, ExactMatches, CorrectResults
+- CurrentStreak, BestStreak, LastUpdatedAt
+
+Bots (Phase 7)
 - Id, Name, AvatarUrl, Strategy
 ```
 

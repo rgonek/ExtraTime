@@ -15,6 +15,9 @@ public interface IApplicationDbContext
     DbSet<Match> Matches { get; }
     DbSet<League> Leagues { get; }
     DbSet<LeagueMember> LeagueMembers { get; }
+    DbSet<Bet> Bets { get; }
+    DbSet<BetResult> BetResults { get; }
+    DbSet<LeagueStanding> LeagueStandings { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(

@@ -67,6 +67,8 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IJobDispatcher, InMemoryJobDispatcher>();
         services.AddSingleton<IInviteCodeGenerator, InviteCodeGenerator>();
+        services.AddScoped<IBetCalculator, BetCalculator>();
+        services.AddScoped<IStandingsCalculator, StandingsCalculator>();
 
         // Football Data Services
         services.Configure<FootballDataSettings>(configuration.GetSection(FootballDataSettings.SectionName));
