@@ -27,7 +27,9 @@
       "Bash(git restore:*)",
       "Bash(git commit:*)",
       "Bash(ln:*)",
-      "Bash(cmd //c \"mklink D:\\\\Dev\\\\ExtraTime\\\\CLAUDE.md AGENTS.md\")"
+      "Bash(cmd //c \"mklink D:\\\\Dev\\\\ExtraTime\\\\CLAUDE.md AGENTS.md\")",
+      "Bash(ls:*)",
+      "Bash(wc:*)"
     ]
   }
 }
