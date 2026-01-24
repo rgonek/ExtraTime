@@ -227,13 +227,6 @@ When adding Azure Functions/Service Bus:
 - [x] DELETE /api/leagues/{id}/members/{userId} - kick member
 - [x] POST /api/leagues/{id}/invite-code/regenerate - regenerate invite code
 
-### Frontend
-- [ ] Create league form
-- [ ] League list/dashboard
-- [ ] League detail page with member list
-- [ ] Join league via code flow
-- [ ] Share invite link functionality
-
 ---
 
 ## Phase 5: Betting System (Core MVP) ✅
@@ -265,7 +258,19 @@ When adding Azure Functions/Service Bus:
 - [x] Streak tracking (current streak, best streak)
 - [x] FootballSyncService integration (auto-triggers bet calculation)
 
-### Frontend
+---
+
+## Phase 6: Frontend Implementation & Polish (Portfolio Focus)
+**Goal**: Build complete frontend UI with impressive, polished UX
+
+### League System UI (from Phase 4)
+- [ ] Create league form
+- [ ] League list/dashboard
+- [ ] League detail page with member list
+- [ ] Join league via code flow
+- [ ] Share invite link functionality
+
+### Betting System UI (from Phase 5)
 - [ ] Match list with betting UI
 - [ ] Bet placement component (score inputs)
 - [ ] My bets view
@@ -273,12 +278,7 @@ When adding Azure Functions/Service Bus:
 - [ ] Match result reveal (show others' bets after deadline)
 - [ ] Points earned animation/celebration
 
----
-
-## Phase 6: Frontend Polish (Portfolio Focus)
-**Goal**: Create impressive, polished UI/UX
-
-### Pages & Components
+### Core Pages & Components
 - [ ] Landing page (marketing/hero)
 - [ ] Dashboard (upcoming matches, recent results, quick stats)
 - [ ] Match day view (grouped matches by date)
