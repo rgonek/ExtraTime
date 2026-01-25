@@ -84,7 +84,8 @@ dotnet add src/ExtraTime.Infrastructure reference src/ExtraTime.Application
 dotnet add src/ExtraTime.API reference src/ExtraTime.Infrastructure
 
 # Add NuGet packages - Application
-dotnet add src/ExtraTime.Application package MediatR
+dotnet add src/ExtraTime.Application package Mediator.Abstractions
+dotnet add src/ExtraTime.Application package Mediator.SourceGenerator
 dotnet add src/ExtraTime.Application package FluentValidation
 dotnet add src/ExtraTime.Application package FluentValidation.DependencyInjectionExtensions
 
@@ -174,9 +175,9 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-        services.AddMediatR(cfg =>
+        services.AddMediator(options =>
         {
-            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            options.ServiceLifetime = ServiceLifetime.Scoped;
         });
         return services;
     }

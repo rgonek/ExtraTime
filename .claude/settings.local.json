@@ -30,7 +30,8 @@
       "Bash(cmd //c \"mklink D:\\\\Dev\\\\ExtraTime\\\\CLAUDE.md AGENTS.md\")",
       "Bash(ls:*)",
       "Bash(wc:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git -C \"D:/Dev/ExtraTime\" log --oneline)"
     ]
   }
 }

@@ -34,7 +34,7 @@ public sealed class GetJobsQueryHandler(
             .Select(j => new JobSummaryDto(
                 j.Id,
                 j.JobType,
-                j.Status.ToString(),
+                j.Status,
                 j.RetryCount,
                 j.CreatedAt,
                 j.CompletedAt))

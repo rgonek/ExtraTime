@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ExtraTime.Application;
 using ExtraTime.Infrastructure;
 using ExtraTime.Infrastructure.Data;
@@ -10,6 +11,12 @@ using ExtraTime.API.Features.Bets;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure JSON serialization - enums as strings
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 // Clean Architecture services
 builder.Services.AddApplicationServices();

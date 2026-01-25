@@ -1,9 +1,11 @@
+using ExtraTime.Domain.Enums;
+
 namespace ExtraTime.Application.Features.Admin.DTOs;
 
 public sealed record JobDto(
     Guid Id,
     string JobType,
-    string Status,
+    JobStatus Status,
     string? Payload,
     string? Result,
     string? Error,
@@ -19,7 +21,7 @@ public sealed record JobDto(
 public sealed record JobSummaryDto(
     Guid Id,
     string JobType,
-    string Status,
+    JobStatus Status,
     int RetryCount,
     DateTime CreatedAt,
     DateTime? CompletedAt);

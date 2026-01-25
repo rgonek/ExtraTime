@@ -21,7 +21,7 @@ public sealed class GetCurrentUserQueryHandler(
 
         var user = await context.Users
             .Where(u => u.Id == currentUserService.UserId)
-            .Select(u => new UserDto(u.Id, u.Email, u.Username, u.Role.ToString()))
+            .Select(u => new UserDto(u.Id, u.Email, u.Username, u.Role))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (user is null)

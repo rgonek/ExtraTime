@@ -18,7 +18,7 @@ public sealed class GetJobByIdQueryHandler(
             .Select(j => new JobDto(
                 j.Id,
                 j.JobType,
-                j.Status.ToString(),
+                j.Status,
                 j.Payload,
                 j.Result,
                 j.Error,

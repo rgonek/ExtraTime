@@ -70,6 +70,6 @@ public sealed class RefreshTokenCommandHandler(
             AccessToken: accessToken,
             RefreshToken: newRefreshToken.Token,
             ExpiresAt: newRefreshToken.ExpiresAt,
-            User: new UserDto(user.Id, user.Email, user.Username, user.Role.ToString())));
+            User: new UserDto(user.Id, user.Email, user.Username, user.Role)));
     }
 }

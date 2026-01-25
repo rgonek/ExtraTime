@@ -9,15 +9,15 @@ A social betting app where friends create leagues, predict football match outcom
 - **User Authentication** - Register, login with JWT tokens, automatic token refresh with rotation
 - **Role-Based Authorization** - User and Admin roles with policy-based access control
 - **Background Job Tracking** - Admin dashboard for monitoring async jobs with retry/cancel capabilities
-- **Modern Frontend** - Next.js 15 with React 19, TypeScript, and Tailwind CSS
+- **Modern Frontend** - Next.js 16 with React 19, TypeScript, and Tailwind CSS v4
 - **API Documentation** - Swagger/OpenAPI with JWT security
-
-### Planned
-
 - **Football Data Integration** - Live match data from Football-Data.org API
 - **League System** - Create private leagues, invite friends with unique codes
 - **Betting System** - Predict match scores, earn points (exact score: 3pts, correct result: 1pt)
 - **Leaderboards** - Track rankings within leagues
+
+### Planned
+
 - **Gamification** - Achievements, streaks, levels, and celebrations
 - **Bot Players** - AI opponents with different strategies to keep leagues active
 
@@ -31,7 +31,7 @@ A social betting app where friends create leagues, predict football match outcom
 - **JWT Authentication** with BCrypt password hashing
 
 ### Frontend
-- **Next.js 15** (App Router, React 19)
+- **Next.js 16** (App Router, React 19)
 - **TypeScript**
 - **TanStack Query** for server state
 - **Zustand** for client state
@@ -47,7 +47,7 @@ A social betting app where friends create leagues, predict football match outcom
 
 ### Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download) or later
+- [.NET 10 SDK](https://dotnet.microsoft.com/download) or later
 - [Node.js 22](https://nodejs.org/) or [Bun](https://bun.sh/)
 - [Docker](https://www.docker.com/) and Docker Compose
 

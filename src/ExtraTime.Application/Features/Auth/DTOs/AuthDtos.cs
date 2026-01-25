@@ -1,3 +1,5 @@
+using ExtraTime.Domain.Enums;
+
 namespace ExtraTime.Application.Features.Auth.DTOs;
 
 public sealed record RegisterRequest(string Email, string Username, string Password);
@@ -12,4 +14,4 @@ public sealed record AuthResponse(
     DateTime ExpiresAt,
     UserDto User);
 
-public sealed record UserDto(Guid Id, string Email, string Username, string Role);
+public sealed record UserDto(Guid Id, string Email, string Username, UserRole Role);

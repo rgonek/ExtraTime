@@ -62,6 +62,6 @@ public sealed class RegisterCommandHandler(
             AccessToken: accessToken,
             RefreshToken: refreshToken.Token,
             ExpiresAt: refreshToken.ExpiresAt,
-            User: new UserDto(user.Id, user.Email, user.Username, user.Role.ToString())));
+            User: new UserDto(user.Id, user.Email, user.Username, user.Role)));
     }
 }
