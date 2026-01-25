@@ -1,11 +1,14 @@
 using System.Data;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.Infrastructure.Data;
 
-public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+public sealed class ApplicationDbContext(
+    DbContextOptions<ApplicationDbContext> options,
+    ICurrentUserService currentUserService)
     : DbContext(options), IApplicationDbContext
 {
     public DbSet<User> Users => Set<User>();
@@ -20,6 +23,29 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Bet> Bets => Set<Bet>();
     public DbSet<BetResult> BetResults => Set<BetResult>();
     public DbSet<LeagueStanding> LeagueStandings => Set<LeagueStanding>();
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var utcNow = DateTime.UtcNow;
+        var userId = currentUserService.UserId?.ToString();
+
+        foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CreatedAt = utcNow;
+                    entry.Entity.CreatedBy = userId;
+                    break;
+                case EntityState.Modified:
+                    entry.Entity.UpdatedAt = utcNow;
+                    entry.Entity.UpdatedBy = userId;
+                    break;
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

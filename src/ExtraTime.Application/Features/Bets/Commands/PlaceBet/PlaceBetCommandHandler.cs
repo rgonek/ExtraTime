@@ -94,9 +94,7 @@ public sealed class PlaceBetCommandHandler(
                 PredictedHomeScore = request.PredictedHomeScore,
                 PredictedAwayScore = request.PredictedAwayScore,
                 PlacedAt = now,
-                LastUpdatedAt = null,
-                CreatedAt = now,
-                CreatedBy = userId.ToString()
+                LastUpdatedAt = null
             };
             context.Bets.Add(existingBet);
         }
@@ -106,8 +104,6 @@ public sealed class PlaceBetCommandHandler(
             existingBet.PredictedHomeScore = request.PredictedHomeScore;
             existingBet.PredictedAwayScore = request.PredictedAwayScore;
             existingBet.LastUpdatedAt = now;
-            existingBet.UpdatedAt = now;
-            existingBet.UpdatedBy = userId.ToString();
         }
 
         await context.SaveChangesAsync(cancellationToken);

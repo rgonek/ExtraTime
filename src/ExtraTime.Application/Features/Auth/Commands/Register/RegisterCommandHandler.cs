@@ -39,8 +39,7 @@ public sealed class RegisterCommandHandler(
         {
             Email = normalizedEmail,
             Username = request.Username,
-            PasswordHash = passwordHasher.Hash(request.Password),
-            CreatedAt = DateTime.UtcNow
+            PasswordHash = passwordHasher.Hash(request.Password)
         };
 
         var refreshToken = new RefreshTokenEntity
