@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLogout } from '@/hooks/use-auth';
@@ -61,7 +62,9 @@ function DashboardContent() {
               <CardDescription>Compete with friends</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Coming soon...</p>
+              <Button asChild className="w-full">
+                <Link href="/leagues">View Leagues</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
