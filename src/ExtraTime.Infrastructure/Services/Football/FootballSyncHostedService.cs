@@ -1,4 +1,5 @@
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -109,7 +110,7 @@ public sealed class FootballSyncHostedService(
 
     private static bool IsMatchHours()
     {
-        var utcHour = DateTime.UtcNow.Hour;
+        var utcHour = Clock.UtcNow.Hour;
         return utcHour is >= 10 and <= 23;
     }
 }

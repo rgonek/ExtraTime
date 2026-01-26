@@ -1,3 +1,5 @@
+using ExtraTime.Domain.Common;
+
 namespace ExtraTime.API.Features.Health;
 
 public static class HealthEndpoints
@@ -6,7 +8,7 @@ public static class HealthEndpoints
     {
         app.MapGet("/api/health", () => Results.Ok(new HealthResponse(
             Status: "Healthy",
-            Timestamp: DateTime.UtcNow,
+            Timestamp: Clock.UtcNow,
             Version: "1.0.0"
         )))
         .WithName("GetHealth")

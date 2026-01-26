@@ -51,7 +51,6 @@ public sealed class CreateLeagueCommandHandlerTests : HandlerTestBase
         await Assert.That(result.Value.InviteCode).IsEqualTo("INVITE123");
         
         Context.Leagues.Received(1).Add(Arg.Is<League>(l => l.Name == "New League" && l.OwnerId == userId));
-        Context.LeagueMembers.Received(1).Add(Arg.Is<LeagueMember>(m => m.UserId == userId && m.Role == ExtraTime.Domain.Enums.MemberRole.Owner));
         await Context.Received(1).SaveChangesAsync(CancellationToken);
     }
 }

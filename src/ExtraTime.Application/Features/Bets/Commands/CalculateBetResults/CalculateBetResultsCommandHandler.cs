@@ -1,5 +1,6 @@
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +68,7 @@ public sealed class CalculateBetResultsCommandHandler(
                     PointsEarned = result.PointsEarned,
                     IsExactMatch = result.IsExactMatch,
                     IsCorrectResult = result.IsCorrectResult,
-                    CalculatedAt = DateTime.UtcNow
+                    CalculatedAt = Clock.UtcNow
                 };
                 context.BetResults.Add(betResult);
             }
@@ -77,7 +78,7 @@ public sealed class CalculateBetResultsCommandHandler(
                 bet.Result.PointsEarned = result.PointsEarned;
                 bet.Result.IsExactMatch = result.IsExactMatch;
                 bet.Result.IsCorrectResult = result.IsCorrectResult;
-                bet.Result.CalculatedAt = DateTime.UtcNow;
+                bet.Result.CalculatedAt = Clock.UtcNow;
             }
         }
 

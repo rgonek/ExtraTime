@@ -1,4 +1,5 @@
 using Bogus;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 
@@ -46,8 +47,8 @@ public sealed class UserBuilder
     {
         var user = User.Register(_email, _username, _passwordHash, _role);
         user.Id = _id;
-        user.CreatedAt = DateTime.UtcNow;
-        user.UpdatedAt = DateTime.UtcNow;
+        user.CreatedAt = Clock.UtcNow;
+        user.UpdatedAt = Clock.UtcNow;
         return user;
     }
 }
@@ -128,8 +129,8 @@ public sealed class LeagueBuilder
             _bettingDeadlineMinutes);
 
         league.Id = _id;
-        league.CreatedAt = DateTime.UtcNow;
-        league.UpdatedAt = DateTime.UtcNow;
+        league.CreatedAt = Clock.UtcNow;
+        league.UpdatedAt = Clock.UtcNow;
         return league;
     }
 }
@@ -175,7 +176,7 @@ public sealed class CompetitionBuilder
             Name = _name,
             Code = _code,
             Country = _country,
-            LastSyncedAt = DateTime.UtcNow
+            LastSyncedAt = Clock.UtcNow
         };
     }
 }
@@ -219,7 +220,7 @@ public sealed class TeamBuilder
             ExternalId = _externalId,
             Name = _name,
             ShortName = _shortName,
-            LastSyncedAt = DateTime.UtcNow
+            LastSyncedAt = Clock.UtcNow
         };
     }
 }
@@ -231,7 +232,7 @@ public sealed class MatchBuilder
     private Guid _competitionId = Guid.NewGuid();
     private Guid _homeTeamId = Guid.NewGuid();
     private Guid _awayTeamId = Guid.NewGuid();
-    private DateTime _matchDateUtc = DateTime.UtcNow.AddDays(1);
+    private DateTime _matchDateUtc = Clock.UtcNow.AddDays(1);
     private MatchStatus _status = MatchStatus.Scheduled;
     private int? _homeScore = null;
     private int? _awayScore = null;
@@ -308,7 +309,7 @@ public sealed class BetBuilder
     private Guid _matchId = Guid.NewGuid();
     private int _predictedHomeScore = 2;
     private int _predictedAwayScore = 1;
-    private DateTime _placedAt = DateTime.UtcNow;
+    private DateTime _placedAt = Clock.UtcNow;
 
     public BetBuilder WithId(Guid id)
     {
@@ -357,8 +358,8 @@ public sealed class BetBuilder
             _predictedAwayScore);
 
         bet.Id = _id;
-        bet.CreatedAt = DateTime.UtcNow;
-        bet.UpdatedAt = DateTime.UtcNow;
+        bet.CreatedAt = Clock.UtcNow;
+        bet.UpdatedAt = Clock.UtcNow;
         return bet;
     }
 }

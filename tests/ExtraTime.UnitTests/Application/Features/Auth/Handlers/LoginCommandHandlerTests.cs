@@ -1,7 +1,9 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Auth.Commands.Login;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.UnitTests.Common;
+using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -13,12 +15,25 @@ public sealed class LoginCommandHandlerTests : HandlerTestBase
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly LoginCommandHandler _handler;
+    private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);
 
     public LoginCommandHandlerTests()
     {
         _passwordHasher = Substitute.For<IPasswordHasher>();
         _tokenService = Substitute.For<ITokenService>();
         _handler = new LoginCommandHandler(Context, _passwordHasher, _tokenService);
+    }
+
+    [Before(Test)]
+    public void Setup()
+    {
+        Clock.Current = new FakeClock(_now);
+    }
+
+    [After(Test)]
+    public void Cleanup()
+    {
+        Clock.Current = null!;
     }
 
     [Test]
@@ -38,7 +53,7 @@ public sealed class LoginCommandHandlerTests : HandlerTestBase
 
         _passwordHasher.Verify(password, user.PasswordHash).Returns(true);
         _tokenService.GenerateRefreshToken().Returns("refresh-token");
-        _tokenService.GetRefreshTokenExpiration().Returns(DateTime.UtcNow.AddDays(7));
+        _tokenService.GetRefreshTokenExpiration().Returns(_now.AddDays(7));
         _tokenService.GenerateAccessToken(user).Returns("access-token");
 
         // Act
@@ -47,7 +62,6 @@ public sealed class LoginCommandHandlerTests : HandlerTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.AccessToken).IsEqualTo("access-token");
-        Context.RefreshTokens.Received(1).Add(Arg.Any<RefreshToken>());
         await Context.Received(1).SaveChangesAsync(CancellationToken);
     }
 

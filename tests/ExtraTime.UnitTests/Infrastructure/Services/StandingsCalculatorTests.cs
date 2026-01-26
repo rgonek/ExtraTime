@@ -1,6 +1,8 @@
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Infrastructure.Services;
 using ExtraTime.UnitTests.Common;
+using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -10,10 +12,23 @@ namespace ExtraTime.UnitTests.Infrastructure.Services;
 public sealed class StandingsCalculatorTests : HandlerTestBase
 {
     private readonly StandingsCalculator _calculator;
+    private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);
 
     public StandingsCalculatorTests()
     {
         _calculator = new StandingsCalculator(Context);
+    }
+
+    [Before(Test)]
+    public void Setup()
+    {
+        Clock.Current = new FakeClock(_now);
+    }
+
+    [After(Test)]
+    public void Cleanup()
+    {
+        Clock.Current = null!;
     }
 
     [Test]
@@ -23,8 +38,8 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
         var leagueId = Guid.NewGuid();
         var userId = Guid.NewGuid();
 
-        var match1 = new MatchBuilder().WithMatchDate(DateTime.UtcNow.AddHours(-2)).Build();
-        var match2 = new MatchBuilder().WithMatchDate(DateTime.UtcNow.AddHours(-1)).Build();
+        var match1 = new MatchBuilder().WithMatchDate(_now.AddHours(-2)).Build();
+        var match2 = new MatchBuilder().WithMatchDate(_now.AddHours(-1)).Build();
 
         var bet1 = new BetBuilder()
             .WithLeagueId(leagueId)
@@ -75,7 +90,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
 
         for (int i = 0; i < results.Length; i++)
         {
-            var match = new MatchBuilder().WithMatchDate(DateTime.UtcNow.AddHours(-10 + i)).Build();
+            var match = new MatchBuilder().WithMatchDate(_now.AddHours(-10 + i)).Build();
             var bet = new BetBuilder()
                 .WithLeagueId(leagueId)
                 .WithUserId(userId)

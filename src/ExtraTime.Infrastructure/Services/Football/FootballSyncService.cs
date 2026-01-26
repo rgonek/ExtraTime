@@ -1,5 +1,6 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Football.DTOs;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Infrastructure.Configuration;
@@ -46,7 +47,7 @@ public sealed class FootballSyncService(
                     CurrentMatchday = apiCompetition.CurrentSeason?.CurrentMatchday,
                     CurrentSeasonStart = apiCompetition.CurrentSeason?.StartDate,
                     CurrentSeasonEnd = apiCompetition.CurrentSeason?.EndDate,
-                    LastSyncedAt = DateTime.UtcNow
+                    LastSyncedAt = Clock.UtcNow
                 };
                 context.Competitions.Add(competition);
                 logger.LogInformation("Added new competition: {Name}", competition.Name);
@@ -60,7 +61,7 @@ public sealed class FootballSyncService(
                 competition.CurrentMatchday = apiCompetition.CurrentSeason?.CurrentMatchday;
                 competition.CurrentSeasonStart = apiCompetition.CurrentSeason?.StartDate;
                 competition.CurrentSeasonEnd = apiCompetition.CurrentSeason?.EndDate;
-                competition.LastSyncedAt = DateTime.UtcNow;
+                competition.LastSyncedAt = Clock.UtcNow;
                 logger.LogInformation("Updated competition: {Name}", competition.Name);
             }
         }
@@ -84,7 +85,7 @@ public sealed class FootballSyncService(
 
         var apiTeams = await footballDataService.GetTeamsForCompetitionAsync(competition.ExternalId, ct);
 
-        var currentYear = DateTime.UtcNow.Year;
+        var currentYear = Clock.UtcNow.Year;
         var season = competition.CurrentSeasonStart?.Year ?? currentYear;
 
         foreach (var apiTeam in apiTeams)
@@ -103,7 +104,7 @@ public sealed class FootballSyncService(
                     LogoUrl = apiTeam.Crest,
                     ClubColors = apiTeam.ClubColors,
                     Venue = apiTeam.Venue,
-                    LastSyncedAt = DateTime.UtcNow
+                    LastSyncedAt = Clock.UtcNow
                 };
                 context.Teams.Add(team);
                 logger.LogInformation("Added new team: {Name}", team.Name);
@@ -116,7 +117,7 @@ public sealed class FootballSyncService(
                 team.LogoUrl = apiTeam.Crest;
                 team.ClubColors = apiTeam.ClubColors;
                 team.Venue = apiTeam.Venue;
-                team.LastSyncedAt = DateTime.UtcNow;
+                team.LastSyncedAt = Clock.UtcNow;
             }
 
             await context.SaveChangesAsync(ct);
@@ -145,8 +146,8 @@ public sealed class FootballSyncService(
 
     public async Task SyncMatchesAsync(DateTime? dateFrom = null, DateTime? dateTo = null, CancellationToken ct = default)
     {
-        dateFrom ??= DateTime.UtcNow.Date;
-        dateTo ??= DateTime.UtcNow.Date.AddDays(14);
+        dateFrom ??= Clock.UtcNow.Date;
+        dateTo ??= Clock.UtcNow.Date.AddDays(14);
 
         logger.LogInformation("Starting match sync from {DateFrom} to {DateTo}", dateFrom, dateTo);
 

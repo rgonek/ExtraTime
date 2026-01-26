@@ -28,7 +28,7 @@ public sealed class ApplicationDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = Clock.UtcNow;
         var userId = currentUserService.UserId?.ToString();
 
         foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())

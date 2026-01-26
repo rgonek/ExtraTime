@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Infrastructure.Configuration;
 using Microsoft.Extensions.Options;
@@ -32,7 +33,7 @@ public sealed class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenServ
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
+            expires: Clock.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -48,6 +49,6 @@ public sealed class TokenService(IOptions<JwtSettings> jwtSettings) : ITokenServ
 
     public DateTime GetRefreshTokenExpiration()
     {
-        return DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays);
+        return Clock.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays);
     }
 }

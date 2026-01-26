@@ -1,6 +1,7 @@
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Auth.DTOs;
+using ExtraTime.Domain.Common;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,7 +34,7 @@ public sealed class RefreshTokenCommandHandler(
 
             foreach (var token in userTokens)
             {
-                token.RevokedAt = DateTime.UtcNow;
+                token.RevokedAt = Clock.UtcNow;
             }
 
             await context.SaveChangesAsync(cancellationToken);
@@ -41,7 +42,7 @@ public sealed class RefreshTokenCommandHandler(
         }
 
         // Check if token is expired
-        if (existingToken.ExpiresAt < DateTime.UtcNow)
+        if (existingToken.ExpiresAt < Clock.UtcNow)
         {
             return Result<AuthResponse>.Failure(AuthErrors.InvalidRefreshToken);
         }
@@ -53,12 +54,12 @@ public sealed class RefreshTokenCommandHandler(
         {
             Token = tokenService.GenerateRefreshToken(),
             ExpiresAt = tokenService.GetRefreshTokenExpiration(),
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = Clock.UtcNow,
             UserId = user.Id
         };
 
         // Revoke old token and link to new one
-        existingToken.RevokedAt = DateTime.UtcNow;
+        existingToken.RevokedAt = Clock.UtcNow;
         existingToken.ReplacedByToken = newRefreshToken.Token;
 
         context.RefreshTokens.Add(newRefreshToken);

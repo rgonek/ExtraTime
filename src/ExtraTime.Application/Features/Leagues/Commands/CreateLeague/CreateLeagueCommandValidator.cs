@@ -1,3 +1,4 @@
+using ExtraTime.Domain.Common;
 using FluentValidation;
 
 namespace ExtraTime.Application.Features.Leagues.Commands.CreateLeague;
@@ -28,7 +29,7 @@ public sealed class CreateLeagueCommandValidator : AbstractValidator<CreateLeagu
             .InclusiveBetween(0, 120).WithMessage("Betting deadline must be between 0 and 120 minutes.");
 
         RuleFor(x => x.InviteCodeExpiresAt)
-            .Must(date => date > DateTime.UtcNow).WithMessage("Invite code expiration must be in the future.")
+            .Must(date => date > Clock.UtcNow).WithMessage("Invite code expiration must be in the future.")
             .When(x => x.InviteCodeExpiresAt.HasValue);
     }
 }

@@ -1,5 +1,6 @@
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Enums;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
@@ -49,7 +50,7 @@ public sealed class DeleteBetCommandHandler(
         }
 
         var deadline = bet.Match.MatchDateUtc.AddMinutes(-league.BettingDeadlineMinutes);
-        if (DateTime.UtcNow >= deadline)
+        if (Clock.UtcNow >= deadline)
         {
             return Result.Failure(BetErrors.DeadlinePassed);
         }

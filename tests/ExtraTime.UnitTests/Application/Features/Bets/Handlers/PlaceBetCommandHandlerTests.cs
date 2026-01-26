@@ -1,9 +1,11 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Bets;
 using ExtraTime.Application.Features.Bets.Commands.PlaceBet;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.UnitTests.Common;
+using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -13,10 +15,23 @@ namespace ExtraTime.UnitTests.Application.Features.Bets.Handlers;
 public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
 {
     private readonly PlaceBetCommandHandler _handler;
+    private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);
 
     public PlaceBetCommandHandlerTests()
     {
         _handler = new PlaceBetCommandHandler(Context, CurrentUserService);
+    }
+
+    [Before(Test)]
+    public void Setup()
+    {
+        Clock.Current = new FakeClock(_now);
+    }
+
+    [After(Test)]
+    public void Cleanup()
+    {
+        Clock.Current = null!; // Resets to SystemClock
     }
 
     [Test]
@@ -28,7 +43,7 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
 
         var league = new LeagueBuilder().Build();
         var match = new MatchBuilder()
-            .WithMatchDate(DateTime.UtcNow.AddHours(2))
+            .WithMatchDate(_now.AddHours(2))
             .WithStatus(MatchStatus.Scheduled)
             .Build();
 
@@ -70,7 +85,7 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
 
         var league = new LeagueBuilder().WithScoringRules(3, 1).Build();
         var match = new MatchBuilder()
-            .WithMatchDate(DateTime.UtcNow.AddMinutes(2)) // League default deadline is 5 mins
+            .WithMatchDate(_now.AddMinutes(2)) // League default deadline is 5 mins
             .WithStatus(MatchStatus.Scheduled)
             .Build();
 

@@ -1,3 +1,4 @@
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Domain.Events;
@@ -10,7 +11,7 @@ public sealed class MatchTests
     public async Task Create_ShouldInitializeCorrectly()
     {
         // Act
-        var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow, MatchStatus.Scheduled);
+        var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Scheduled);
 
         // Assert
         await Assert.That(match.ExternalId).IsEqualTo(123);
@@ -21,7 +22,7 @@ public sealed class MatchTests
     public async Task UpdateStatus_ShouldRaiseEvent()
     {
         // Arrange
-        var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow, MatchStatus.Scheduled);
+        var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Scheduled);
         
         // Act
         match.UpdateStatus(MatchStatus.InPlay);
@@ -35,11 +36,11 @@ public sealed class MatchTests
     public async Task IsOpenForBetting_WhenBeforeDeadline_ShouldBeTrue()
     {
         // Arrange
-        var matchDate = DateTime.UtcNow.AddHours(1);
+        var matchDate = Clock.UtcNow.AddHours(1);
         var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), matchDate, MatchStatus.Scheduled);
 
         // Act
-        var isOpen = match.IsOpenForBetting(15, DateTime.UtcNow);
+        var isOpen = match.IsOpenForBetting(15, Clock.UtcNow);
 
         // Assert
         await Assert.That(isOpen).IsTrue();
@@ -49,11 +50,11 @@ public sealed class MatchTests
     public async Task IsOpenForBetting_WhenAfterDeadline_ShouldBeFalse()
     {
         // Arrange
-        var matchDate = DateTime.UtcNow.AddMinutes(10);
+        var matchDate = Clock.UtcNow.AddMinutes(10);
         var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), matchDate, MatchStatus.Scheduled);
 
         // Act
-        var isOpen = match.IsOpenForBetting(15, DateTime.UtcNow);
+        var isOpen = match.IsOpenForBetting(15, Clock.UtcNow);
 
         // Assert
         await Assert.That(isOpen).IsFalse();

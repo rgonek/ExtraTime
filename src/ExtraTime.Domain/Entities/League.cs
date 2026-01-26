@@ -90,7 +90,7 @@ public sealed class League : BaseAuditableEntity
             LeagueId = Id,
             UserId = userId,
             Role = role,
-            JoinedAt = DateTime.UtcNow
+            JoinedAt = Clock.UtcNow
         };
 
         _members.Add(member);

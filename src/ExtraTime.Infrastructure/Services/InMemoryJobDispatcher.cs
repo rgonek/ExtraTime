@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,7 @@ public sealed class InMemoryJobDispatcher(
             JobType = jobType,
             Payload = JsonSerializer.Serialize(payload),
             Status = JobStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = Clock.UtcNow
         };
 
         context.BackgroundJobs.Add(job);

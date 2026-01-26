@@ -6,7 +6,7 @@ public sealed class RefreshToken : BaseEntity
 {
     public required string Token { get; set; }
     public required DateTime ExpiresAt { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = Clock.UtcNow;
     public string? CreatedByIp { get; set; }
     public DateTime? RevokedAt { get; set; }
     public string? RevokedByIp { get; set; }
@@ -15,7 +15,7 @@ public sealed class RefreshToken : BaseEntity
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 
-    public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
+    public bool IsExpired => Clock.UtcNow >= ExpiresAt;
     public bool IsRevoked => RevokedAt != null;
     public bool IsActive => !IsRevoked && !IsExpired;
 }

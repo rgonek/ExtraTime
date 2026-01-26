@@ -57,7 +57,7 @@ public sealed class Match : BaseEntity
             Stage = stage,
             Group = group,
             Venue = venue,
-            LastSyncedAt = DateTime.UtcNow
+            LastSyncedAt = Clock.UtcNow
         };
     }
 
@@ -74,7 +74,7 @@ public sealed class Match : BaseEntity
 
         var oldStatus = Status;
         Status = newStatus;
-        LastSyncedAt = DateTime.UtcNow;
+        LastSyncedAt = Clock.UtcNow;
 
         AddDomainEvent(new MatchStatusChanged(Id, oldStatus, newStatus));
     }
@@ -88,7 +88,7 @@ public sealed class Match : BaseEntity
         AwayScore = away;
         HomeHalfTimeScore = homeHalf;
         AwayHalfTimeScore = awayHalf;
-        LastSyncedAt = DateTime.UtcNow;
+        LastSyncedAt = Clock.UtcNow;
 
         AddDomainEvent(new MatchScoreUpdated(Id, home, away));
     }
@@ -99,7 +99,7 @@ public sealed class Match : BaseEntity
         Stage = stage;
         Group = group;
         Venue = venue;
-        LastSyncedAt = DateTime.UtcNow;
+        LastSyncedAt = Clock.UtcNow;
     }
 
     public bool IsOpenForBetting(int deadlineMinutes, DateTime currentTime)
@@ -122,6 +122,6 @@ public sealed class Match : BaseEntity
         MatchDateUtc = matchDateUtc;
         UpdateStatus(status);
         UpdateScore(homeScore, awayScore, homeHalf, awayHalf);
-        LastSyncedAt = DateTime.UtcNow;
+        LastSyncedAt = Clock.UtcNow;
     }
 }

@@ -1,5 +1,6 @@
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Enums;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,7 @@ public sealed class CancelJobCommandHandler(
         }
 
         job.Status = JobStatus.Cancelled;
-        job.CompletedAt = DateTime.UtcNow;
+        job.CompletedAt = Clock.UtcNow;
 
         await context.SaveChangesAsync(cancellationToken);
 

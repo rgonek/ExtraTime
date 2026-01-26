@@ -41,14 +41,14 @@ public sealed class User : BaseAuditableEntity
 
     public void UpdateLastLogin()
     {
-        LastLoginAt = DateTime.UtcNow;
+        LastLoginAt = Clock.UtcNow;
         AddDomainEvent(new UserLoggedIn(Id));
     }
 
     public void AddRefreshToken(string token, DateTime expiresAt, string? createdByIp = null)
     {
         // Remove expired and old revoked tokens
-        _refreshTokens.RemoveAll(t => t.IsExpired || (t.IsRevoked && t.RevokedAt?.AddDays(7) < DateTime.UtcNow));
+        _refreshTokens.RemoveAll(t => t.IsExpired || (t.IsRevoked && t.RevokedAt?.AddDays(7) < Clock.UtcNow));
 
         var refreshToken = new RefreshToken
         {
@@ -56,7 +56,7 @@ public sealed class User : BaseAuditableEntity
             ExpiresAt = expiresAt,
             CreatedByIp = createdByIp,
             UserId = Id,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = Clock.UtcNow
         };
 
         _refreshTokens.Add(refreshToken);
@@ -67,7 +67,7 @@ public sealed class User : BaseAuditableEntity
         var refreshToken = _refreshTokens.FirstOrDefault(t => t.Token == token);
         if (refreshToken != null && refreshToken.IsActive)
         {
-            refreshToken.RevokedAt = DateTime.UtcNow;
+            refreshToken.RevokedAt = Clock.UtcNow;
             refreshToken.RevokedByIp = revokedByIp;
             refreshToken.ReasonRevoked = reason;
         }

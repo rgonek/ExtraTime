@@ -1,3 +1,4 @@
+using ExtraTime.Domain.Common;
 using FluentValidation;
 
 namespace ExtraTime.Application.Features.Leagues.Commands.RegenerateInviteCode;
@@ -10,7 +11,7 @@ public sealed class RegenerateInviteCodeCommandValidator : AbstractValidator<Reg
             .NotEmpty().WithMessage("League ID is required.");
 
         RuleFor(x => x.ExpiresAt)
-            .Must(date => date > DateTime.UtcNow).WithMessage("Invite code expiration must be in the future.")
+            .Must(date => date > Clock.UtcNow).WithMessage("Invite code expiration must be in the future.")
             .When(x => x.ExpiresAt.HasValue);
     }
 }

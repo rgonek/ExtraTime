@@ -1,6 +1,7 @@
 using System.Data;
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using Mediator;
@@ -37,7 +38,7 @@ public sealed class JoinLeagueCommandHandler(
             }
 
             // Check if invite code is expired
-            if (league.InviteCodeExpiresAt.HasValue && league.InviteCodeExpiresAt.Value < DateTime.UtcNow)
+            if (league.InviteCodeExpiresAt.HasValue && league.InviteCodeExpiresAt.Value < Clock.UtcNow)
             {
                 return Result.Failure(LeagueErrors.InvalidInviteCode);
             }

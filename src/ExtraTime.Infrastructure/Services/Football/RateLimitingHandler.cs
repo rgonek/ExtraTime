@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using ExtraTime.Domain.Common;
 using ExtraTime.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,7 +22,7 @@ public sealed class RateLimitingHandler(
         try
         {
             await WaitForRateLimitAsync(cancellationToken);
-            RequestTimestamps.Enqueue(DateTime.UtcNow);
+            RequestTimestamps.Enqueue(Clock.UtcNow);
         }
         finally
         {
@@ -39,7 +40,7 @@ public sealed class RateLimitingHandler(
         {
             if (RequestTimestamps.TryPeek(out var oldestRequest))
             {
-                var waitTime = oldestRequest.AddMinutes(1) - DateTime.UtcNow;
+                var waitTime = oldestRequest.AddMinutes(1) - Clock.UtcNow;
                 if (waitTime > TimeSpan.Zero)
                 {
                     logger.LogInformation("Rate limit reached, waiting {WaitTime}...", waitTime);
@@ -52,7 +53,7 @@ public sealed class RateLimitingHandler(
 
     private static void CleanupOldTimestamps()
     {
-        var oneMinuteAgo = DateTime.UtcNow.AddMinutes(-1);
+        var oneMinuteAgo = Clock.UtcNow.AddMinutes(-1);
         while (RequestTimestamps.TryPeek(out var timestamp) && timestamp < oneMinuteAgo)
         {
             RequestTimestamps.TryDequeue(out _);

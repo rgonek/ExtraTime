@@ -2,6 +2,7 @@ using System.Text.Json;
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Bets.DTOs;
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using Mediator;
@@ -63,7 +64,7 @@ public sealed class PlaceBetCommandHandler(
                      b.MatchId == request.MatchId,
                 cancellationToken);
 
-        var now = DateTime.UtcNow;
+        var now = Clock.UtcNow;
 
         if (existingBet == null)
         {

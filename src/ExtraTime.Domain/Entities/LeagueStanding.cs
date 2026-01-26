@@ -31,7 +31,7 @@ public sealed class LeagueStanding : BaseEntity
         {
             LeagueId = leagueId,
             UserId = userId,
-            LastUpdatedAt = DateTime.UtcNow
+            LastUpdatedAt = Clock.UtcNow
         };
     }
 
@@ -56,7 +56,7 @@ public sealed class LeagueStanding : BaseEntity
             CurrentStreak = 0;
         }
 
-        LastUpdatedAt = DateTime.UtcNow;
+        LastUpdatedAt = Clock.UtcNow;
     }
 
     public void Reset()
@@ -67,6 +67,6 @@ public sealed class LeagueStanding : BaseEntity
         CorrectResults = 0;
         CurrentStreak = 0;
         BestStreak = 0;
-        LastUpdatedAt = DateTime.UtcNow;
+        LastUpdatedAt = Clock.UtcNow;
     }
 }

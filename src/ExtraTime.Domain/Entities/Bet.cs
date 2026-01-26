@@ -44,7 +44,7 @@ public sealed class Bet : BaseAuditableEntity
             MatchId = matchId,
             PredictedHomeScore = homeScore,
             PredictedAwayScore = awayScore,
-            PlacedAt = DateTime.UtcNow
+            PlacedAt = Clock.UtcNow
         };
 
         bet.AddDomainEvent(new BetPlaced(bet.Id, userId, matchId));

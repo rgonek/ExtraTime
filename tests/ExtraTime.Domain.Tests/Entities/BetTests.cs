@@ -1,3 +1,4 @@
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Domain.Events;
@@ -32,12 +33,12 @@ public sealed class BetTests
     public async Task Update_BeforeDeadline_ShouldUpdateScores()
     {
         // Arrange
-        var matchStartTime = DateTime.UtcNow.AddHours(2);
+        var matchStartTime = Clock.UtcNow.AddHours(2);
         var bet = Bet.Place(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1, 1);
         bet.ClearDomainEvents();
 
         // Act
-        bet.Update(2, 0, DateTime.UtcNow, 15, matchStartTime);
+        bet.Update(2, 0, Clock.UtcNow, 15, matchStartTime);
 
         // Assert
         await Assert.That(bet.PredictedHomeScore).IsEqualTo(2);
@@ -49,11 +50,11 @@ public sealed class BetTests
     public async Task Update_AfterDeadline_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var matchStartTime = DateTime.UtcNow.AddMinutes(10);
+        var matchStartTime = Clock.UtcNow.AddMinutes(10);
         var bet = Bet.Place(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1, 1);
 
         // Act & Assert
-        await Assert.That(() => bet.Update(2, 0, DateTime.UtcNow, 15, matchStartTime))
+        await Assert.That(() => bet.Update(2, 0, Clock.UtcNow, 15, matchStartTime))
             .Throws<InvalidOperationException>();
     }
 
@@ -62,7 +63,7 @@ public sealed class BetTests
     {
         // Arrange
         var bet = Bet.Place(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 2, 1);
-        var match = Match.Create(1, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow, MatchStatus.Finished);
+        var match = Match.Create(1, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Finished);
         match.UpdateScore(2, 1);
 
         // Act
@@ -79,7 +80,7 @@ public sealed class BetTests
     {
         // Arrange
         var bet = Bet.Place(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1, 0); // Home win
-        var match = Match.Create(1, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow, MatchStatus.Finished);
+        var match = Match.Create(1, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Finished);
         match.UpdateScore(3, 1); // Home win, different score
 
         // Act
@@ -96,7 +97,7 @@ public sealed class BetTests
     {
         // Arrange
         var bet = Bet.Place(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), 1, 0); // Home win
-        var match = Match.Create(1, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow, MatchStatus.Finished);
+        var match = Match.Create(1, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Finished);
         match.UpdateScore(1, 2); // Away win
 
         // Act

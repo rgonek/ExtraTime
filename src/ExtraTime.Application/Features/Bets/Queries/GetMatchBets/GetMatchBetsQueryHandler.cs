@@ -1,6 +1,7 @@
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Bets.DTOs;
+using ExtraTime.Domain.Common;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,7 +47,7 @@ public sealed class GetMatchBetsQueryHandler(
 
         // Check if deadline has passed - if not, return empty list (bets are hidden)
         var deadline = match.MatchDateUtc.AddMinutes(-league.BettingDeadlineMinutes);
-        if (DateTime.UtcNow < deadline)
+        if (Clock.UtcNow < deadline)
         {
             // Bets are intentionally hidden before the deadline
             return Result<List<MatchBetDto>>.Success([]);

@@ -1,3 +1,4 @@
+using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Infrastructure.Configuration;
@@ -77,7 +78,7 @@ public sealed class TokenServiceTests
         var expiration = _tokenService.GetRefreshTokenExpiration();
 
         // Assert
-        await Assert.That(expiration).IsGreaterThan(DateTime.UtcNow);
-        await Assert.That(expiration).IsLessThan(DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays + 1));
+        await Assert.That(expiration).IsGreaterThan(Clock.UtcNow);
+        await Assert.That(expiration).IsLessThan(Clock.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays + 1));
     }
 }
