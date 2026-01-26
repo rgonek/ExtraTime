@@ -64,8 +64,9 @@ docker-compose up --build
 
 Services will be available at:
 - **Frontend**: http://localhost:3000
-- **API**: http://localhost:5000
-- **Swagger**: http://localhost:5000/swagger
+- **API**: http://localhost:5200
+- **Swagger**: http://localhost:5200/swagger
+- **Database Admin (Adminer)**: http://localhost:8080
 
 ### Manual Setup
 
@@ -84,6 +85,17 @@ dotnet ef database update --project src/ExtraTime.Infrastructure --startup-proje
 # Run the API
 dotnet run --project src/ExtraTime.API
 ```
+
+#### Database Admin Panel
+
+Access Adminer at http://localhost:8080 with these credentials:
+- **System**: PostgreSQL
+- **Server**: db
+- **Username**: extratime
+- **Password**: extratime_dev
+- **Database**: extratime
+
+You can browse tables, run SQL queries, export data, and manage your database through the web interface.
 
 #### Frontend
 
@@ -175,7 +187,7 @@ ExtraTime/
 ### Frontend (.env.local)
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:5200/api
 ```
 
 ## Development
