@@ -9,12 +9,14 @@ namespace ExtraTime.IntegrationTests.Common;
 public abstract class IntegrationTestBase
 {
     private static readonly DatabaseFixture Fixture = new();
+    private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
 
     [Before(Test)]
     public async Task InitializeAsync()
     {
+        await DatabaseLock.WaitAsync();
         await Fixture.EnsureInitializedAsync();
         await Fixture.ResetDatabaseAsync();
 
@@ -30,6 +32,7 @@ public abstract class IntegrationTestBase
     public async Task DisposeAsync()
     {
         await Context.DisposeAsync();
+        DatabaseLock.Release();
     }
 
     protected void SetCurrentUser(Guid userId)

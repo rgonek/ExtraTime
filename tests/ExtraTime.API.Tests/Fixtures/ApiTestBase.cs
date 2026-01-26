@@ -12,12 +12,14 @@ namespace ExtraTime.API.Tests.Fixtures;
 public abstract class ApiTestBase
 {
     private static readonly CustomWebApplicationFactory Factory = new();
+    private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
     private Respawner _respawner = null!;
     protected HttpClient Client { get; private set; } = null!;
 
     [Before(Test)]
     public async Task InitializeAsync()
     {
+        await DatabaseLock.WaitAsync();
         await Factory.EnsureInitializedAsync();
         Client = Factory.CreateClient();
 
@@ -40,31 +42,38 @@ public abstract class ApiTestBase
     public void DisposeTest()
     {
         Client.Dispose();
+        DatabaseLock.Release();
     }
 
-    protected async Task<string> GetAuthTokenAsync(string email = "test@example.com", string password = "Test123!")
+    protected async Task<string> GetAuthTokenAsync(string email = "testuser@example.com", string password = "Test123!")
     {
         var registerResponse = await Client.PostAsJsonAsync("/api/auth/register", new
         {
             Email = email,
-            Username = email.Split('@')[0],
+            Username = email.Split('@')[0].Length < 3 ? email.Split('@')[0] + "123" : email.Split('@')[0],
             Password = password
         });
 
-        if (!registerResponse.IsSuccessStatusCode)
+        if (registerResponse.IsSuccessStatusCode)
         {
-            var loginResponse = await Client.PostAsJsonAsync("/api/auth/login", new
-            {
-                Email = email,
-                Password = password
-            });
-
-            var loginResult = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
-            return loginResult!.AccessToken;
+            var registerResult = await registerResponse.Content.ReadFromJsonAsync<AuthResponse>();
+            return registerResult!.AccessToken;
         }
 
-        var registerResult = await registerResponse.Content.ReadFromJsonAsync<AuthResponse>();
-        return registerResult!.AccessToken;
+        var loginResponse = await Client.PostAsJsonAsync("/api/auth/login", new
+        {
+            Email = email,
+            Password = password
+        });
+
+        if (!loginResponse.IsSuccessStatusCode)
+        {
+            var error = await loginResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to get auth token. Status: {loginResponse.StatusCode}, Error: {error}");
+        }
+
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
+        return loginResult!.AccessToken;
     }
 
     protected void SetAuthHeader(string token)

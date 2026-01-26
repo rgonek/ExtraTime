@@ -34,14 +34,12 @@ internal sealed class TestAsyncQueryProvider<T> : IAsyncQueryProvider
 
     public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = default)
     {
-        var resultType = typeof(TResult).GetGenericArguments().FirstOrDefault();
-        var executeMethod = typeof(IQueryProvider)
-            .GetMethod(nameof(IQueryProvider.Execute), 1, new[] { typeof(Expression) })
-            ?.MakeGenericMethod(resultType ?? typeof(TResult));
+        var resultType = typeof(TResult).GetGenericArguments().FirstOrDefault() ?? typeof(TResult);
+        var result = _innerQueryProvider.Execute(expression);
 
-        var result = executeMethod?.Invoke(_innerQueryProvider, new object[] { expression });
-        var taskResult = Task.FromResult(result!).GetAwaiter().GetResult();
-        return (TResult)taskResult;
+        return (TResult)typeof(Task).GetMethod(nameof(Task.FromResult))!
+            .MakeGenericMethod(resultType)
+            .Invoke(null, new[] { result })!;
     }
 }
 

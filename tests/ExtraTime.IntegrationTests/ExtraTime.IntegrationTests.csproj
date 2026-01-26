@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
@@ -22,5 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ExtraTime.Infrastructure\ExtraTime.Infrastructure.csproj" />
+    <ProjectReference Include="..\ExtraTime.UnitTests\ExtraTime.UnitTests.csproj" />
   </ItemGroup>
 </Project>

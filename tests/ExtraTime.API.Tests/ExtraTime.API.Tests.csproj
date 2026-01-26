@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ExtraTime.API\ExtraTime.API.csproj" />
+    <ProjectReference Include="..\ExtraTime.UnitTests\ExtraTime.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>
