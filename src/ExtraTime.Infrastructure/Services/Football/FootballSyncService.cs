@@ -193,12 +193,12 @@ public sealed class FootballSyncService(
                 var previousStatus = match.Status;
                 var newStatus = ParseMatchStatus(apiMatch.Status);
 
-                match.Status = newStatus;
-                match.HomeScore = apiMatch.Score.FullTime.Home;
-                match.AwayScore = apiMatch.Score.FullTime.Away;
-                match.HomeHalfTimeScore = apiMatch.Score.HalfTime.Home;
-                match.AwayHalfTimeScore = apiMatch.Score.HalfTime.Away;
-                match.LastSyncedAt = DateTime.UtcNow;
+                match.UpdateStatus(newStatus);
+                match.UpdateScore(
+                    apiMatch.Score.FullTime.Home,
+                    apiMatch.Score.FullTime.Away,
+                    apiMatch.Score.HalfTime.Home,
+                    apiMatch.Score.HalfTime.Away);
 
                 logger.LogInformation("Updated live match: {MatchId} - Score: {Home}-{Away}",
                     match.Id, match.HomeScore, match.AwayScore);
@@ -243,24 +243,24 @@ public sealed class FootballSyncService(
 
             if (match is null)
             {
-                match = new Match
-                {
-                    ExternalId = apiMatch.Id,
-                    CompetitionId = competition.Id,
-                    HomeTeamId = homeTeam.Id,
-                    AwayTeamId = awayTeam.Id,
-                    MatchDateUtc = apiMatch.UtcDate,
-                    Status = ParseMatchStatus(apiMatch.Status),
-                    Matchday = apiMatch.Matchday,
-                    Stage = apiMatch.Stage,
-                    Group = apiMatch.Group,
-                    HomeScore = apiMatch.Score.FullTime.Home,
-                    AwayScore = apiMatch.Score.FullTime.Away,
-                    HomeHalfTimeScore = apiMatch.Score.HalfTime.Home,
-                    AwayHalfTimeScore = apiMatch.Score.HalfTime.Away,
-                    Venue = apiMatch.Venue,
-                    LastSyncedAt = DateTime.UtcNow
-                };
+                match = Match.Create(
+                    apiMatch.Id,
+                    competition.Id,
+                    homeTeam.Id,
+                    awayTeam.Id,
+                    apiMatch.UtcDate,
+                    ParseMatchStatus(apiMatch.Status),
+                    apiMatch.Matchday,
+                    apiMatch.Stage,
+                    apiMatch.Group,
+                    apiMatch.Venue);
+                
+                match.UpdateScore(
+                    apiMatch.Score.FullTime.Home,
+                    apiMatch.Score.FullTime.Away,
+                    apiMatch.Score.HalfTime.Home,
+                    apiMatch.Score.HalfTime.Away);
+
                 context.Matches.Add(match);
                 logger.LogInformation("Added new match: {Home} vs {Away} on {Date}",
                     homeTeam.Name, awayTeam.Name, match.MatchDateUtc);
@@ -270,17 +270,19 @@ public sealed class FootballSyncService(
                 var previousStatus = match.Status;
                 var newStatus = ParseMatchStatus(apiMatch.Status);
 
-                match.MatchDateUtc = apiMatch.UtcDate;
-                match.Status = newStatus;
-                match.Matchday = apiMatch.Matchday;
-                match.Stage = apiMatch.Stage;
-                match.Group = apiMatch.Group;
-                match.HomeScore = apiMatch.Score.FullTime.Home;
-                match.AwayScore = apiMatch.Score.FullTime.Away;
-                match.HomeHalfTimeScore = apiMatch.Score.HalfTime.Home;
-                match.AwayHalfTimeScore = apiMatch.Score.HalfTime.Away;
-                match.Venue = apiMatch.Venue;
-                match.LastSyncedAt = DateTime.UtcNow;
+                match.SyncDetails(
+                    apiMatch.UtcDate,
+                    newStatus,
+                    apiMatch.Score.FullTime.Home,
+                    apiMatch.Score.FullTime.Away,
+                    apiMatch.Score.HalfTime.Home,
+                    apiMatch.Score.HalfTime.Away);
+                
+                match.UpdateMetadata(
+                    apiMatch.Matchday,
+                    apiMatch.Stage,
+                    apiMatch.Group,
+                    apiMatch.Venue);
 
                 // If match just finished, trigger bet calculation
                 if (previousStatus != MatchStatus.Finished && newStatus == MatchStatus.Finished)

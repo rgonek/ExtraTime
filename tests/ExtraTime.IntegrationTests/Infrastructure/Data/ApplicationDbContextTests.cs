@@ -23,7 +23,7 @@ public sealed class ApplicationDbContextTests : IntegrationTestBase
 
         // Act - Update
         var originalCreatedAt = user.CreatedAt;
-        user.Username = "updated_username";
+        user.UpdateProfile(user.Email, "updated_username");
         await Task.Delay(200); // Ensure some time passes
         await Context.SaveChangesAsync();
 

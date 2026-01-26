@@ -113,12 +113,8 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
         bet.Match = match;
         bet.Result = new BetResult { PointsEarned = 3, IsExactMatch = true, IsCorrectResult = true };
 
-        var existingStanding = new LeagueStanding
-        {
-            LeagueId = leagueId,
-            UserId = userId,
-            TotalPoints = 0
-        };
+        var existingStanding = LeagueStanding.Create(leagueId, userId);
+        existingStanding.TotalPoints = 0;
 
         var mockBets = CreateMockDbSet(new List<Bet> { bet }.AsQueryable());
         Context.Bets.Returns(mockBets);

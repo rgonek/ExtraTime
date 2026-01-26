@@ -16,30 +16,26 @@ public sealed class LoginCommandHandler(
         LoginCommand request,
         CancellationToken cancellationToken)
     {
-        var normalizedEmail = request.Email.ToLowerInvariant();
-
         var user = await context.Users
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+            .Include(u => u.RefreshTokens)
+            .FirstOrDefaultAsync(u => u.Email == request.Email.ToLowerInvariant(), cancellationToken);
 
         if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
         {
             return Result<AuthResponse>.Failure(AuthErrors.InvalidCredentials);
         }
 
-        user.LastLoginAt = DateTime.UtcNow;
+        user.UpdateLastLogin();
 
-        var refreshToken = new RefreshTokenEntity
-        {
-            Token = tokenService.GenerateRefreshToken(),
-            ExpiresAt = tokenService.GetRefreshTokenExpiration(),
-            CreatedAt = DateTime.UtcNow,
-            UserId = user.Id
-        };
+        var refreshTokenString = tokenService.GenerateRefreshToken();
+        var expiresAt = tokenService.GetRefreshTokenExpiration();
 
-        context.RefreshTokens.Add(refreshToken);
+        user.AddRefreshToken(refreshTokenString, expiresAt);
+
         await context.SaveChangesAsync(cancellationToken);
 
         var accessToken = tokenService.GenerateAccessToken(user);
+        var refreshToken = user.RefreshTokens.First(t => t.Token == refreshTokenString);
 
         return Result<AuthResponse>.Success(new AuthResponse(
             AccessToken: accessToken,

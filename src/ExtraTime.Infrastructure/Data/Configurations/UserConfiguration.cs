@@ -38,6 +38,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasMany(u => u.RefreshTokens)
             .WithOne(rt => rt.User)
             .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .Metadata.PrincipalToDependent!.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

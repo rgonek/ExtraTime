@@ -51,9 +51,8 @@ public sealed class CalculateBetResultsIntegrationTests : IntegrationTestBase
 
         await Context.SaveChangesAsync();
 
-        var betCalculator = new BetCalculator();
         var jobDispatcher = Substitute.For<IJobDispatcher>();
-        var handler = new CalculateBetResultsCommandHandler(Context, betCalculator, jobDispatcher);
+        var handler = new CalculateBetResultsCommandHandler(Context, jobDispatcher);
 
         var command = new CalculateBetResultsCommand(match.Id, competition.Id);
 

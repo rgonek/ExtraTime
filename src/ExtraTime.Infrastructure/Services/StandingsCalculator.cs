@@ -26,76 +26,29 @@ public sealed class StandingsCalculator(IApplicationDbContext context) : IStandi
             var userId = userGroup.Key;
             var bets = userGroup.OrderBy(b => b.Match.MatchDateUtc).ToList();
 
-            // Calculate totals
-            var totalPoints = bets.Sum(b => b.Result!.PointsEarned);
-            var betsPlaced = bets.Count;
-            var exactMatches = bets.Count(b => b.Result!.IsExactMatch);
-            var correctResults = bets.Count(b => b.Result!.IsCorrectResult);
-
-            // Calculate streaks
-            var (currentStreak, bestStreak) = CalculateStreaks(bets);
-
             // Upsert standing
             var standing = await context.LeagueStandings
                 .FirstOrDefaultAsync(s => s.LeagueId == leagueId && s.UserId == userId, cancellationToken);
 
             if (standing == null)
             {
-                standing = new LeagueStanding
-                {
-                    LeagueId = leagueId,
-                    UserId = userId
-                };
+                standing = LeagueStanding.Create(leagueId, userId);
                 context.LeagueStandings.Add(standing);
             }
+            else
+            {
+                standing.Reset();
+            }
 
-            standing.TotalPoints = totalPoints;
-            standing.BetsPlaced = betsPlaced;
-            standing.ExactMatches = exactMatches;
-            standing.CorrectResults = correctResults;
-            standing.CurrentStreak = currentStreak;
-            standing.BestStreak = bestStreak;
-            standing.LastUpdatedAt = DateTime.UtcNow;
+            foreach (var bet in bets)
+            {
+                standing.ApplyBetResult(
+                    bet.Result!.PointsEarned,
+                    bet.Result.IsExactMatch,
+                    bet.Result.IsCorrectResult);
+            }
         }
 
         await context.SaveChangesAsync(cancellationToken);
-    }
-
-    // PRECONDITION: All bets in the list must have non-null Result property
-    // (ensured by filtering with 'b.Result != null' in the calling method)
-    private static (int CurrentStreak, int BestStreak) CalculateStreaks(List<Bet> bets)
-    {
-        var currentStreak = 0;
-        var bestStreak = 0;
-        var tempStreak = 0;
-
-        foreach (var bet in bets)
-        {
-            // Null-forgiving operator safe due to precondition
-            if (bet.Result!.IsCorrectResult)
-            {
-                tempStreak++;
-                bestStreak = Math.Max(bestStreak, tempStreak);
-            }
-            else
-            {
-                tempStreak = 0;
-            }
-        }
-
-        // Current streak = most recent consecutive correct results
-        for (var i = bets.Count - 1; i >= 0; i--)
-        {
-            if (bets[i].Result!.IsCorrectResult)
-            {
-                currentStreak++;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        return (currentStreak, bestStreak);
     }
 }

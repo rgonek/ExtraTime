@@ -8,7 +8,6 @@ namespace ExtraTime.Application.Features.Bets.Commands.CalculateBetResults;
 
 public sealed class CalculateBetResultsCommandHandler(
     IApplicationDbContext context,
-    IBetCalculator betCalculator,
     IJobDispatcher jobDispatcher) : IRequestHandler<CalculateBetResultsCommand, Result>
 {
     public async ValueTask<Result> Handle(
@@ -57,7 +56,7 @@ public sealed class CalculateBetResultsCommandHandler(
                 continue;
             }
 
-            var resultDto = betCalculator.CalculateResult(bet, match, league);
+            var result = bet.CalculatePoints(match, league.ScoreExactMatch, league.ScoreCorrectResult);
 
             if (bet.Result == null)
             {
@@ -65,9 +64,9 @@ public sealed class CalculateBetResultsCommandHandler(
                 var betResult = new BetResult
                 {
                     BetId = bet.Id,
-                    PointsEarned = resultDto.PointsEarned,
-                    IsExactMatch = resultDto.IsExactMatch,
-                    IsCorrectResult = resultDto.IsCorrectResult,
+                    PointsEarned = result.PointsEarned,
+                    IsExactMatch = result.IsExactMatch,
+                    IsCorrectResult = result.IsCorrectResult,
                     CalculatedAt = DateTime.UtcNow
                 };
                 context.BetResults.Add(betResult);
@@ -75,9 +74,9 @@ public sealed class CalculateBetResultsCommandHandler(
             else
             {
                 // Update existing result (recalculation scenario)
-                bet.Result.PointsEarned = resultDto.PointsEarned;
-                bet.Result.IsExactMatch = resultDto.IsExactMatch;
-                bet.Result.IsCorrectResult = resultDto.IsCorrectResult;
+                bet.Result.PointsEarned = result.PointsEarned;
+                bet.Result.IsExactMatch = result.IsExactMatch;
+                bet.Result.IsCorrectResult = result.IsCorrectResult;
                 bet.Result.CalculatedAt = DateTime.UtcNow;
             }
         }

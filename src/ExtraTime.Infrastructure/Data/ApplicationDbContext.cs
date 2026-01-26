@@ -2,13 +2,15 @@ using System.Data;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
+using Mediator;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.Infrastructure.Data;
 
 public sealed class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options,
-    ICurrentUserService currentUserService)
+    ICurrentUserService currentUserService,
+    IMediator mediator)
     : DbContext(options), IApplicationDbContext
 {
     public DbSet<User> Users => Set<User>();
@@ -44,7 +46,33 @@ public sealed class ApplicationDbContext(
             }
         }
 
-        return await base.SaveChangesAsync(cancellationToken);
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        await DispatchDomainEventsAsync();
+
+        return result;
+    }
+
+    private async Task DispatchDomainEventsAsync()
+    {
+        var entities = ChangeTracker
+            .Entries<BaseEntity>()
+            .Where(e => e.Entity.DomainEvents.Any())
+            .Select(e => e.Entity);
+
+        var domainEvents = entities
+            .SelectMany(e => e.DomainEvents)
+            .ToList();
+
+        foreach (var entity in entities)
+        {
+            entity.ClearDomainEvents();
+        }
+
+        foreach (var domainEvent in domainEvents)
+        {
+            await mediator.Publish(domainEvent);
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

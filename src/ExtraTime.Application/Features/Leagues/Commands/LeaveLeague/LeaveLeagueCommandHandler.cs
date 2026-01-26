@@ -16,21 +16,24 @@ public sealed class LeaveLeagueCommandHandler(
     {
         var userId = currentUserService.UserId!.Value;
 
-        var member = await context.LeagueMembers
-            .FirstOrDefaultAsync(lm => lm.LeagueId == request.LeagueId && lm.UserId == userId, cancellationToken);
+        var league = await context.Leagues
+            .Include(l => l.Members)
+            .FirstOrDefaultAsync(l => l.Id == request.LeagueId, cancellationToken);
 
-        if (member == null)
+        if (league == null)
         {
-            return Result.Failure(LeagueErrors.NotAMember);
+            return Result.Failure(LeagueErrors.LeagueNotFound);
         }
 
-        // Check if user is the owner
-        if (member.Role == MemberRole.Owner)
+        try
         {
-            return Result.Failure(LeagueErrors.OwnerCannotLeave);
+            league.RemoveMember(userId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
         }
 
-        context.LeagueMembers.Remove(member);
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

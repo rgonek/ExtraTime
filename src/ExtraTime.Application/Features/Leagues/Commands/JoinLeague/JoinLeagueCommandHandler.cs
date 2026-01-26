@@ -42,28 +42,16 @@ public sealed class JoinLeagueCommandHandler(
                 return Result.Failure(LeagueErrors.InvalidInviteCode);
             }
 
-            // Check if user is already a member
-            var isAlreadyMember = league.Members.Any(m => m.UserId == userId);
-            if (isAlreadyMember)
+            // Add member using domain logic
+            try
             {
-                return Result.Failure(LeagueErrors.AlreadyAMember);
+                league.AddMember(userId, MemberRole.Member);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Result.Failure(ex.Message);
             }
 
-            // Check if league is full (protected by transaction isolation)
-            if (league.Members.Count >= league.MaxMembers)
-            {
-                return Result.Failure(LeagueErrors.LeagueFull);
-            }
-
-            var member = new LeagueMember
-            {
-                LeagueId = league.Id,
-                UserId = userId,
-                Role = MemberRole.Member,
-                JoinedAt = DateTime.UtcNow
-            };
-
-            context.LeagueMembers.Add(member);
             await context.SaveChangesAsync(ct);
 
             return Result.Success();

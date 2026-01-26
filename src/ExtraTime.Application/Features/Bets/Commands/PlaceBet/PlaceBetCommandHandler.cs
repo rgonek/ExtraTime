@@ -49,26 +49,9 @@ public sealed class PlaceBetCommandHandler(
         }
 
         // Check if match is in allowed competitions (if league has competition restrictions)
-        if (!string.IsNullOrEmpty(league.AllowedCompetitionIds))
+        if (!league.CanAcceptBet(match.CompetitionId))
         {
-            var allowedIds = JsonSerializer.Deserialize<Guid[]>(league.AllowedCompetitionIds);
-            if (allowedIds != null && !allowedIds.Contains(match.CompetitionId))
-            {
-                return Result<BetDto>.Failure(BetErrors.MatchNotAllowed);
-            }
-        }
-
-        // Check match status - only allow betting on Scheduled or Timed matches
-        if (match.Status != MatchStatus.Scheduled && match.Status != MatchStatus.Timed)
-        {
-            return Result<BetDto>.Failure(BetErrors.MatchAlreadyStarted);
-        }
-
-        // Check betting deadline
-        var deadline = match.MatchDateUtc.AddMinutes(-league.BettingDeadlineMinutes);
-        if (DateTime.UtcNow >= deadline)
-        {
-            return Result<BetDto>.Failure(BetErrors.DeadlinePassed);
+            return Result<BetDto>.Failure(BetErrors.MatchNotAllowed);
         }
 
         // Check if user already has a bet for this match in this league (upsert behavior)
@@ -81,29 +64,41 @@ public sealed class PlaceBetCommandHandler(
                 cancellationToken);
 
         var now = DateTime.UtcNow;
-        bool isNewBet = existingBet == null;
 
         if (existingBet == null)
         {
-            // Create new bet
-            existingBet = new Bet
+            // Check match status and deadline
+            if (!match.IsOpenForBetting(league.BettingDeadlineMinutes, now))
             {
-                LeagueId = request.LeagueId,
-                UserId = userId,
-                MatchId = request.MatchId,
-                PredictedHomeScore = request.PredictedHomeScore,
-                PredictedAwayScore = request.PredictedAwayScore,
-                PlacedAt = now,
-                LastUpdatedAt = null
-            };
+                return Result<BetDto>.Failure(BetErrors.DeadlinePassed);
+            }
+
+            // Create new bet
+            existingBet = Bet.Place(
+                request.LeagueId,
+                userId,
+                request.MatchId,
+                request.PredictedHomeScore,
+                request.PredictedAwayScore);
+            
             context.Bets.Add(existingBet);
         }
         else
         {
             // Update existing bet
-            existingBet.PredictedHomeScore = request.PredictedHomeScore;
-            existingBet.PredictedAwayScore = request.PredictedAwayScore;
-            existingBet.LastUpdatedAt = now;
+            try
+            {
+                existingBet.Update(
+                    request.PredictedHomeScore,
+                    request.PredictedAwayScore,
+                    now,
+                    league.BettingDeadlineMinutes,
+                    match.MatchDateUtc);
+            }
+            catch (InvalidOperationException)
+            {
+                return Result<BetDto>.Failure(BetErrors.DeadlinePassed);
+            }
         }
 
         await context.SaveChangesAsync(cancellationToken);

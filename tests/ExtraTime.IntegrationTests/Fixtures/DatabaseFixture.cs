@@ -1,5 +1,6 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Infrastructure.Data;
+using Mediator;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Npgsql;
@@ -42,7 +43,8 @@ public sealed class DatabaseFixture
                 .Options;
 
             var mockCurrentUserService = Substitute.For<ICurrentUserService>();
-            await using var context = new ApplicationDbContext(options, mockCurrentUserService);
+            var mockMediator = Substitute.For<IMediator>();
+            await using var context = new ApplicationDbContext(options, mockCurrentUserService, mockMediator);
             await context.Database.MigrateAsync();
 
             _connection = new NpgsqlConnection(ConnectionString);

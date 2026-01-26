@@ -34,6 +34,7 @@ public sealed class LeagueConfiguration : IEntityTypeConfiguration<League>
         builder.HasMany(l => l.Members)
             .WithOne(lm => lm.League)
             .HasForeignKey(lm => lm.LeagueId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .Metadata.PrincipalToDependent!.SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

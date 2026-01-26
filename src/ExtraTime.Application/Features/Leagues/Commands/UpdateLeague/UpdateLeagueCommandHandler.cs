@@ -49,24 +49,24 @@ public sealed class UpdateLeagueCommandHandler(
             }
         }
 
-        // Check if new MaxMembers is less than current member count
-        var currentMemberCount = league.Members.Count;
-        if (request.MaxMembers < currentMemberCount)
+        // Update league settings using domain logic
+        try
         {
-            return Result<LeagueDto>.Failure($"Cannot set max members to {request.MaxMembers} when league already has {currentMemberCount} members");
+            league.UpdateSettings(
+                request.Name,
+                request.Description,
+                request.IsPublic,
+                request.MaxMembers,
+                request.ScoreExactMatch,
+                request.ScoreCorrectResult,
+                request.BettingDeadlineMinutes);
+            
+            league.SetCompetitionFilter(allowedCompetitionIds);
         }
-
-        // Update league properties
-        league.Name = request.Name;
-        league.Description = request.Description;
-        league.IsPublic = request.IsPublic;
-        league.MaxMembers = request.MaxMembers;
-        league.ScoreExactMatch = request.ScoreExactMatch;
-        league.ScoreCorrectResult = request.ScoreCorrectResult;
-        league.BettingDeadlineMinutes = request.BettingDeadlineMinutes;
-        league.AllowedCompetitionIds = allowedCompetitionIds != null
-            ? JsonSerializer.Serialize(allowedCompetitionIds)
-            : null;
+        catch (Exception ex)
+        {
+            return Result<LeagueDto>.Failure(ex.Message);
+        }
 
         await context.SaveChangesAsync(cancellationToken);
 
@@ -78,7 +78,7 @@ public sealed class UpdateLeagueCommandHandler(
             OwnerUsername: league.Owner.Username,
             IsPublic: league.IsPublic,
             MaxMembers: league.MaxMembers,
-            CurrentMemberCount: currentMemberCount,
+            CurrentMemberCount: league.Members.Count,
             ScoreExactMatch: league.ScoreExactMatch,
             ScoreCorrectResult: league.ScoreCorrectResult,
             BettingDeadlineMinutes: league.BettingDeadlineMinutes,

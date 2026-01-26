@@ -17,10 +17,8 @@ public sealed class RegisterCommandHandler(
         RegisterCommand request,
         CancellationToken cancellationToken)
     {
-        var normalizedEmail = request.Email.ToLowerInvariant();
-
         var emailExists = await context.Users
-            .AnyAsync(u => u.Email == normalizedEmail, cancellationToken);
+            .AnyAsync(u => u.Email == request.Email.ToLowerInvariant(), cancellationToken);
 
         if (emailExists)
         {
@@ -35,27 +33,21 @@ public sealed class RegisterCommandHandler(
             return Result<AuthResponse>.Failure(AuthErrors.UsernameAlreadyExists);
         }
 
-        var user = new User
-        {
-            Email = normalizedEmail,
-            Username = request.Username,
-            PasswordHash = passwordHasher.Hash(request.Password)
-        };
+        var user = User.Register(
+            request.Email,
+            request.Username,
+            passwordHasher.Hash(request.Password));
 
-        var refreshToken = new RefreshTokenEntity
-        {
-            Token = tokenService.GenerateRefreshToken(),
-            ExpiresAt = tokenService.GetRefreshTokenExpiration(),
-            CreatedAt = DateTime.UtcNow,
-            UserId = user.Id
-        };
+        var refreshTokenString = tokenService.GenerateRefreshToken();
+        var expiresAt = tokenService.GetRefreshTokenExpiration();
 
-        user.RefreshTokens.Add(refreshToken);
+        user.AddRefreshToken(refreshTokenString, expiresAt);
 
         context.Users.Add(user);
         await context.SaveChangesAsync(cancellationToken);
 
         var accessToken = tokenService.GenerateAccessToken(user);
+        var refreshToken = user.RefreshTokens.First(t => t.Token == refreshTokenString);
 
         return Result<AuthResponse>.Success(new AuthResponse(
             AccessToken: accessToken,

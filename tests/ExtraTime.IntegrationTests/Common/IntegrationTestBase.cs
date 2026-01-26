@@ -1,6 +1,7 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Infrastructure.Data;
 using ExtraTime.IntegrationTests.Fixtures;
+using Mediator;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -12,6 +13,7 @@ public abstract class IntegrationTestBase
     private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
+    protected IMediator Mediator { get; private set; } = null!;
 
     [Before(Test)]
     public async Task InitializeAsync()
@@ -25,7 +27,8 @@ public abstract class IntegrationTestBase
             .Options;
 
         CurrentUserService = Substitute.For<ICurrentUserService>();
-        Context = new ApplicationDbContext(options, CurrentUserService);
+        Mediator = Substitute.For<IMediator>();
+        Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
     }
 
     [After(Test)]

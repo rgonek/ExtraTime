@@ -41,34 +41,20 @@ public sealed class CreateLeagueCommandHandler(
             async (code, ct) => await context.Leagues.AnyAsync(l => l.InviteCode == code, ct),
             cancellationToken);
 
-        var league = new League
-        {
-            Name = request.Name,
-            Description = request.Description,
-            OwnerId = userId,
-            IsPublic = request.IsPublic,
-            MaxMembers = request.MaxMembers,
-            ScoreExactMatch = request.ScoreExactMatch,
-            ScoreCorrectResult = request.ScoreCorrectResult,
-            BettingDeadlineMinutes = request.BettingDeadlineMinutes,
-            AllowedCompetitionIds = allowedCompetitionIds != null
-                ? JsonSerializer.Serialize(allowedCompetitionIds)
-                : null,
-            InviteCode = inviteCode,
-            InviteCodeExpiresAt = request.InviteCodeExpiresAt
-        };
+        var league = League.Create(
+            request.Name,
+            userId,
+            inviteCode,
+            request.Description,
+            request.IsPublic,
+            request.MaxMembers,
+            request.ScoreExactMatch,
+            request.ScoreCorrectResult,
+            request.BettingDeadlineMinutes);
 
-        // Add owner as member
-        var ownerMember = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Owner,
-            JoinedAt = DateTime.UtcNow
-        };
+        league.SetCompetitionFilter(allowedCompetitionIds);
 
         context.Leagues.Add(league);
-        context.LeagueMembers.Add(ownerMember);
         await context.SaveChangesAsync(cancellationToken);
 
         // Get owner username for response

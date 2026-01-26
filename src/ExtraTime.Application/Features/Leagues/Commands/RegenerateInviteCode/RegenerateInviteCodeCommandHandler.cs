@@ -39,8 +39,7 @@ public sealed class RegenerateInviteCodeCommandHandler(
             async (code, ct) => await context.Leagues.AnyAsync(l => l.InviteCode == code, ct),
             cancellationToken);
 
-        league.InviteCode = newInviteCode;
-        league.InviteCodeExpiresAt = request.ExpiresAt;
+        league.RegenerateInviteCode(newInviteCode, request.ExpiresAt);
 
         await context.SaveChangesAsync(cancellationToken);
 

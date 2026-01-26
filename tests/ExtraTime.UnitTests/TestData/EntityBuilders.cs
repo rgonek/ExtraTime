@@ -44,16 +44,11 @@ public sealed class UserBuilder
 
     public User Build()
     {
-        return new User
-        {
-            Id = _id,
-            Email = _email,
-            Username = _username,
-            PasswordHash = _passwordHash,
-            Role = _role,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var user = User.Register(_email, _username, _passwordHash, _role);
+        user.Id = _id;
+        user.CreatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.UtcNow;
+        return user;
     }
 }
 
@@ -121,21 +116,21 @@ public sealed class LeagueBuilder
 
     public League Build()
     {
-        return new League
-        {
-            Id = _id,
-            Name = _name,
-            Description = _description,
-            OwnerId = _ownerId,
-            IsPublic = _isPublic,
-            MaxMembers = _maxMembers,
-            ScoreExactMatch = _scoreExactMatch,
-            ScoreCorrectResult = _scoreCorrectResult,
-            BettingDeadlineMinutes = _bettingDeadlineMinutes,
-            InviteCode = _inviteCode,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var league = League.Create(
+            _name,
+            _ownerId,
+            _inviteCode,
+            _description,
+            _isPublic,
+            _maxMembers,
+            _scoreExactMatch,
+            _scoreCorrectResult,
+            _bettingDeadlineMinutes);
+
+        league.Id = _id;
+        league.CreatedAt = DateTime.UtcNow;
+        league.UpdatedAt = DateTime.UtcNow;
+        return league;
     }
 }
 
@@ -287,19 +282,21 @@ public sealed class MatchBuilder
 
     public Match Build()
     {
-        return new Match
+        var match = Match.Create(
+            _externalId,
+            _competitionId,
+            _homeTeamId,
+            _awayTeamId,
+            _matchDateUtc,
+            _status);
+
+        match.Id = _id;
+        if (_homeScore.HasValue && _awayScore.HasValue)
         {
-            Id = _id,
-            ExternalId = _externalId,
-            CompetitionId = _competitionId,
-            HomeTeamId = _homeTeamId,
-            AwayTeamId = _awayTeamId,
-            MatchDateUtc = _matchDateUtc,
-            Status = _status,
-            HomeScore = _homeScore,
-            AwayScore = _awayScore,
-            LastSyncedAt = DateTime.UtcNow
-        };
+            match.UpdateScore(_homeScore.Value, _awayScore.Value);
+        }
+
+        return match;
     }
 }
 
@@ -352,17 +349,16 @@ public sealed class BetBuilder
 
     public Bet Build()
     {
-        return new Bet
-        {
-            Id = _id,
-            LeagueId = _leagueId,
-            UserId = _userId,
-            MatchId = _matchId,
-            PredictedHomeScore = _predictedHomeScore,
-            PredictedAwayScore = _predictedAwayScore,
-            PlacedAt = _placedAt,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var bet = Bet.Place(
+            _leagueId,
+            _userId,
+            _matchId,
+            _predictedHomeScore,
+            _predictedAwayScore);
+
+        bet.Id = _id;
+        bet.CreatedAt = DateTime.UtcNow;
+        bet.UpdatedAt = DateTime.UtcNow;
+        return bet;
     }
 }
