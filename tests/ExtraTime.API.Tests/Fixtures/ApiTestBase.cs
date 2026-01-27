@@ -12,17 +12,36 @@ namespace ExtraTime.API.Tests.Fixtures;
 public abstract class ApiTestBase
 {
     private static readonly CustomWebApplicationFactory Factory = new();
-    // Use a named semaphore to ensure system-wide synchronization for the database (handles parallel process execution in CI)
-    private static readonly Semaphore GlobalLock = new(1, 1, "ExtraTime.API.Tests.GlobalLock");
+    private FileStream? _lockFile;
     private Respawner _respawner = null!;
     protected HttpClient Client { get; private set; } = null!;
 
     [Before(Test)]
     public async Task InitializeAsync()
     {
-        // WaitOne is blocking, but necessary for Semaphore (System.Threading) which supports named locks.
-        // In a test context, this blocking is acceptable to ensure isolation.
-        GlobalLock.WaitOne();
+        // Acquire system-wide file lock to prevent race conditions during Respawner reset
+        // This is more robust than named Semaphores/Mutexes across different platforms and runners
+        var lockPath = Path.Combine(Path.GetTempPath(), "ExtraTime.API.Tests.lock");
+        var timeout = TimeSpan.FromMinutes(1);
+        var start = DateTime.UtcNow;
+        
+        while (true)
+        {
+            try
+            {
+                // FileShare.None is the key - it prevents any other process from opening the file
+                _lockFile = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose);
+                break;
+            }
+            catch (IOException)
+            {
+                if (DateTime.UtcNow - start > timeout) 
+                    throw new TimeoutException($"Could not acquire test lock at {lockPath} after 1 minute");
+                
+                await Task.Delay(100);
+            }
+        }
+
         try 
         {
             await Factory.EnsureInitializedAsync();
@@ -56,7 +75,8 @@ public abstract class ApiTestBase
         }
         catch (Exception)
         {
-            GlobalLock.Release();
+            _lockFile?.Dispose();
+            _lockFile = null;
             throw;
         }
     }
@@ -65,7 +85,8 @@ public abstract class ApiTestBase
     public void DisposeTest()
     {
         Client?.Dispose();
-        GlobalLock.Release();
+        _lockFile?.Dispose();
+        _lockFile = null;
     }
 
     protected async Task EnsureSuccessAsync(HttpResponseMessage response)
