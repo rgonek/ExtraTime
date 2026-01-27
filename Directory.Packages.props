@@ -21,6 +21,7 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.0" />
     <!-- Test Projects -->
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.3.2" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="TUnit" Version="1.12.65" />
     <PackageVersion Include="TUnit.Assertions" Version="1.12.65" />
