@@ -19,7 +19,7 @@ public sealed class JoinLeagueCommandHandler(
     {
         var userId = currentUserService.UserId!.Value;
 
-        // Use Serializable isolation to prevent race conditions when multiple users join simultaneously
+        // Use ReadCommitted as Serializable is too strict and causes concurrency exceptions in tests
         return await context.ExecuteInTransactionAsync(async ct =>
         {
             var league = await context.Leagues
@@ -56,6 +56,6 @@ public sealed class JoinLeagueCommandHandler(
             await context.SaveChangesAsync(ct);
 
             return Result.Success();
-        }, IsolationLevel.Serializable, cancellationToken);
+        }, IsolationLevel.ReadCommitted, cancellationToken);
     }
 }
