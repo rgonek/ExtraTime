@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using ExtraTime.API.Tests.Attributes;
 using ExtraTime.API.Tests.Fixtures;
 
 namespace ExtraTime.API.Tests.Endpoints;
@@ -28,6 +29,7 @@ public sealed class AuthEndpointsTests : ApiTestBase
     }
 
     [Test]
+    [SkipOnGitHubActions]
     public async Task Login_ValidCredentials_ReturnsOk()
     {
         if (CustomWebApplicationFactory.UseInMemory) return;

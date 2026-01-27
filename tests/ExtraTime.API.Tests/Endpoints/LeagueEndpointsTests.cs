@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using ExtraTime.API.Tests.Attributes;
 using ExtraTime.API.Tests.Fixtures;
 using ExtraTime.Application.Features.Leagues.DTOs;
 
@@ -38,6 +39,7 @@ public sealed class LeagueEndpointsTests : ApiTestBase
     }
 
     [Test]
+    [SkipOnGitHubActions]
     public async Task JoinLeague_ValidCode_ReturnsOk()
     {
         if (CustomWebApplicationFactory.UseInMemory) return;
