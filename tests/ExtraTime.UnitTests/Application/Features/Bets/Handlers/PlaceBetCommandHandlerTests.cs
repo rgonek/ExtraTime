@@ -22,12 +22,6 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
         _handler = new PlaceBetCommandHandler(Context, CurrentUserService);
     }
 
-    [Before(Test)]
-    public void Setup()
-    {
-        Clock.Current = new FakeClock(_now);
-    }
-
     [After(Test)]
     public void Cleanup()
     {
@@ -38,6 +32,7 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
     public async Task Handle_ValidNewBet_ReturnsSuccess()
     {
         // Arrange
+        Clock.Current = new FakeClock(_now);
         var userId = Guid.NewGuid();
         SetCurrentUser(userId);
 
@@ -80,6 +75,7 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
     public async Task Handle_DeadlinePassed_ReturnsFailure()
     {
         // Arrange
+        Clock.Current = new FakeClock(_now);
         var userId = Guid.NewGuid();
         SetCurrentUser(userId);
 
@@ -101,6 +97,9 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
         
         var mockMatches = CreateMockDbSet(new List<Match> { match }.AsQueryable());
         Context.Matches.Returns(mockMatches);
+
+        var mockBets = CreateMockDbSet(new List<Bet>().AsQueryable());
+        Context.Bets.Returns(mockBets);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken);

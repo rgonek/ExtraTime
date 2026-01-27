@@ -19,9 +19,19 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         // Database
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        if (configuration.GetValue<bool>("UseInMemoryDatabase"))
+        {
+            var dbName = configuration["InMemoryDatabaseName"] ?? "ExtraTimeDb";
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseInMemoryDatabase(dbName)
+                       .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning)));
+        }
+        else
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(connectionString));
+        }
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
 

@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using NSubstitute;
 using Testcontainers.PostgreSql;
 
@@ -13,15 +16,14 @@ namespace ExtraTime.API.Tests.Fixtures;
 
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private static readonly PostgreSqlContainer Container = new PostgreSqlBuilder()
-        .WithImage("postgres:17-alpine")
-        .WithDatabase("extratime_api_test")
-        .WithUsername("postgres")
-        .WithPassword("postgres")
-        .Build();
+    private static PostgreSqlContainer? Container;
 
     private static bool _initialized;
+    private static bool _migrated;
+    private static bool _useInMemory;
     private static readonly SemaphoreSlim InitLock = new(1, 1);
+
+    public static bool UseInMemory => _useInMemory;
 
     public async Task EnsureInitializedAsync()
     {
@@ -34,8 +36,53 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             if (_initialized)
                 return;
 
-            await Container.StartAsync();
+            try
+            {
+                Container = new PostgreSqlBuilder()
+                    .WithImage("postgres:17-alpine")
+                    .WithDatabase("extratime_api_test")
+                    .WithUsername("postgres")
+                    .WithPassword("postgres")
+                    .Build();
+
+                await Container.StartAsync();
+            }
+            catch
+            {
+                _useInMemory = true;
+                Environment.SetEnvironmentVariable("UseInMemoryDatabase", "true");
+            }
             _initialized = true;
+        }
+        finally
+        {
+            InitLock.Release();
+        }
+    }
+
+    public async Task EnsureMigratedAsync()
+    {
+        if (_migrated)
+            return;
+
+        await InitLock.WaitAsync();
+        try
+        {
+            if (_migrated)
+                return;
+
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
+            if (_useInMemory)
+            {
+                await context.Database.EnsureCreatedAsync();
+            }
+            else
+            {
+                await context.Database.MigrateAsync();
+            }
+            _migrated = true;
         }
         finally
         {
@@ -45,32 +92,41 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            if (_useInMemory)
+            {
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    { "UseInMemoryDatabase", "true" }
+                });
+            }
+            else if (Container != null)
+            {
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    { "ConnectionStrings:DefaultConnection", Container.GetConnectionString() }
+                });
+            }
+        });
+
         builder.ConfigureTestServices(services =>
         {
-            // Remove existing DbContext registration
-            services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
-
-            // Add test database
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Container.GetConnectionString()));
-
             // Mock external services
             var mockFootballDataService = Substitute.For<IFootballDataService>();
             services.RemoveAll(typeof(IFootballDataService));
             services.AddSingleton(mockFootballDataService);
 
-            // Ensure database is created
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            context.Database.Migrate();
+            // Remove background service
+            services.RemoveAll(typeof(IHostedService));
         });
     }
 
-    public string GetConnectionString() => Container.GetConnectionString();
+    public string GetConnectionString() => _useInMemory || Container == null ? string.Empty : Container.GetConnectionString();
 
     public static async Task DisposeContainerAsync()
     {
-        await Container.DisposeAsync();
+        if (!_useInMemory && Container != null)
+            await Container.DisposeAsync();
     }
 }

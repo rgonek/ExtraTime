@@ -20,39 +20,70 @@ public abstract class ApiTestBase
     public async Task InitializeAsync()
     {
         await DatabaseLock.WaitAsync();
-        await Factory.EnsureInitializedAsync();
-        Client = Factory.CreateClient();
-
-        // Initialize Respawn for database cleanup
-        using var scope = Factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var connection = context.Database.GetDbConnection();
-        await connection.OpenAsync();
-
-        _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
+        try 
         {
-            DbAdapter = DbAdapter.Postgres,
-            SchemasToInclude = ["public"]
-        });
+            await Factory.EnsureInitializedAsync();
+            Client = Factory.CreateClient();
+            await Factory.EnsureMigratedAsync();
 
-        await _respawner.ResetAsync(connection);
+            // Initialize Respawn for database cleanup or handle InMemory
+            using var scope = Factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
+            if (CustomWebApplicationFactory.UseInMemory)
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+            }
+            else
+            {
+                var connection = context.Database.GetDbConnection();
+                
+                if (connection.State != System.Data.ConnectionState.Open)
+                    await connection.OpenAsync();
+
+                _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
+                {
+                    DbAdapter = DbAdapter.Postgres,
+                    SchemasToInclude = ["public"]
+                });
+
+                await _respawner.ResetAsync(connection);
+            }
+        }
+        catch (Exception)
+        {
+            DatabaseLock.Release();
+            throw;
+        }
     }
 
     [After(Test)]
     public void DisposeTest()
     {
-        Client.Dispose();
+        Client?.Dispose();
         DatabaseLock.Release();
+    }
+
+    protected async Task EnsureSuccessAsync(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Response failed with {response.StatusCode}: {content}");
+        }
     }
 
     protected async Task<string> GetAuthTokenAsync(string email = "testuser@example.com", string password = "Test123!")
     {
-        var registerResponse = await Client.PostAsJsonAsync("/api/auth/register", new
+        var registerRequest = new
         {
             Email = email,
             Username = email.Split('@')[0].Length < 3 ? email.Split('@')[0] + "123" : email.Split('@')[0],
             Password = password
-        });
+        };
+        
+        var registerResponse = await Client.PostAsJsonAsync("/api/auth/register", registerRequest);
 
         if (registerResponse.IsSuccessStatusCode)
         {
@@ -69,7 +100,8 @@ public abstract class ApiTestBase
         if (!loginResponse.IsSuccessStatusCode)
         {
             var error = await loginResponse.Content.ReadAsStringAsync();
-            throw new Exception($"Failed to get auth token. Status: {loginResponse.StatusCode}, Error: {error}");
+            var regError = await registerResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Failed to get auth token. \nRegister Status: {registerResponse.StatusCode}, Error: {regError}\nLogin Status: {loginResponse.StatusCode}, Error: {error}");
         }
 
         var loginResult = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();

@@ -9,8 +9,19 @@ namespace ExtraTime.IntegrationTests.Common;
 
 public abstract class IntegrationTestBase
 {
-    private static readonly DatabaseFixture Fixture = new();
+    private static DatabaseFixture? _fixture;
     private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
+    
+    private static DatabaseFixture Fixture
+    {
+        get
+        {
+            if (_fixture == null)
+                _fixture = new DatabaseFixture();
+            return _fixture;
+        }
+    }
+
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
     protected IMediator Mediator { get; private set; } = null!;
@@ -19,22 +30,50 @@ public abstract class IntegrationTestBase
     public async Task InitializeAsync()
     {
         await DatabaseLock.WaitAsync();
-        await Fixture.EnsureInitializedAsync();
-        await Fixture.ResetDatabaseAsync();
+        
+        try 
+        {
+            await Fixture.EnsureInitializedAsync();
 
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(Fixture.ConnectionString)
-            .Options;
+            DbContextOptions<ApplicationDbContext> options;
 
-        CurrentUserService = Substitute.For<ICurrentUserService>();
-        Mediator = Substitute.For<IMediator>();
-        Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
+            if (Fixture.UseInMemory)
+            {
+                options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                    .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                    .Options;
+            }
+            else
+            {
+                await Fixture.ResetDatabaseAsync();
+                options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                    .UseNpgsql(Fixture.ConnectionString)
+                    .Options;
+            }
+
+            CurrentUserService = Substitute.For<ICurrentUserService>();
+            Mediator = Substitute.For<IMediator>();
+            Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
+            
+            if (Fixture.UseInMemory)
+            {
+                await Context.Database.EnsureCreatedAsync();
+            }
+        }
+        catch (Exception)
+        {
+            DatabaseLock.Release();
+            throw;
+        }
     }
 
     [After(Test)]
     public async Task DisposeAsync()
     {
-        await Context.DisposeAsync();
+        if (Context != null)
+        {
+            await Context.DisposeAsync();
+        }
         DatabaseLock.Release();
     }
 

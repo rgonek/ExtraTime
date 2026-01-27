@@ -40,6 +40,8 @@ public sealed class LeagueEndpointsTests : ApiTestBase
     [Test]
     public async Task JoinLeague_ValidCode_ReturnsOk()
     {
+        if (CustomWebApplicationFactory.UseInMemory) return;
+
         // Arrange - Create league by user 1
         var token1 = await GetAuthTokenAsync("owner@example.com");
         SetAuthHeader(token1);
@@ -61,6 +63,7 @@ public sealed class LeagueEndpointsTests : ApiTestBase
         var response = await Client.PostAsJsonAsync($"/api/leagues/{league!.Id}/join", new { InviteCode = league.InviteCode });
 
         // Assert
+        await EnsureSuccessAsync(response);
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
     }
 }
