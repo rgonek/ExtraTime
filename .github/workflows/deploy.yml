@@ -1,0 +1,54 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: 'extratime-app' # Replace with your app name if hardcoding, or use solely for reference
+  DOTNET_VERSION: '10.0.x' # Targeting .NET 10 as per global.json
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+      - name: Publish
+        run: dotnet publish src/ExtraTime.API/ExtraTime.API.csproj -c Release -o ./publish
+
+      - name: Install EF Core Tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Run Database Migrations
+        env:
+          CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+        run: |
+          dotnet ef database update \
+            --project src/ExtraTime.Infrastructure \
+            --startup-project src/ExtraTime.API \
+            --connection "$CONNECTION_STRING"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }} # You can also remove this if publish-profile handles it
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
