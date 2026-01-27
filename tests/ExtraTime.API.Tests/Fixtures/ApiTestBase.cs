@@ -12,14 +12,17 @@ namespace ExtraTime.API.Tests.Fixtures;
 public abstract class ApiTestBase
 {
     private static readonly CustomWebApplicationFactory Factory = new();
-    private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
+    // Use a named semaphore to ensure system-wide synchronization for the database (handles parallel process execution in CI)
+    private static readonly Semaphore GlobalLock = new(1, 1, "ExtraTime.API.Tests.GlobalLock");
     private Respawner _respawner = null!;
     protected HttpClient Client { get; private set; } = null!;
 
     [Before(Test)]
     public async Task InitializeAsync()
     {
-        await DatabaseLock.WaitAsync();
+        // WaitOne is blocking, but necessary for Semaphore (System.Threading) which supports named locks.
+        // In a test context, this blocking is acceptable to ensure isolation.
+        GlobalLock.WaitOne();
         try 
         {
             await Factory.EnsureInitializedAsync();
@@ -53,7 +56,7 @@ public abstract class ApiTestBase
         }
         catch (Exception)
         {
-            DatabaseLock.Release();
+            GlobalLock.Release();
             throw;
         }
     }
@@ -62,7 +65,7 @@ public abstract class ApiTestBase
     public void DisposeTest()
     {
         Client?.Dispose();
-        DatabaseLock.Release();
+        GlobalLock.Release();
     }
 
     protected async Task EnsureSuccessAsync(HttpResponseMessage response)
