@@ -31,10 +31,19 @@ public sealed class DatabaseFixture
             if (_initialized)
                 return;
 
+            // Check for environment variable configuration
+            var dbType = Environment.GetEnvironmentVariable("TEST_DATABASE_TYPE");
+            if (string.Equals(dbType, "InMemory", StringComparison.OrdinalIgnoreCase))
+            {
+                UseInMemory = true;
+                _initialized = true;
+                return;
+            }
+
             try
             {
-                _container = new PostgreSqlBuilder()
-                    .WithImage("postgres:17-alpine")
+                // Use constructor with image parameter as per warning
+                _container = new PostgreSqlBuilder("postgres:17-alpine")
                     .WithDatabase("extratime_test")
                     .WithUsername("postgres")
                     .WithPassword("postgres")

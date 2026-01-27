@@ -38,8 +38,14 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             try
             {
-                Container = new PostgreSqlBuilder()
-                    .WithImage("postgres:17-alpine")
+                // Check for environment variable configuration
+                var dbType = Environment.GetEnvironmentVariable("TEST_DATABASE_TYPE");
+                if (string.Equals(dbType, "InMemory", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new Exception("Forced InMemory");
+                }
+
+                Container = new PostgreSqlBuilder("postgres:17-alpine")
                     .WithDatabase("extratime_api_test")
                     .WithUsername("postgres")
                     .WithPassword("postgres")

@@ -21,7 +21,7 @@ public sealed class LeagueTests
         await Assert.That(league.Name).IsEqualTo(name);
         await Assert.That(league.OwnerId).IsEqualTo(ownerId);
         await Assert.That(league.InviteCode).IsEqualTo(inviteCode);
-        await Assert.That(league.Members).HasCount().EqualTo(1);
+        await Assert.That(league.Members).Count().IsEqualTo(1);
         
         var ownerMember = league.Members.First();
         await Assert.That(ownerMember.UserId).IsEqualTo(ownerId);
@@ -47,7 +47,7 @@ public sealed class LeagueTests
         league.AddMember(newUserId, MemberRole.Member);
 
         // Assert
-        await Assert.That(league.Members).HasCount().EqualTo(2);
+        await Assert.That(league.Members).Count().IsEqualTo(2);
         await Assert.That(league.Members.Any(m => m.UserId == newUserId)).IsTrue();
         await Assert.That(league.DomainEvents.Any(e => e is LeagueMemberAdded)).IsTrue();
     }
@@ -91,7 +91,7 @@ public sealed class LeagueTests
         league.RemoveMember(userId);
 
         // Assert
-        await Assert.That(league.Members).HasCount().EqualTo(1);
+        await Assert.That(league.Members).Count().IsEqualTo(1);
         await Assert.That(league.DomainEvents.Any(e => e is LeagueMemberRemoved)).IsTrue();
     }
 

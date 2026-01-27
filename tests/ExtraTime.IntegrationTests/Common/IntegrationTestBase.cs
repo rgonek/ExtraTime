@@ -7,7 +7,7 @@ using NSubstitute;
 
 namespace ExtraTime.IntegrationTests.Common;
 
-public abstract class IntegrationTestBase
+public abstract class IntegrationTestBase : IAsyncDisposable
 {
     private static DatabaseFixture? _fixture;
     private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
@@ -22,6 +22,8 @@ public abstract class IntegrationTestBase
         }
     }
 
+    private bool _lockTaken;
+
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
     protected IMediator Mediator { get; private set; } = null!;
@@ -30,6 +32,7 @@ public abstract class IntegrationTestBase
     public async Task InitializeAsync()
     {
         await DatabaseLock.WaitAsync();
+        _lockTaken = true;
         
         try 
         {
@@ -62,19 +65,33 @@ public abstract class IntegrationTestBase
         }
         catch (Exception)
         {
-            DatabaseLock.Release();
+            if (_lockTaken)
+            {
+                DatabaseLock.Release();
+                _lockTaken = false;
+            }
             throw;
         }
     }
 
     [After(Test)]
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (Context != null)
         {
             await Context.DisposeAsync();
         }
-        DatabaseLock.Release();
+        
+        if (_lockTaken)
+        {
+            DatabaseLock.Release();
+            _lockTaken = false;
+        }
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await DisposeAsync();
     }
 
     protected void SetCurrentUser(Guid userId)

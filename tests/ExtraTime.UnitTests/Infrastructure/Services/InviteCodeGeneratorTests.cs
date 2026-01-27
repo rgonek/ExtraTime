@@ -28,7 +28,7 @@ public sealed class InviteCodeGeneratorTests
         // Assert
         foreach (var c in code)
         {
-            await Assert.That(allowed).Contains(c.ToString());
+            await Assert.That(allowed.Contains(c)).IsTrue();
         }
     }
 
