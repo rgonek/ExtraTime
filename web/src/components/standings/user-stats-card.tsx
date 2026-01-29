@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Trophy,
-  Target,
-  Flame,
-  TrendingUp,
-  Award,
-  BarChart3,
-} from 'lucide-react';
+import { Trophy, Target, TrendingUp, Award } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -20,6 +13,8 @@ import { useUserStats } from '@/hooks/use-bets';
 import { useAuthStore } from '@/stores/auth-store';
 import { CardSkeleton } from '@/components/shared/loading-skeleton';
 import { RankBadge } from './rank-badge';
+import { LevelIndicator } from '@/components/gamification/level-indicator';
+import { StreakCounter } from '@/components/gamification/streak-counter';
 
 interface UserStatsCardProps {
   leagueId: string;
@@ -74,6 +69,9 @@ export function UserStatsCard({ leagueId, userId }: UserStatsCardProps) {
           </div>
           <RankBadge rank={stats.rank} />
         </div>
+        <div className="pt-2">
+          <LevelIndicator totalPoints={stats.totalPoints} />
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -114,26 +112,11 @@ export function UserStatsCard({ leagueId, userId }: UserStatsCardProps) {
         </div>
 
         {/* Streaks */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-              <Flame className="h-5 w-5 text-orange-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.currentStreak}</div>
-              <div className="text-xs text-muted-foreground">Current Streak</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-              <BarChart3 className="h-5 w-5 text-purple-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold">{stats.bestStreak}</div>
-              <div className="text-xs text-muted-foreground">Best Streak</div>
-            </div>
-          </div>
+        <div className="pt-4 border-t">
+          <StreakCounter
+            currentStreak={stats.currentStreak}
+            bestStreak={stats.bestStreak}
+          />
         </div>
 
         {/* Bet breakdown */}
