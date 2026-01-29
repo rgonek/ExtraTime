@@ -33,7 +33,8 @@
       "Bash(find:*)",
       "Bash(git -C \"D:/Dev/ExtraTime\" log --oneline)",
       "Bash(Get-ChildItem -Path \"D:\\\\Dev\\\\ExtraTime\\\\src\" -Directory)",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(Set-Location \"D:\\\\Dev\\\\ExtraTime\\\\web\")"
     ]
   }
 }
