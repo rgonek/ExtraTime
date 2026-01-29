@@ -1,7 +1,6 @@
 'use client';
 
 import { use } from 'react';
-import { ProtectedRoute } from '@/components/auth/protected-route';
 import { LeagueForm } from '@/components/leagues/league-form';
 import { useLeague } from '@/hooks/use-leagues';
 import { CardSkeleton } from '@/components/shared/loading-skeleton';
@@ -35,12 +34,8 @@ export default function EditLeaguePage({ params }: PageProps) {
   const { id } = use(params);
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4">
-        <div className="mx-auto max-w-2xl">
-          <EditLeagueContent leagueId={id} />
-        </div>
-      </div>
-    </ProtectedRoute>
+    <div className="max-w-2xl mx-auto">
+      <EditLeagueContent leagueId={id} />
+    </div>
   );
 }
