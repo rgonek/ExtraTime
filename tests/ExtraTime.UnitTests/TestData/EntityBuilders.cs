@@ -115,6 +115,14 @@ public sealed class LeagueBuilder
         return this;
     }
 
+    private Guid[]? _allowedCompetitionIds = null;
+
+    public LeagueBuilder WithAllowedCompetitions(params Guid[] competitionIds)
+    {
+        _allowedCompetitionIds = competitionIds;
+        return this;
+    }
+
     public League Build()
     {
         var league = League.Create(
@@ -131,6 +139,12 @@ public sealed class LeagueBuilder
         league.Id = _id;
         league.CreatedAt = Clock.UtcNow;
         league.UpdatedAt = Clock.UtcNow;
+
+        if (_allowedCompetitionIds != null)
+        {
+            league.SetCompetitionFilter(_allowedCompetitionIds);
+        }
+
         return league;
     }
 }

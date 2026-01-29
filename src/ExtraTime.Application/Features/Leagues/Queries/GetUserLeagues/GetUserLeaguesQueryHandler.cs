@@ -18,16 +18,24 @@ public sealed class GetUserLeaguesQueryHandler(
 
         var leagues = await context.LeagueMembers
             .Where(lm => lm.UserId == userId)
-            .Select(lm => new LeagueSummaryDto(
-                Id: lm.League.Id,
-                Name: lm.League.Name,
-                OwnerUsername: lm.League.Owner.Username,
-                MemberCount: lm.League.Members.Count,
-                IsPublic: lm.League.IsPublic,
-                CreatedAt: lm.League.CreatedAt))
+            .Include(lm => lm.League)
+                .ThenInclude(l => l.Owner)
+            .Include(lm => lm.League)
+                .ThenInclude(l => l.Members)
+            .Select(lm => lm.League)
+            .Distinct()
             .OrderByDescending(l => l.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return Result<List<LeagueSummaryDto>>.Success(leagues);
+        var result = leagues.Select(l => new LeagueSummaryDto(
+            Id: l.Id,
+            Name: l.Name,
+            OwnerUsername: l.Owner.Username,
+            MemberCount: l.Members.Count,
+            IsPublic: l.IsPublic,
+            CreatedAt: l.CreatedAt))
+            .ToList();
+
+        return Result<List<LeagueSummaryDto>>.Success(result);
     }
 }
