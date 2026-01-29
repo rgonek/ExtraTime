@@ -8,7 +8,7 @@ public sealed class MatchConfiguration : IEntityTypeConfiguration<Match>
 {
     public void Configure(EntityTypeBuilder<Match> builder)
     {
-        builder.ToTable("matches");
+        builder.ToTable("Matches");
 
         builder.HasKey(m => m.Id);
 

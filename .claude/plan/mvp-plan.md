@@ -23,7 +23,7 @@ A social betting app (no real money) where friends create leagues, bet on footba
 
 ### Backend
 - **ASP.NET Core (.NET 9)** with Clean Architecture
-- **Entity Framework Core 9** with PostgreSQL (Npgsql)
+- **Entity Framework Core 9** with SQL Server (Microsoft.EntityFrameworkCore.SqlServer)
 - **Mediator** (source generator, not MediatR) for CQRS pattern
 - **JWT Authentication** (BCrypt + custom JWT)
 - **FluentValidation** for request validation
@@ -36,9 +36,9 @@ A social betting app (no real money) where friends create leagues, bet on footba
 - **Tailwind CSS** + **shadcn/ui** for styling
 
 ### Infrastructure (Budget-Friendly)
-- **Frontend**: Vercel (free tier)
-- **Backend API**: Azure App Service Free Tier or Railway
-- **Database**: PostgreSQL on Supabase (free) or Neon
+- **Frontend**: Azure Static Web Apps (free tier)
+- **Backend API**: Azure App Service Free Tier
+- **Database**: Azure SQL (free tier - 32GB)
 - **Scheduled Jobs**: Azure Functions (free tier - 1M executions/month)
 - **Football Data**: Football-Data.org API (free tier - 10 calls/min)
 
@@ -57,7 +57,7 @@ A social betting app (no real money) where friends create leagues, bet on footba
     ExtraTime.Infrastructure/ # EF Core, External APIs, Identity
     ExtraTime.API/           # Minimal APIs, Middleware
   ```
-- [x] Configure EF Core with PostgreSQL (Npgsql)
+- [x] Configure EF Core with SQL Server
 - [x] Set up dependency injection (Application + Infrastructure)
 - [x] Add basic health check endpoint (`/api/health`, `/health`)
 
@@ -325,17 +325,17 @@ When adding Azure Functions/Service Bus:
 **Goal**: Deploy MVP to production
 
 ### Infrastructure Setup
-- [ ] Provision Azure resources (App Service, Functions, or alternatives)
-- [ ] Set up Supabase/Neon PostgreSQL
+- [ ] Provision Azure resources (App Service, Functions, Azure SQL)
+- [ ] Set up Azure SQL database
 - [ ] Configure environment variables
-- [ ] Set up Vercel project for frontend
+- [ ] Set up Azure Static Web Apps for frontend
 
 ### Deployment
-- [ ] Deploy backend API
+- [ ] Deploy backend API to Azure App Service
 - [ ] Deploy Azure Functions
-- [ ] Deploy frontend to Vercel
+- [ ] Deploy frontend to Azure Static Web Apps
 - [ ] Configure custom domain (optional)
-- [ ] Set up monitoring/logging
+- [ ] Set up monitoring/logging (Application Insights)
 
 ### Testing
 - [ ] End-to-end testing of critical flows
@@ -437,9 +437,9 @@ Bots (Phase 7)
 
 | Service | Provider | Cost |
 |---------|----------|------|
-| Frontend | Vercel | Free |
-| Backend API | Azure App Service F1 / Railway | Free |
-| Database | Supabase / Neon | Free (500MB) |
+| Frontend | Azure Static Web Apps | Free |
+| Backend API | Azure App Service F1 | Free |
+| Database | Azure SQL | Free (32GB limit) |
 | Functions | Azure Functions | Free (1M/month) |
 | Football API | Football-Data.org | Free (10/min) |
 

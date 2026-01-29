@@ -66,8 +66,7 @@ public abstract class ApiTestBase
 
                 _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
                 {
-                    DbAdapter = DbAdapter.Postgres,
-                    SchemasToInclude = ["public"]
+                    DbAdapter = DbAdapter.SqlServer
                 });
 
                 await _respawner.ResetAsync(connection);

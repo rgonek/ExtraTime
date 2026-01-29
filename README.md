@@ -25,7 +25,7 @@ A social betting app where friends create leagues, predict football match outcom
 
 ### Backend
 - **ASP.NET Core** (.NET 10) with Clean Architecture
-- **Entity Framework Core** with PostgreSQL
+- **Entity Framework Core** with SQL Server
 - **Mediator** (source generator) for CQRS pattern
 - **FluentValidation** for request validation
 - **JWT Authentication** with BCrypt password hashing
@@ -39,8 +39,11 @@ A social betting app where friends create leagues, predict football match outcom
 - **Framer Motion** for animations
 
 ### Infrastructure
-- **Docker Compose** for local development
-- **PostgreSQL** database
+- **.NET Aspire** for local orchestration and observability
+- **Docker Compose** for containerized development
+- **SQL Server** database (Azure SQL for production)
+- **Azure Static Web Apps** for frontend hosting
+- **Azure App Service** for backend API
 - **GitHub Actions** CI/CD
 
 ## Getting Started
@@ -49,16 +52,29 @@ A social betting app where friends create leagues, predict football match outcom
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) or later
 - [Node.js 22](https://nodejs.org/) or [Bun](https://bun.sh/)
-- [Docker](https://www.docker.com/) and Docker Compose
+- [Docker](https://www.docker.com/) (for SQL Server container)
 
-### Quick Start with Docker
+### Quick Start with .NET Aspire (Recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/ExtraTime.git
 cd ExtraTime
 
-# Start all services
+# Start with Aspire
+dotnet run --project src/ExtraTime.AppHost
+```
+
+This starts all services with the Aspire dashboard for observability:
+- **Aspire Dashboard**: https://localhost:15170 (logs, traces, metrics)
+- **Frontend**: http://localhost:3000
+- **API**: https://localhost:5001
+- **Swagger**: https://localhost:5001/swagger
+
+### Alternative: Docker Compose
+
+```bash
+# Start all services in containers
 docker-compose up --build
 ```
 
@@ -66,18 +82,18 @@ Services will be available at:
 - **Frontend**: http://localhost:3000
 - **API**: http://localhost:5200
 - **Swagger**: http://localhost:5200/swagger
-- **Database Admin (Adminer)**: http://localhost:8080
 
 ### Manual Setup
 
 #### Backend
 
 ```bash
-# Start PostgreSQL (or use docker-compose up db)
-docker-compose up db -d
+# Option 1: Use Aspire (handles SQL Server automatically)
+dotnet run --project src/ExtraTime.AppHost
 
-# Restore packages
-dotnet restore
+# Option 2: Run API standalone
+# Start SQL Server first
+docker-compose up db -d
 
 # Apply migrations
 dotnet ef database update --project src/ExtraTime.Infrastructure --startup-project src/ExtraTime.API
@@ -86,16 +102,18 @@ dotnet ef database update --project src/ExtraTime.Infrastructure --startup-proje
 dotnet run --project src/ExtraTime.API
 ```
 
-#### Database Admin Panel
+#### Database Management
 
-Access Adminer at http://localhost:8080 with these credentials:
-- **System**: PostgreSQL
-- **Server**: db
-- **Username**: extratime
-- **Password**: extratime_dev
+For local development, you can connect to SQL Server using:
+- **Azure Data Studio** (recommended)
+- **SQL Server Management Studio (SSMS)**
+- **VS Code with SQL Server extension**
+
+Connection details:
+- **Server**: localhost,1433
+- **Username**: sa
+- **Password**: ExtraTime_Dev123!
 - **Database**: extratime
-
-You can browse tables, run SQL queries, export data, and manage your database through the web interface.
 
 #### Frontend
 
@@ -121,9 +139,14 @@ ExtraTime/
 │   ├── ExtraTime.Domain/          # Entities, Enums, Value Objects
 │   ├── ExtraTime.Application/     # Use Cases, DTOs, Interfaces
 │   ├── ExtraTime.Infrastructure/  # EF Core, Services, External APIs
-│   └── ExtraTime.API/             # Minimal APIs, Middleware
+│   ├── ExtraTime.API/             # Minimal APIs, Middleware
+│   ├── ExtraTime.AppHost/         # .NET Aspire orchestrator
+│   └── ExtraTime.ServiceDefaults/ # Shared Aspire configuration
 ├── tests/
-│   └── ExtraTime.API.Tests/       # Integration tests
+│   ├── ExtraTime.API.Tests/       # API integration tests
+│   ├── ExtraTime.IntegrationTests/# Database integration tests
+│   ├── ExtraTime.UnitTests/       # Unit tests
+│   └── ExtraTime.Domain.Tests/    # Domain logic tests
 ├── web/                           # Next.js frontend
 │   ├── src/
 │   │   ├── app/                   # Pages and layouts
@@ -133,7 +156,7 @@ ExtraTime/
 │   │   ├── stores/                # Zustand stores
 │   │   └── types/                 # TypeScript types
 │   └── public/                    # Static assets
-├── docker-compose.yml             # Local development setup
+├── docker-compose.yml             # Containerized development
 └── ExtraTime.sln                  # Solution file
 ```
 
@@ -169,10 +192,12 @@ ExtraTime/
 
 ### Backend (appsettings.json)
 
+> **Note**: When running with Aspire, connection strings are injected automatically.
+
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=extratime;Username=extratime;Password=extratime_dev"
+    "DefaultConnection": "Server=localhost,1433;Database=extratime;User Id=sa;Password=ExtraTime_Dev123!;TrustServerCertificate=True"
   },
   "Jwt": {
     "Secret": "your-secret-key-minimum-32-characters",

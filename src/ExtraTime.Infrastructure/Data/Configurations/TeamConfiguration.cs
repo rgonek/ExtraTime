@@ -8,7 +8,7 @@ public sealed class TeamConfiguration : IEntityTypeConfiguration<Team>
 {
     public void Configure(EntityTypeBuilder<Team> builder)
     {
-        builder.ToTable("teams");
+        builder.ToTable("Teams");
 
         builder.HasKey(t => t.Id);
 

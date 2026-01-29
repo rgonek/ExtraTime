@@ -36,7 +36,17 @@
       "Bash(Select-Object Name)",
       "Bash(Set-Location \"D:\\\\Dev\\\\ExtraTime\\\\web\")",
       "Bash(Set-Location D:DevExtraTimeweb)",
-      "Bash(Select-Object -First 20)"
+      "Bash(Select-Object -First 20)",
+      "Bash(Remove-Item -Path \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\*\" -Force)",
+      "Bash(New-Item -ItemType Directory -Path \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.ServiceDefaults\" -Force)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"src/ExtraTime.AppHost/Properties\")",
+      "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129190235_InitialCreate.cs\" -Force)",
+      "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129190235_InitialCreate.Designer.cs\" -Force)",
+      "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129194948_RenameTablesToSqlServerStyle.cs\" -Force)",
+      "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129194948_RenameTablesToSqlServerStyle.Designer.cs\" -Force)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(Test-Path \"D:\\\\Dev\\\\ExtraTime\\\\web\")"
     ]
   }
 }

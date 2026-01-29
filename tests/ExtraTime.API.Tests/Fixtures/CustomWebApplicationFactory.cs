@@ -4,19 +4,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
-using Testcontainers.PostgreSql;
+using Testcontainers.MsSql;
 
 namespace ExtraTime.API.Tests.Fixtures;
 
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private static PostgreSqlContainer? Container;
+    private static MsSqlContainer? Container;
 
     private static bool _initialized;
     private static bool _migrated;
@@ -45,10 +44,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                     throw new Exception("Forced InMemory");
                 }
 
-                Container = new PostgreSqlBuilder("postgres:17-alpine")
-                    .WithDatabase("extratime_api_test")
-                    .WithUsername("postgres")
-                    .WithPassword("postgres")
+                Container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
                     .Build();
 
                 await Container.StartAsync();
@@ -79,7 +75,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            
+
             if (_useInMemory)
             {
                 await context.Database.EnsureCreatedAsync();
@@ -109,15 +105,56 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
             else if (Container != null)
             {
+                var connectionString = Container.GetConnectionString();
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    { "ConnectionStrings:DefaultConnection", Container.GetConnectionString() }
+                    // Standard connection string for non-Aspire scenarios
+                    { "ConnectionStrings:DefaultConnection", connectionString },
+                    // Aspire uses this connection string name
+                    { "ConnectionStrings:extratime", connectionString }
                 });
             }
         });
 
         builder.ConfigureTestServices(services =>
         {
+            // Remove ALL DbContext-related services to prevent conflicts with Aspire pooling
+            var dbContextDescriptors = services
+                .Where(d => d.ServiceType.FullName?.Contains("ApplicationDbContext") == true ||
+                            d.ServiceType.FullName?.Contains("DbContextPool") == true ||
+                            d.ServiceType.FullName?.Contains("DbContextLease") == true ||
+                            d.ImplementationType?.FullName?.Contains("ApplicationDbContext") == true)
+                .ToList();
+
+            foreach (var descriptor in dbContextDescriptors)
+            {
+                services.Remove(descriptor);
+            }
+
+            // Also remove the generic DbContextOptions
+            services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
+            services.RemoveAll(typeof(DbContextOptions));
+
+            // Also remove IApplicationDbContext registration
+            services.RemoveAll(typeof(IApplicationDbContext));
+
+            // Re-register DbContext with test configuration (without pooling)
+            if (_useInMemory)
+            {
+                services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseInMemoryDatabase("TestDb")
+                           .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning)));
+            }
+            else if (Container != null)
+            {
+                services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlServer(Container.GetConnectionString()));
+            }
+
+            // Re-register IApplicationDbContext
+            services.AddScoped<IApplicationDbContext>(provider =>
+                provider.GetRequiredService<ApplicationDbContext>());
+
             // Mock external services
             var mockFootballDataService = Substitute.For<IFootballDataService>();
             services.RemoveAll(typeof(IFootballDataService));

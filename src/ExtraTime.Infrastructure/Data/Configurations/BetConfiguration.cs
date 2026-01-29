@@ -8,7 +8,7 @@ public sealed class BetConfiguration : IEntityTypeConfiguration<Bet>
 {
     public void Configure(EntityTypeBuilder<Bet> builder)
     {
-        builder.ToTable("bets");
+        builder.ToTable("Bets");
 
         builder.HasKey(b => b.Id);
 

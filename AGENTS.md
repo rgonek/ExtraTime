@@ -38,17 +38,17 @@
 
 | Element | Convention | Example |
 |---------|------------|---------|
-| Table names | snake_case (plural) | `users`, `league_members` |
+| Table names | PascalCase (plural) | `Users`, `LeagueMembers` |
 | Column names | PascalCase | `Id`, `OwnerId`, `CreatedAt` |
-| Primary keys | `PK_tablename` | `PK_leagues` |
-| Foreign keys | `FK_table_target_column` | `FK_leagues_users_OwnerId` |
-| Indexes | `IX_tablename_column` | `IX_leagues_InviteCode` |
+| Primary keys | `PK_TableName` | `PK_Leagues` |
+| Foreign keys | `FK_Table_Target_Column` | `FK_Leagues_Users_OwnerId` |
+| Indexes | `IX_TableName_Column` | `IX_Leagues_InviteCode` |
 
 ### Data Types
 - Enums stored as **strings** with `HasConversion<string>()` and appropriate `MaxLength`
-- GUIDs for primary keys (`uuid` in PostgreSQL)
-- `timestamp with time zone` for DateTime fields
-- JSON stored as `text` for complex types (e.g., array of IDs)
+- GUIDs for primary keys (`uniqueidentifier` in SQL Server)
+- `datetimeoffset` for DateTime fields with timezone
+- JSON stored as `nvarchar(max)` for complex types (e.g., array of IDs)
 
 ### Configuration
 - Use `IEntityTypeConfiguration<T>` classes in `Infrastructure/Data/Configurations/`

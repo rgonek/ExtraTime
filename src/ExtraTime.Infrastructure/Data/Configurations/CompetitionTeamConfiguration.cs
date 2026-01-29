@@ -8,7 +8,7 @@ public sealed class CompetitionTeamConfiguration : IEntityTypeConfiguration<Comp
 {
     public void Configure(EntityTypeBuilder<CompetitionTeam> builder)
     {
-        builder.ToTable("competition_teams");
+        builder.ToTable("CompetitionTeams");
 
         builder.HasKey(ct => ct.Id);
 

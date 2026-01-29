@@ -8,7 +8,7 @@ public sealed class BackgroundJobConfiguration : IEntityTypeConfiguration<Backgr
 {
     public void Configure(EntityTypeBuilder<BackgroundJob> builder)
     {
-        builder.ToTable("background_jobs");
+        builder.ToTable("BackgroundJobs");
 
         builder.HasKey(j => j.Id);
 
@@ -22,10 +22,10 @@ public sealed class BackgroundJobConfiguration : IEntityTypeConfiguration<Backgr
             .HasMaxLength(20);
 
         builder.Property(j => j.Payload)
-            .HasColumnType("jsonb");
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(j => j.Result)
-            .HasColumnType("jsonb");
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(j => j.Error)
             .HasMaxLength(4000);

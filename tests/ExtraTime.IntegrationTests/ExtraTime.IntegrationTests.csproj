@@ -17,7 +17,7 @@
     <PackageReference Include="TUnit.Assertions" />
     <PackageReference Include="Bogus" />
     <PackageReference Include="NSubstitute" />
-    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Respawn" />
   </ItemGroup>

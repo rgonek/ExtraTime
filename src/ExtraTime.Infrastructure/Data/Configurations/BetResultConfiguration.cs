@@ -8,7 +8,7 @@ public sealed class BetResultConfiguration : IEntityTypeConfiguration<BetResult>
 {
     public void Configure(EntityTypeBuilder<BetResult> builder)
     {
-        builder.ToTable("bet_results");
+        builder.ToTable("BetResults");
 
         // Use BetId as the primary key for the one-to-one dependent
         builder.HasKey(br => br.BetId);

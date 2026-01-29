@@ -9,8 +9,8 @@ namespace ExtraTime.Infrastructure.Data;
 
 public sealed class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options,
-    ICurrentUserService currentUserService,
-    IMediator mediator)
+    ICurrentUserService? currentUserService = null,
+    IMediator? mediator = null)
     : DbContext(options), IApplicationDbContext
 {
     public DbSet<User> Users => Set<User>();
@@ -29,7 +29,7 @@ public sealed class ApplicationDbContext(
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var utcNow = Clock.UtcNow;
-        var userId = currentUserService.UserId?.ToString();
+        var userId = currentUserService?.UserId?.ToString();
 
         foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())
         {
@@ -48,13 +48,19 @@ public sealed class ApplicationDbContext(
 
         var result = await base.SaveChangesAsync(cancellationToken);
 
-        await DispatchDomainEventsAsync();
+        if (mediator is not null)
+        {
+            await DispatchDomainEventsAsync();
+        }
 
         return result;
     }
 
     private async Task DispatchDomainEventsAsync()
     {
+        if (mediator is null)
+            return;
+
         var entities = ChangeTracker
             .Entries<BaseEntity>()
             .Where(e => e.Entity.DomainEvents.Any())

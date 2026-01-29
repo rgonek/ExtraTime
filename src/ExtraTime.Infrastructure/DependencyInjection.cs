@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Infrastructure.Configuration;
@@ -18,19 +19,25 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Database
-        if (configuration.GetValue<bool>("UseInMemoryDatabase"))
+        // Database - only register if not already registered (e.g., by Aspire)
+        var dbContextAlreadyRegistered = services.Any(s =>
+            s.ServiceType == typeof(ApplicationDbContext) ||
+            s.ImplementationType == typeof(ApplicationDbContext));
+        if (!dbContextAlreadyRegistered)
         {
-            var dbName = configuration["InMemoryDatabaseName"] ?? "ExtraTimeDb";
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase(dbName)
-                       .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning)));
-        }
-        else
-        {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(connectionString));
+            if (configuration.GetValue<bool>("UseInMemoryDatabase"))
+            {
+                var dbName = configuration["InMemoryDatabaseName"] ?? "ExtraTimeDb";
+                services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseInMemoryDatabase(dbName)
+                           .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning)));
+            }
+            else
+            {
+                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                services.AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlServer(connectionString));
+            }
         }
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
@@ -91,7 +98,7 @@ public static class DependencyInjection
         })
         .AddHttpMessageHandler<RateLimitingHandler>();
         services.AddScoped<IFootballSyncService, FootballSyncService>();
-        services.AddHostedService<FootballSyncHostedService>();
+        // services.AddHostedService<FootballSyncHostedService>();
 
         return services;
     }

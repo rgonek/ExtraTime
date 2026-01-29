@@ -50,7 +50,7 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             {
                 await Fixture.ResetDatabaseAsync();
                 options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseNpgsql(Fixture.ConnectionString)
+                    .UseSqlServer(Fixture.ConnectionString)
                     .Options;
             }
 

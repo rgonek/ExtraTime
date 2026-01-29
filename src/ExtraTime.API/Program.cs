@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using ExtraTime.Application;
 using ExtraTime.Infrastructure;
 using ExtraTime.Infrastructure.Data;
+using ExtraTime.Infrastructure.Services;
 using ExtraTime.API.Features.Admin;
 using ExtraTime.API.Features.Auth;
 using ExtraTime.API.Features.Football;
@@ -11,6 +12,13 @@ using ExtraTime.API.Features.Bets;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Aspire service defaults (OpenTelemetry, health checks, service discovery)
+builder.AddServiceDefaults();
+
+// Add Aspire SQL Server DbContext integration (when running under Aspire)
+// Falls back to connection string from configuration when not running under Aspire
+builder.AddSqlServerDbContext<ApplicationDbContext>("extratime");
 
 // Configure JSON serialization - enums as strings
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -33,6 +41,12 @@ builder.Services.AddCors(options =>
 // Clean Architecture services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Run database migrations on startup in development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHostedService<DatabaseMigrationService>();
+}
 
 // Swagger with JWT support
 builder.Services.AddEndpointsApiExplorer();
@@ -63,9 +77,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Health Checks
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ApplicationDbContext>();
+// Note: Health checks are configured by Aspire service defaults and AddSqlServerDbContext
 
 var app = builder.Build();
 
@@ -82,6 +94,9 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Map Aspire default endpoints (health checks, etc.)
+app.MapDefaultEndpoints();
+
 // Map endpoints
 app.MapHealthEndpoints();
 app.MapAuthEndpoints();
@@ -90,7 +105,6 @@ app.MapFootballEndpoints();
 app.MapFootballSyncEndpoints();
 app.MapLeagueEndpoints();
 app.MapBetEndpoints();
-app.MapHealthChecks("/health");
 
 app.Run();
 
