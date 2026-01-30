@@ -122,6 +122,13 @@ public sealed class LeagueBuilder
     }
 
     private Guid[]? _allowedCompetitionIds = null;
+    private bool _botsEnabled = false;
+
+    public LeagueBuilder WithBotsEnabled(bool botsEnabled)
+    {
+        _botsEnabled = botsEnabled;
+        return this;
+    }
 
     public LeagueBuilder WithAllowedCompetitions(params Guid[] competitionIds)
     {
@@ -149,6 +156,11 @@ public sealed class LeagueBuilder
         if (_allowedCompetitionIds != null)
         {
             league.SetCompetitionFilter(_allowedCompetitionIds);
+        }
+
+        if (_botsEnabled)
+        {
+            league.EnableBots(true);
         }
 
         return league;

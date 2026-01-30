@@ -217,7 +217,7 @@ Integration tests use a real database (SQL Server via Testcontainers) with Respa
 | `RegisterCommandIntegrationTests.cs` | User creation, duplicate email handling | ✓ Complete |
 | `RefreshTokenCommandIntegrationTests.cs` | Token rotation, token reuse detection | ✓ Complete |
 
-**League Integration Tests (5/6) ⚠️**
+**League Integration Tests (6/6) ✓**
 | Test File | Scenarios to Cover | Status |
 |-----------|-------------------|--------|
 | `JoinLeagueCommandIntegrationTests.cs` | Member joining, invite code validation | ✓ Complete |
@@ -225,58 +225,58 @@ Integration tests use a real database (SQL Server via Testcontainers) with Respa
 | `DeleteLeagueCommandIntegrationTests.cs` | League deletion, cascade delete | ✓ Complete |
 | `KickMemberCommandIntegrationTests.cs` | Member removal, owner protection | ✓ Complete |
 | `LeaveLeagueCommandIntegrationTests.cs` | Member leaving, owner restriction | ✓ Complete |
-| `RegenerateInviteCodeIntegrationTests.cs` | Code regeneration, expiration | ⚠️ Pending |
+| `RegenerateInviteCodeIntegrationTests.cs` | Code regeneration, expiration, owner check | ✓ Complete |
 
-**Bet Integration Tests (4/5) ⚠️**
+**Bet Integration Tests (5/5) ✓**
 | Test File | Scenarios to Cover | Status |
 |-----------|-------------------|--------|
 | `PlaceBetCommandIntegrationTests.cs` | Bet placement, deadline enforcement | ✓ Complete |
 | `DeleteBetCommandIntegrationTests.cs` | Bet deletion, deadline enforcement | ✓ Complete |
 | `GetMyBetsQueryIntegrationTests.cs` | Bet listing with match details | ✓ Complete |
 | `GetLeagueStandingsQueryIntegrationTests.cs` | Standings calculation, ranks | ✓ Complete |
-| `GetMatchBetsQueryIntegrationTests.cs` | Bets visibility, result inclusion | ⚠️ Pending |
+| `GetMatchBetsQueryIntegrationTests.cs` | Bets visibility, deadline check, result inclusion | ✓ Complete |
 
-#### Medium Priority
+#### Medium Priority - ✓ COMPLETED
 
-**Bot Integration Tests**
-| Test File | Scenarios to Cover |
-|-----------|-------------------|
-| `CreateBotCommandIntegrationTests.cs` | Bot creation, unique name enforcement |
-| `AddBotToLeagueCommandIntegrationTests.cs` | Bot joining, member limit enforcement |
-| `RemoveBotFromLeagueCommandIntegrationTests.cs` | Bot removal, bet cleanup |
-| `PlaceBotBetsCommandIntegrationTests.cs` | Automated betting, strategy execution |
-| `GetBotsQueryIntegrationTests.cs` | Bot listing, filtering |
-| `GetLeagueBotsQueryIntegrationTests.cs` | League bot listing |
+**Bot Integration Tests (6/6) ✓**
+| Test File | Scenarios to Cover | Status |
+|-----------|-------------------|--------|
+| `CreateBotCommandIntegrationTests.cs` | Bot creation, unique name enforcement | ✓ Complete |
+| `AddBotToLeagueCommandIntegrationTests.cs` | Bot joining, owner authorization | ✓ Complete |
+| `RemoveBotFromLeagueCommandIntegrationTests.cs` | Bot removal, owner authorization | ✓ Complete |
+| `PlaceBotBetsCommandIntegrationTests.cs` | Automated betting execution | ✓ Complete |
+| `GetBotsQueryIntegrationTests.cs` | Bot listing | ✓ Complete |
+| `GetLeagueBotsQueryIntegrationTests.cs` | League bot listing | ✓ Complete |
 
-**Football Integration Tests**
-| Test File | Scenarios to Cover |
-|-----------|-------------------|
-| `GetMatchesQueryIntegrationTests.cs` | Match listing, filtering, pagination |
-| `GetMatchByIdQueryIntegrationTests.cs` | Match retrieval with details |
-| `GetCompetitionsQueryIntegrationTests.cs` | Competition listing |
+**Football Integration Tests (3/3) ✓**
+| Test File | Scenarios to Cover | Status |
+|-----------|-------------------|--------|
+| `GetMatchesQueryIntegrationTests.cs` | Match listing, filtering, pagination | ✓ Complete |
+| `GetMatchByIdQueryIntegrationTests.cs` | Match retrieval with details | ✓ Complete |
+| `GetCompetitionsQueryIntegrationTests.cs` | Competition listing | ✓ Complete |
 
-**User Integration Tests**
-| Test File | Scenarios to Cover |
-|-----------|-------------------|
-| `GetCurrentUserQueryIntegrationTests.cs` | Current user retrieval |
-| `GetUserStatsQueryIntegrationTests.cs` | User stats calculation, rank determination |
+**User Integration Tests (2/2) ✓**
+| Test File | Scenarios to Cover | Status |
+|-----------|-------------------|--------|
+| `GetCurrentUserQueryIntegrationTests.cs` | Current user retrieval | ✓ Complete |
+| `GetUserStatsQueryIntegrationTests.cs` | User stats calculation, rank determination | ✓ Complete |
 
-#### Low Priority
+#### Low Priority - ✓ COMPLETED
 
-**Admin Integration Tests**
-| Test File | Scenarios to Cover |
-|-----------|-------------------|
-| `GetJobsQueryIntegrationTests.cs` | Job listing, filtering |
-| `GetJobByIdQueryIntegrationTests.cs` | Job retrieval |
-| `GetJobStatsQueryIntegrationTests.cs` | Job statistics |
-| `CancelJobCommandIntegrationTests.cs` | Job cancellation |
-| `RetryJobCommandIntegrationTests.cs` | Job retry |
+**Admin Integration Tests (5/5) ✓**
+| Test File | Scenarios to Cover | Status |
+|-----------|-------------------|--------|
+| `GetJobsQueryIntegrationTests.cs` | Job listing, filtering, pagination | ✓ Complete |
+| `GetJobByIdQueryIntegrationTests.cs` | Job retrieval by ID | ✓ Complete |
+| `GetJobStatsQueryIntegrationTests.cs` | Job statistics aggregation | ✓ Complete |
+| `CancelJobCommandIntegrationTests.cs` | Job cancellation (Pending/Processing) | ✓ Complete |
+| `RetryJobCommandIntegrationTests.cs` | Job retry with dispatcher | ✓ Complete |
 
-**Background Job Integration Tests**
-| Test File | Scenarios to Cover |
-|-----------|-------------------|
-| `CalculateBetResultsJobIntegrationTests.cs` | End-to-end bet calculation job |
-| `RecalculateStandingsJobIntegrationTests.cs` | End-to-end standings recalculation |
+**Background Job Integration Tests (2/2) ✓**
+| Test File | Scenarios to Cover | Status |
+|-----------|-------------------|--------|
+| `CalculateBetResultsJobIntegrationTests.cs` | End-to-end bet calculation, result creation | ✓ Complete |
+| `RecalculateStandingsJobIntegrationTests.cs` | End-to-end standings recalculation | ✓ Complete |
 
 ### Integration Test Implementation Guidelines
 
@@ -342,14 +342,14 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 - **Leagues (5/6)**: Join ✓, Update ✓, Delete ✓, KickMember ✓, Leave ✓, RegenerateInviteCode ⚠️
 - **Bets (4/5)**: PlaceBet ✓, DeleteBet ✓, GetMyBets ✓, GetStandings ✓, GetMatchBets ⚠️
 
-#### Phase 2: Core Features (Medium Priority) - In Progress
-1. **Bot (5 tests)**: CreateBot, AddBotToLeague, RemoveBotFromLeague, PlaceBotBets, GetBots, GetLeagueBots
-2. **Football (3 tests)**: GetMatches, GetMatchById, GetCompetitions
-3. **User (2 tests)**: GetCurrentUser, GetUserStats
+#### Phase 2: Core Features (Medium Priority) - ✓ COMPLETED
+1. **Bot (5/6 tests)**: CreateBot ✓, AddBotToLeague ✓, RemoveBotFromLeague ✓, PlaceBotBets ✓, GetBots ✓, GetLeagueBots ✓
+2. **Football (3/3 tests)**: GetMatches ✓, GetMatchById ✓, GetCompetitions ✓
+3. **User (2/2 tests)**: GetCurrentUser ✓, GetUserStats ✓
 
-#### Phase 3: Background Jobs & Admin (Low Priority) - Pending
-1. **Admin (5 tests)**: GetJobs, GetJobById, GetJobStats, CancelJob, RetryJob
-2. **Background Jobs (2 tests)**: CalculateBetResultsJob, RecalculateStandingsJob
+#### Phase 3: Background Jobs & Admin (Low Priority) - ✓ COMPLETED
+1. **Admin (5/5 tests)**: GetJobs ✓, GetJobById ✓, GetJobStats ✓, CancelJob ✓, RetryJob ✓
+2. **Background Jobs (2/2 tests)**: CalculateBetResultsJob ✓, RecalculateStandingsJob ✓
 
 #### Success Criteria
 - All commands have at least one integration test
@@ -418,7 +418,7 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 - `TestAsyncQueryProvider.cs` (infrastructure)
 - `ValidatorTestBase.cs` (infrastructure)
 
-### Integration Tests (16 files) ✓ PHASE 1 COMPLETE
+### Integration Tests (33 files) ✓ ALL PHASES COMPLETE
 - `CalculateBetResultsIntegrationTests.cs` ✓
 - `CreateLeagueCommandIntegrationTests.cs` ✓
 - `DeleteBetCommandIntegrationTests.cs` ✓ **(NEW)**
@@ -435,6 +435,26 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 - `LoginCommandIntegrationTests.cs` ✓ **(NEW)**
 - `RegisterCommandIntegrationTests.cs` ✓ **(NEW)**
 - `RefreshTokenCommandIntegrationTests.cs` ✓ **(NEW)**
+- `CreateBotCommandIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `AddBotToLeagueCommandIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `RemoveBotFromLeagueCommandIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `PlaceBotBetsCommandIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetBotsQueryIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetLeagueBotsQueryIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetMatchesQueryIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetMatchByIdQueryIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetCompetitionsQueryIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetCurrentUserQueryIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetUserStatsQueryIntegrationTests.cs` ✓ **(NEW - Phase 2)**
+- `GetJobsQueryIntegrationTests.cs` ✓ **(NEW - Phase 3)**
+- `GetJobByIdQueryIntegrationTests.cs` ✓ **(NEW - Phase 3)**
+- `GetJobStatsQueryIntegrationTests.cs` ✓ **(NEW - Phase 3)**
+- `CancelJobCommandIntegrationTests.cs` ✓ **(NEW - Phase 3)**
+- `RetryJobCommandIntegrationTests.cs` ✓ **(NEW - Phase 3)**
+- `CalculateBetResultsJobIntegrationTests.cs` ✓ **(NEW - Phase 3)**
+- `RecalculateStandingsJobIntegrationTests.cs` ✓ **(NEW - Phase 3)**
+- `RegenerateInviteCodeIntegrationTests.cs` ✓ **(NEW - Phase 1)**
+- `GetMatchBetsQueryIntegrationTests.cs` ✓ **(NEW - Phase 1)**
 - `ApplicationDbContextTests.cs` ✓
 - `IntegrationTestBase.cs` (infrastructure)
 
@@ -454,16 +474,17 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 
 ### Coverage Improvement
 - **Before**: 28 test files, ~15% handler coverage
-- **After**: 69 test files, ~90% handler coverage, ~100% validator coverage
-- **New Tests Added**: 29 handler test files, 7 validator test files, 10 integration test files
+- **After**: 81 test files, ~90% handler coverage, ~100% validator coverage
+- **New Tests Added**: 29 handler test files, 7 validator test files, 29 integration test files
 - **Total Unit Test Cases**: 185+ unit tests passing
-- **Total Integration Test Cases**: 50+ integration tests
+- **Total Integration Test Cases**: 100+ integration tests
 
 ### Integration Test Status
-- **Current**: 16 integration test files (was 6)
-- **Phase 1 Complete**: Auth (3/3) ✓, Leagues (5/5) ✓, Bets (4/4) ✓
-- **Phase 2 Remaining**: Bot (5), Football (3), User (2), Admin (5), Background Jobs (2)
-- **Coverage Goal**: All commands + queries with Include operations
+- **Current**: 35 integration test files (was 6)
+- **Phase 1 Complete**: Auth (3/3) ✓, Leagues (6/6) ✓, Bets (5/5) ✓
+- **Phase 2 Complete**: Bot (6/6) ✓, Football (3/3) ✓, User (2/2) ✓
+- **Phase 3 Complete**: Admin (5/5) ✓, Background Jobs (2/2) ✓
+- **Coverage Goal**: ✓ Achieved - All critical commands + queries with Include operations
 
 ### Key Achievements
 ✓ All high priority handlers have unit tests
@@ -474,11 +495,13 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 ✓ **100% of Phase 2 (Admin) unit tests complete**
 ✓ **100% of Phase 3 (Remaining) unit tests complete**
 ✓ 100% of Phase 1 (Critical Path) unit tests complete
-✓ 90% of Phase 2 (Core Features) unit tests complete
+✓ 100% of Phase 2 (Core Features) unit tests complete
 ✓ **Integration test infrastructure ready (Testcontainers, Respawn)**
-✓ **Phase 1 (Critical Path) Integration Tests COMPLETE: Auth (3), Leagues (5), Bets (4)**
+✓ **Phase 1 (Critical Path) Integration Tests COMPLETE: Auth (3), Leagues (6), Bets (5)**
+✓ **Phase 2 (Core Features) Integration Tests COMPLETE: Bot (6), Football (3), User (2)**
+✓ **Phase 3 (Admin & Background Jobs) Integration Tests COMPLETE: Admin (5), Background Jobs (2)**
 
 ### Next Steps
-1. **Phase 2 (Core Features)**: Integration tests for Bot (5), Football (3), User (2)
-2. **Phase 3 (Admin & Background Jobs)**: Admin (5), Background jobs (2)
-3. **Continued**: Add edge case tests and improve coverage for complex scenarios
+1. ✓ **ALL PLANNED INTEGRATION TESTS COMPLETE** - 35 integration test files across all phases
+2. **Continued**: Add edge case tests and improve coverage for complex scenarios
+3. **Performance**: Add load testing for critical paths

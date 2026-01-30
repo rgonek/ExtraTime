@@ -54,7 +54,8 @@
       "Bash(cmd //c start \"\" \"D:\\\\Dev\\\\ExtraTime\\\\design-system-playground.html\")",
       "Bash(New-Item -ItemType Directory -Path \"D:\\\\Dev\\\\ExtraTime\\\\web\\\\src\\\\components\\\\bets\" -Force)",
       "Bash(Out-Null)",
-      "Bash(Write-Host \"Directory created\")"
+      "Bash(Write-Host \"Directory created\")",
+      "Skill(playground)"
     ]
   }
 }
