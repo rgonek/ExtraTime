@@ -13,8 +13,10 @@ public sealed class User : BaseAuditableEntity
     public string Username { get; private set; } = null!;
     public string PasswordHash { get; private set; } = null!;
     public UserRole Role { get; private set; }
+    public bool IsBot { get; private set; }
     public DateTime? LastLoginAt { get; private set; }
     public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens.AsReadOnly();
+    public Bot? Bot { get; set; }
 
     private User() { } // Required for EF Core
 
@@ -77,5 +79,10 @@ public sealed class User : BaseAuditableEntity
     {
         Email = new Email(email).Value;
         Username = new Username(username).Value;
+    }
+
+    public void MarkAsBot()
+    {
+        IsBot = true;
     }
 }

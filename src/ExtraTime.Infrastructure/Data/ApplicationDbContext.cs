@@ -22,9 +22,11 @@ public sealed class ApplicationDbContext(
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<League> Leagues => Set<League>();
     public DbSet<LeagueMember> LeagueMembers => Set<LeagueMember>();
+    public DbSet<LeagueBotMember> LeagueBotMembers => Set<LeagueBotMember>();
     public DbSet<Bet> Bets => Set<Bet>();
     public DbSet<BetResult> BetResults => Set<BetResult>();
     public DbSet<LeagueStanding> LeagueStandings => Set<LeagueStanding>();
+    public DbSet<Bot> Bots => Set<Bot>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

@@ -1,9 +1,12 @@
 using System.Linq;
 using System.Text;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Application.Features.Bots.Services;
+using ExtraTime.Application.Features.Bots.Strategies;
 using ExtraTime.Infrastructure.Configuration;
 using ExtraTime.Infrastructure.Data;
 using ExtraTime.Infrastructure.Services;
+using ExtraTime.Infrastructure.Services.Bots;
 using ExtraTime.Infrastructure.Services.Football;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +89,12 @@ public static class DependencyInjection
         services.AddSingleton<IInviteCodeGenerator, InviteCodeGenerator>();
         services.AddScoped<IBetCalculator, BetCalculator>();
         services.AddScoped<IStandingsCalculator, StandingsCalculator>();
+
+        // Bot Services
+        services.AddScoped<BotSeeder>();
+        services.AddSingleton<BotStrategyFactory>();
+        services.AddScoped<IBotBettingService, BotBettingService>();
+        services.AddHostedService<BotBettingBackgroundService>();
 
         // Football Data Services
         services.Configure<FootballDataSettings>(configuration.GetSection(FootballDataSettings.SectionName));

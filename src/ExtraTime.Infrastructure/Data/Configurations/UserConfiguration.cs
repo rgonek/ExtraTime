@@ -29,6 +29,10 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        builder.Property(u => u.IsBot)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.HasIndex(u => u.Email)
             .IsUnique();
 

@@ -1,3 +1,7 @@
+using ExtraTime.Application.Features.Bots.Commands.AddBotToLeague;
+using ExtraTime.Application.Features.Bots.Commands.RemoveBotFromLeague;
+using ExtraTime.Application.Features.Bots.DTOs;
+using ExtraTime.Application.Features.Bots.Queries.GetLeagueBots;
 using ExtraTime.Application.Features.Leagues;
 using ExtraTime.Application.Features.Leagues.Commands.CreateLeague;
 using ExtraTime.Application.Features.Leagues.Commands.DeleteLeague;
@@ -48,6 +52,16 @@ public static class LeagueEndpoints
 
         group.MapPost("/{id}/invite-code/regenerate", RegenerateInviteCodeAsync)
             .WithName("RegenerateInviteCode");
+
+        // Bot management endpoints
+        group.MapGet("/{id:guid}/bots", GetLeagueBotsAsync)
+            .WithName("GetLeagueBots");
+
+        group.MapPost("/{id:guid}/bots", AddBotToLeagueAsync)
+            .WithName("AddBotToLeague");
+
+        group.MapDelete("/{id:guid}/bots/{botId:guid}", RemoveBotFromLeagueAsync)
+            .WithName("RemoveBotFromLeague");
     }
 
     private static async Task<IResult> CreateLeagueAsync(
@@ -297,5 +311,71 @@ public static class LeagueEndpoints
         }
 
         return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> GetLeagueBotsAsync(
+        Guid id,
+        IMediator mediator,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetLeagueBotsQuery(id);
+        var result = await mediator.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return Results.BadRequest(new { error = result.Error });
+        }
+
+        return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> AddBotToLeagueAsync(
+        Guid id,
+        AddBotToLeagueRequest request,
+        IMediator mediator,
+        CancellationToken cancellationToken)
+    {
+        var command = new AddBotToLeagueCommand(id, request.BotId);
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error == "League not found")
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+            if (result.Error == "Only the league owner can add bots")
+            {
+                return Results.Forbid();
+            }
+            return Results.BadRequest(new { error = result.Error });
+        }
+
+        return Results.Created($"/api/leagues/{id}/bots/{result.Value!.Id}", result.Value);
+    }
+
+    private static async Task<IResult> RemoveBotFromLeagueAsync(
+        Guid id,
+        Guid botId,
+        IMediator mediator,
+        CancellationToken cancellationToken)
+    {
+        var command = new RemoveBotFromLeagueCommand(id, botId);
+        var result = await mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error == "League not found")
+            {
+                return Results.NotFound(new { error = result.Error });
+            }
+            if (result.Error == "Only the league owner can remove bots")
+            {
+                return Results.Forbid();
+            }
+            return Results.BadRequest(new { error = result.Error });
+        }
+
+        return Results.NoContent();
     }
 }

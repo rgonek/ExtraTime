@@ -1,4 +1,5 @@
 using ExtraTime.Infrastructure.Data;
+using ExtraTime.Infrastructure.Services.Bots;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +23,12 @@ public sealed class DatabaseMigrationService(
 
             await dbContext.Database.MigrateAsync(cancellationToken);
             logger.LogInformation("Database migration completed successfully");
+
+            // Seed default bots
+            using var scope = serviceProvider.CreateScope();
+            var botSeeder = scope.ServiceProvider.GetRequiredService<BotSeeder>();
+            await botSeeder.SeedDefaultBotsAsync(cancellationToken);
+            logger.LogInformation("Default bots seeded successfully");
         }
         catch (Exception ex)
         {

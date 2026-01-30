@@ -5,6 +5,7 @@ using ExtraTime.Infrastructure.Data;
 using ExtraTime.Infrastructure.Services;
 using ExtraTime.API.Features.Admin;
 using ExtraTime.API.Features.Auth;
+using ExtraTime.API.Features.Bots;
 using ExtraTime.API.Features.Football;
 using ExtraTime.API.Features.Health;
 using ExtraTime.API.Features.Leagues;
@@ -104,6 +105,8 @@ app.MapAdminEndpoints();
 app.MapFootballEndpoints();
 app.MapFootballSyncEndpoints();
 app.MapLeagueEndpoints();
+app.MapBotEndpoints();
+app.MapAdminBotEndpoints();
 app.MapBetEndpoints();
 
 app.Run();

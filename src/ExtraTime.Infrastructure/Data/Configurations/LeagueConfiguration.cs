@@ -36,5 +36,15 @@ public sealed class LeagueConfiguration : IEntityTypeConfiguration<League>
             .HasForeignKey(lm => lm.LeagueId)
             .OnDelete(DeleteBehavior.Cascade)
             .Metadata.PrincipalToDependent!.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasMany(l => l.BotMembers)
+            .WithOne(bm => bm.League)
+            .HasForeignKey(bm => bm.LeagueId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .Metadata.PrincipalToDependent!.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Property(l => l.BotsEnabled)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 }

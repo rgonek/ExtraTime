@@ -34,8 +34,14 @@ public sealed class League : BaseAuditableEntity
     public string InviteCode { get; private set; } = null!;
     public DateTime? InviteCodeExpiresAt { get; private set; }
 
+    // Bot System
+    public bool BotsEnabled { get; private set; }
+
     // Navigation
     public IReadOnlyCollection<LeagueMember> Members => _members.AsReadOnly();
+
+    private readonly List<LeagueBotMember> _botMembers = [];
+    public IReadOnlyCollection<LeagueBotMember> BotMembers => _botMembers.AsReadOnly();
 
     private League() { } // Required for EF Core
 
@@ -168,6 +174,35 @@ public sealed class League : BaseAuditableEntity
         else
         {
             AllowedCompetitionIds = System.Text.Json.JsonSerializer.Serialize(competitionIds.ToArray());
+        }
+    }
+
+    public void EnableBots(bool enabled)
+    {
+        BotsEnabled = enabled;
+    }
+
+    public void AddBot(Guid botId)
+    {
+        if (_botMembers.Any(bm => bm.BotId == botId))
+            throw new InvalidOperationException("Bot is already a member of this league");
+
+        var botMember = new LeagueBotMember
+        {
+            LeagueId = Id,
+            BotId = botId,
+            AddedAt = Clock.UtcNow
+        };
+
+        _botMembers.Add(botMember);
+    }
+
+    public void RemoveBot(Guid botId)
+    {
+        var botMember = _botMembers.FirstOrDefault(bm => bm.BotId == botId);
+        if (botMember != null)
+        {
+            _botMembers.Remove(botMember);
         }
     }
 }
