@@ -46,7 +46,15 @@
       "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129194948_RenameTablesToSqlServerStyle.Designer.cs\" -Force)",
       "Bash(docker-compose up:*)",
       "Bash(docker-compose ps:*)",
-      "Bash(Test-Path \"D:\\\\Dev\\\\ExtraTime\\\\web\")"
+      "Bash(Test-Path \"D:\\\\Dev\\\\ExtraTime\\\\web\")",
+      "Skill(frontend-design)",
+      "Skill(playground:playground)",
+      "Bash(start D:DevExtraTimedesign-system-playground.html)",
+      "Bash(Start-Process \"D:\\\\Dev\\\\ExtraTime\\\\design-system-playground.html\")",
+      "Bash(cmd //c start \"\" \"D:\\\\Dev\\\\ExtraTime\\\\design-system-playground.html\")",
+      "Bash(New-Item -ItemType Directory -Path \"D:\\\\Dev\\\\ExtraTime\\\\web\\\\src\\\\components\\\\bets\" -Force)",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"Directory created\")"
     ]
   }
 }

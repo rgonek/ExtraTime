@@ -15,6 +15,13 @@
 | Phase 3 | ✅ Complete | Football Data Integration |
 | Phase 4 | ✅ Complete | League System (Backend) |
 | Phase 5 | ✅ Complete | Betting System (Backend) |
+| Phase 6 | ✅ Complete | Frontend Implementation & Polish |
+| Phase 6.1 | ✅ Complete | Foundation & Types |
+| Phase 6.2 | ✅ Complete | League System UI |
+| Phase 6.3 | ✅ Complete | Betting System Core |
+| Phase 6.4 | ✅ Complete | Leaderboard & Statistics |
+| Phase 6.5 | ✅ Complete | Gamification System |
+| Phase 6.6 | ✅ Complete | UX Polish & Dark Mode |
 
 ## Project Overview
 A social betting app (no real money) where friends create leagues, bet on football matches, and compete for points. Portfolio project showcasing frontend skills.
@@ -260,46 +267,55 @@ When adding Azure Functions/Service Bus:
 
 ---
 
-## Phase 6: Frontend Implementation & Polish (Portfolio Focus)
+## Phase 6: Frontend Implementation & Polish (Portfolio Focus) ✅
 **Goal**: Build complete frontend UI with impressive, polished UX
+**Status**: Complete
 
-### League System UI (from Phase 4)
-- [ ] Create league form
-- [ ] League list/dashboard
-- [ ] League detail page with member list
-- [ ] Join league via code flow
-- [ ] Share invite link functionality
+### League System UI (from Phase 4) ✅
+- [x] Create league form (`league-form.tsx`)
+- [x] League list/dashboard (`league-list.tsx`, `league-card.tsx`)
+- [x] League detail page with member list (`league-detail.tsx`, `member-list.tsx`)
+- [x] Join league via code flow (`join-league-form.tsx`)
+- [x] Share invite link functionality (`invite-share.tsx`)
 
-### Betting System UI (from Phase 5)
-- [ ] Match list with betting UI
-- [ ] Bet placement component (score inputs)
-- [ ] My bets view
-- [ ] Leaderboard page with avatars and ranks
-- [ ] Match result reveal (show others' bets after deadline)
-- [ ] Points earned animation/celebration
+### Betting System UI (from Phase 5) ✅
+- [x] Match list with betting UI (`match-list.tsx`, `match-card.tsx`)
+- [x] Bet placement component (score inputs) (`bet-form.tsx`)
+- [x] My bets view (`my-bets-list.tsx`)
+- [x] Leaderboard page with avatars and ranks (`leaderboard.tsx`, `rank-badge.tsx`)
+- [x] Match result reveal (show others' bets after deadline) (`match-bets-reveal.tsx`)
+- [x] Points earned animation/celebration (`points-animation.tsx`)
 
-### Core Pages & Components
-- [ ] Landing page (marketing/hero)
-- [ ] Dashboard (upcoming matches, recent results, quick stats)
-- [ ] Match day view (grouped matches by date)
-- [ ] User profile page
-- [ ] League standings with animations
-- [ ] Responsive design (mobile-first)
+### Core Pages & Components ✅
+- [x] Dashboard (upcoming matches, recent results, quick stats)
+- [x] Match day view (grouped matches by date)
+- [x] League standings with animations (`standings/page.tsx`)
+- [x] Responsive design (mobile-first)
+- [x] App shell with navigation (`app-shell.tsx`)
 
-### UX Enhancements
-- [ ] Loading skeletons
-- [ ] Toast notifications
-- [ ] Optimistic updates for bets
-- [ ] Dark/light mode toggle
-- [ ] Micro-animations (Framer Motion)
+### UX Enhancements ✅
+- [x] Loading skeletons (`loading-skeleton.tsx`)
+- [x] Toast notifications (Sonner)
+- [x] Optimistic updates for bets (`use-bets.ts`)
+- [x] Dark/light mode toggle (`theme-toggle.tsx`)
+- [x] Micro-animations (`animated-container.tsx`)
 
-### Gamification Features
-- [ ] Achievement badge system (First Bet, Perfect Score, etc.)
-- [ ] User levels/ranks based on total points
-- [ ] Streak counter component
-- [ ] Confetti/celebration animations for wins
-- [ ] Weekly challenge cards
-- [ ] Progress bars for achievements
+### Gamification Features ✅
+- [x] Achievement badge system (`achievement-badge.tsx`, `achievement-list.tsx`)
+- [x] User levels/ranks based on total points (`level-indicator.tsx`)
+- [x] Streak counter component (`streak-counter.tsx`)
+- [x] Confetti/celebration animations for wins (`celebration-confetti.tsx`)
+- [x] Weekly challenge cards (`challenge-card.tsx`)
+- [x] Progress bars for achievements
+- [x] User stats card (`user-stats-card.tsx`)
+
+### Accessibility & Polish ✅
+- [x] Error boundaries (`error-boundary.tsx`)
+- [x] Skip links (`skip-link.tsx`)
+- [x] Visually hidden elements (`visually-hidden.tsx`)
+- [x] Global loading indicator (`global-loading.tsx`)
+- [x] Empty state components (`empty-state.tsx`)
+- [x] Error message components (`error-message.tsx`)
 
 ---
 

@@ -91,40 +91,108 @@ export function useUserStats(leagueId: string, userId: string) {
 }
 
 // ============================================================
-// MUTATIONS
+// MUTATIONS WITH OPTIMISTIC UPDATES
 // ============================================================
 
 /**
- * Place or update a bet
- * POST /api/leagues/{leagueId}/bets
+ * Place or update a bet with optimistic update
  *
- * Note: This endpoint creates or updates depending on whether
- * a bet already exists for this match
+ * This demonstrates the full optimistic update pattern:
+ * 1. onMutate: Update cache optimistically BEFORE API call
+ * 2. onError: Rollback on failure
+ * 3. onSettled: Always refetch to ensure consistency
  */
 export function usePlaceBet(leagueId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation<BetDto, ApiError, PlaceBetRequest>({
+  return useMutation<BetDto, ApiError, PlaceBetRequest, { previousBets?: MyBetDto[] }>({
     mutationFn: (data) =>
       apiClient.post<BetDto>(`/leagues/${leagueId}/bets`, data),
-    onSuccess: () => {
-      // Refresh my bets list
+
+    // OPTIMISTIC UPDATE: Run BEFORE the API call
+    onMutate: async (newBet) => {
+      // 1. Cancel any outgoing refetches
+      // This prevents race conditions where refetch returns old data
+      await queryClient.cancelQueries({ queryKey: betKeys.myBets(leagueId) });
+
+      // 2. Snapshot the previous value
+      const previousBets = queryClient.getQueryData<MyBetDto[]>(
+        betKeys.myBets(leagueId)
+      );
+
+      // 3. Optimistically update to the new value
+      if (previousBets) {
+        const existingIndex = previousBets.findIndex(
+          (b) => b.matchId === newBet.matchId
+        );
+
+        if (existingIndex >= 0) {
+          // Update existing bet
+          const updated = [...previousBets];
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            predictedHomeScore: newBet.predictedHomeScore,
+            predictedAwayScore: newBet.predictedAwayScore,
+          };
+          queryClient.setQueryData(betKeys.myBets(leagueId), updated);
+        }
+        // Note: For new bets, we don't add optimistically because
+        // we don't have all the required MyBetDto fields (team names, etc.)
+      }
+
+      // 4. Return context with previous value for rollback
+      return { previousBets };
+    },
+
+    // ROLLBACK: If mutation fails, restore previous state
+    onError: (_err, _newBet, context) => {
+      if (context?.previousBets) {
+        queryClient.setQueryData(betKeys.myBets(leagueId), context.previousBets);
+      }
+    },
+
+    // ALWAYS REFETCH: Ensure cache matches server
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: betKeys.myBets(leagueId) });
     },
   });
 }
 
 /**
- * Delete a bet
- * DELETE /api/leagues/{leagueId}/bets/{betId}
+ * Delete a bet with optimistic update
  */
 export function useDeleteBet(leagueId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, ApiError, string>({
+  return useMutation<void, ApiError, string, { previousBets?: MyBetDto[] }>({
     mutationFn: (betId) =>
       apiClient.delete(`/leagues/${leagueId}/bets/${betId}`),
-    onSuccess: () => {
+
+    onMutate: async (betId) => {
+      await queryClient.cancelQueries({ queryKey: betKeys.myBets(leagueId) });
+
+      const previousBets = queryClient.getQueryData<MyBetDto[]>(
+        betKeys.myBets(leagueId)
+      );
+
+      // Optimistically remove the bet
+      if (previousBets) {
+        queryClient.setQueryData(
+          betKeys.myBets(leagueId),
+          previousBets.filter((b) => b.betId !== betId)
+        );
+      }
+
+      return { previousBets };
+    },
+
+    onError: (_err, _betId, context) => {
+      if (context?.previousBets) {
+        queryClient.setQueryData(betKeys.myBets(leagueId), context.previousBets);
+      }
+    },
+
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: betKeys.myBets(leagueId) });
     },
   });
