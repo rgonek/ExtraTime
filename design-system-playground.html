@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExtraTime Design System</title>
+  <style>
+    :root {
+      --ui-bg: #0f0f0f;
+      --ui-surface: #1a1a1a;
+      --ui-border: #2a2a2a;
+      --ui-text: #e5e5e5;
+      --ui-text-muted: #888;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: 1fr auto;
+      min-height: 100vh;
+    }
+
+    /* Controls Panel */
+    .controls {
+      background: var(--ui-surface);
+      border-right: 1px solid var(--ui-border);
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .controls h1 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .controls .subtitle {
+      font-size: 12px;
+      color: var(--ui-text-muted);
+      margin-bottom: 24px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ui-text-muted);
+      margin-bottom: 12px;
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .preset-btn {
+      padding: 8px 12px;
+      border: 1px solid var(--ui-border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ui-text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .preset-btn:hover {
+      background: var(--ui-border);
+    }
+
+    .preset-btn.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: white;
+    }
+
+    .control-group {
+      margin-bottom: 16px;
+    }
+
+    .control-label {
+      display: block;
+      font-size: 12px;
+      color: var(--ui-text-muted);
+      margin-bottom: 6px;
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .color-input {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .color-input::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-input::-webkit-color-swatch {
+      border: none;
+      border-radius: 6px;
+    }
+
+    .color-name {
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .color-value {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--ui-text-muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--ui-border);
+      appearance: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #6366f1;
+      cursor: pointer;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--ui-bg);
+      border: 1px solid var(--ui-border);
+      border-radius: 6px;
+      color: var(--ui-text);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--ui-border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: #6366f1;
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* Preview Panel */
+    .preview {
+      padding: 32px;
+      overflow-y: auto;
+      max-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .preview-section {
+      margin-bottom: 48px;
+    }
+
+    .preview-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid;
+      opacity: 0.6;
+    }
+
+    /* Component Styles in Preview */
+    .color-swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .swatch {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .swatch-color {
+      height: 64px;
+    }
+
+    .swatch-info {
+      padding: 10px;
+      font-size: 12px;
+    }
+
+    .swatch-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .swatch-hex {
+      opacity: 0.6;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    .typography-sample {
+      margin-bottom: 16px;
+    }
+
+    .type-label {
+      font-size: 11px;
+      opacity: 0.5;
+      margin-bottom: 4px;
+      font-family: monospace;
+    }
+
+    .buttons-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-header {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-body {
+      padding: 0 16px 16px;
+    }
+
+    .card-footer {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .achievement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 16px;
+    }
+
+    .achievement {
+      text-align: center;
+      padding: 16px;
+      border-radius: 12px;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .achievement:hover {
+      transform: scale(1.05);
+    }
+
+    .achievement-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .achievement-name {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .streak-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .streak-icon {
+      font-size: 24px;
+    }
+
+    .progress-container {
+      margin-bottom: 16px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .points-display {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      font-weight: 700;
+    }
+
+    .points-value {
+      font-size: 32px;
+    }
+
+    .points-label {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .level-icon {
+      font-size: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .text-input {
+      width: 100%;
+      max-width: 300px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 2px solid;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .text-input:focus {
+      outline: none;
+    }
+
+    .animation-demos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .animation-box {
+      width: 100px;
+      height: 100px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .animation-box.pulse:hover {
+      animation: pulse 0.5s ease;
+    }
+
+    .animation-box.bounce:hover {
+      animation: bounce 0.5s ease;
+    }
+
+    .animation-box.shake:hover {
+      animation: shake 0.5s ease;
+    }
+
+    .animation-box.glow:hover {
+      animation: glow 0.5s ease;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 5px currentColor; }
+      50% { box-shadow: 0 0 25px currentColor, 0 0 50px currentColor; }
+    }
+
+    .confetti-trigger {
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .confetti-trigger:hover {
+      transform: scale(1.05);
+    }
+
+    /* Prompt Output */
+    .prompt-output {
+      grid-column: 1 / -1;
+      background: var(--ui-surface);
+      border-top: 1px solid var(--ui-border);
+      padding: 20px;
+    }
+
+    .prompt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .prompt-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ui-text-muted);
+    }
+
+    .copy-btn {
+      padding: 8px 16px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: #5558e3;
+    }
+
+    .copy-btn.copied {
+      background: #10b981;
+    }
+
+    .prompt-text {
+      font-family: monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      background: var(--ui-bg);
+      padding: 16px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="controls">
+      <h1>ExtraTime Design System</h1>
+      <p class="subtitle">Interactive style guide for the betting app</p>
+
+      <div class="section">
+        <div class="section-title">Theme Presets</div>
+        <div class="presets">
+          <button class="preset-btn active" data-preset="vibrant">Vibrant</button>
+          <button class="preset-btn" data-preset="sporty">Sporty</button>
+          <button class="preset-btn" data-preset="neon">Neon</button>
+          <button class="preset-btn" data-preset="classic">Classic</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Theme Mode</div>
+        <div class="toggle-row">
+          <span class="control-label" style="margin: 0;">Dark Mode</span>
+          <label class="toggle">
+            <input type="checkbox" id="darkMode">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Core Colors</div>
+        <div class="color-row">
+          <input type="color" class="color-input" id="primaryColor" value="#6366f1">
+          <span class="color-name">Primary</span>
+          <span class="color-value" id="primaryValue">#6366f1</span>
+        </div>
+        <div class="color-row">
+          <input type="color" class="color-input" id="secondaryColor" value="#8b5cf6">
+          <span class="color-name">Secondary</span>
+          <span class="color-value" id="secondaryValue">#8b5cf6</span>
+        </div>
+        <div class="color-row">
+          <input type="color" class="color-input" id="accentColor" value="#f59e0b">
+          <span class="color-name">Accent</span>
+          <span class="color-value" id="accentValue">#f59e0b</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Semantic Colors</div>
+        <div class="color-row">
+          <input type="color" class="color-input" id="successColor" value="#10b981">
+          <span class="color-name">Success</span>
+          <span class="color-value" id="successValue">#10b981</span>
+        </div>
+        <div class="color-row">
+          <input type="color" class="color-input" id="warningColor" value="#f59e0b">
+          <span class="color-name">Warning</span>
+          <span class="color-value" id="warningValue">#f59e0b</span>
+        </div>
+        <div class="color-row">
+          <input type="color" class="color-input" id="errorColor" value="#ef4444">
+          <span class="color-name">Error</span>
+          <span class="color-value" id="errorValue">#ef4444</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Typography</div>
+        <div class="control-group">
+          <label class="control-label">Font Family</label>
+          <select id="fontFamily">
+            <option value="system">System Default</option>
+            <option value="inter">Inter</option>
+            <option value="poppins">Poppins</option>
+            <option value="space">Space Grotesk</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Base Size: <span id="baseSizeValue">16</span>px</label>
+          <input type="range" id="baseSize" min="14" max="20" value="16">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Spacing & Radius</div>
+        <div class="control-group">
+          <label class="control-label">Border Radius: <span id="radiusValue">12</span>px</label>
+          <input type="range" id="borderRadius" min="0" max="24" value="12">
+        </div>
+        <div class="control-group">
+          <label class="control-label">Card Shadow</label>
+          <select id="shadowStyle">
+            <option value="subtle">Subtle</option>
+            <option value="medium" selected>Medium</option>
+            <option value="strong">Strong</option>
+            <option value="glow">Glow Effect</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Gamification Style</div>
+        <div class="control-group">
+          <label class="control-label">Badge Style</label>
+          <select id="badgeStyle">
+            <option value="rounded">Rounded Pills</option>
+            <option value="square">Rounded Square</option>
+            <option value="sharp">Sharp Edges</option>
+          </select>
+        </div>
+        <div class="toggle-row">
+          <span class="control-label" style="margin: 0;">Animated Elements</span>
+          <label class="toggle">
+            <input type="checkbox" id="animations" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview" id="preview">
+      <!-- Color Palette -->
+      <div class="preview-section">
+        <div class="preview-title">Color Palette</div>
+        <div class="color-swatches" id="colorSwatches"></div>
+      </div>
+
+      <!-- Typography -->
+      <div class="preview-section">
+        <div class="preview-title">Typography Scale</div>
+        <div id="typographySamples"></div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="preview-section">
+        <div class="preview-title">Buttons</div>
+        <div class="buttons-row" id="buttonsRow"></div>
+      </div>
+
+      <!-- Cards -->
+      <div class="preview-section">
+        <div class="preview-title">Cards</div>
+        <div class="cards-grid" id="cardsGrid"></div>
+      </div>
+
+      <!-- Badges -->
+      <div class="preview-section">
+        <div class="preview-title">Badges & Chips</div>
+        <div class="badges-row" id="badgesRow"></div>
+      </div>
+
+      <!-- Inputs -->
+      <div class="preview-section">
+        <div class="preview-title">Input Fields</div>
+        <div id="inputsSection"></div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="preview-section">
+        <div class="preview-title">Achievement Badges</div>
+        <div class="achievement-grid" id="achievementsGrid"></div>
+      </div>
+
+      <!-- Gamification -->
+      <div class="preview-section">
+        <div class="preview-title">Gamification Elements</div>
+        <div id="gamificationSection"></div>
+      </div>
+
+      <!-- Animations -->
+      <div class="preview-section">
+        <div class="preview-title">Animations & Transitions</div>
+        <div class="animation-demos" id="animationDemos"></div>
+      </div>
+    </div>
+
+    <div class="prompt-output">
+      <div class="prompt-header">
+        <span class="prompt-title">Design System Prompt</span>
+        <button class="copy-btn" id="copyBtn">Copy to Clipboard</button>
+      </div>
+      <div class="prompt-text" id="promptText"></div>
+    </div>
+  </div>
+
+  <script>
+    // Default state
+    const DEFAULTS = {
+      preset: 'vibrant',
+      darkMode: false,
+      primaryColor: '#6366f1',
+      secondaryColor: '#8b5cf6',
+      accentColor: '#f59e0b',
+      successColor: '#10b981',
+      warningColor: '#f59e0b',
+      errorColor: '#ef4444',
+      fontFamily: 'system',
+      baseSize: 16,
+      borderRadius: 12,
+      shadowStyle: 'medium',
+      badgeStyle: 'rounded',
+      animations: true
+    };
+
+    // Presets
+    const PRESETS = {
+      vibrant: {
+        primaryColor: '#6366f1',
+        secondaryColor: '#8b5cf6',
+        accentColor: '#f59e0b',
+        successColor: '#10b981',
+        warningColor: '#f59e0b',
+        errorColor: '#ef4444'
+      },
+      sporty: {
+        primaryColor: '#059669',
+        secondaryColor: '#0891b2',
+        accentColor: '#eab308',
+        successColor: '#22c55e',
+        warningColor: '#f97316',
+        errorColor: '#dc2626'
+      },
+      neon: {
+        primaryColor: '#a855f7',
+        secondaryColor: '#ec4899',
+        accentColor: '#14b8a6',
+        successColor: '#22d3ee',
+        warningColor: '#fbbf24',
+        errorColor: '#f43f5e'
+      },
+      classic: {
+        primaryColor: '#2563eb',
+        secondaryColor: '#7c3aed',
+        accentColor: '#d97706',
+        successColor: '#16a34a',
+        warningColor: '#ca8a04',
+        errorColor: '#dc2626'
+      }
+    };
+
+    // Current state
+    const state = { ...DEFAULTS };
+
+    // Font stacks
+    const FONTS = {
+      system: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      inter: "'Inter', -apple-system, sans-serif",
+      poppins: "'Poppins', -apple-system, sans-serif",
+      space: "'Space Grotesk', -apple-system, sans-serif"
+    };
+
+    // DOM references
+    const preview = document.getElementById('preview');
+    const promptText = document.getElementById('promptText');
+    const copyBtn = document.getElementById('copyBtn');
+
+    // Initialize controls
+    function initControls() {
+      // Preset buttons
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyPreset(btn.dataset.preset);
+        });
+      });
+
+      // Dark mode toggle
+      document.getElementById('darkMode').addEventListener('change', (e) => {
+        state.darkMode = e.target.checked;
+        updateAll();
+      });
+
+      // Color inputs
+      ['primary', 'secondary', 'accent', 'success', 'warning', 'error'].forEach(color => {
+        const input = document.getElementById(`${color}Color`);
+        const value = document.getElementById(`${color}Value`);
+        input.addEventListener('input', (e) => {
+          state[`${color}Color`] = e.target.value;
+          value.textContent = e.target.value;
+          updateAll();
+        });
+      });
+
+      // Font family
+      document.getElementById('fontFamily').addEventListener('change', (e) => {
+        state.fontFamily = e.target.value;
+        updateAll();
+      });
+
+      // Base size
+      document.getElementById('baseSize').addEventListener('input', (e) => {
+        state.baseSize = parseInt(e.target.value);
+        document.getElementById('baseSizeValue').textContent = e.target.value;
+        updateAll();
+      });
+
+      // Border radius
+      document.getElementById('borderRadius').addEventListener('input', (e) => {
+        state.borderRadius = parseInt(e.target.value);
+        document.getElementById('radiusValue').textContent = e.target.value;
+        updateAll();
+      });
+
+      // Shadow style
+      document.getElementById('shadowStyle').addEventListener('change', (e) => {
+        state.shadowStyle = e.target.value;
+        updateAll();
+      });
+
+      // Badge style
+      document.getElementById('badgeStyle').addEventListener('change', (e) => {
+        state.badgeStyle = e.target.value;
+        updateAll();
+      });
+
+      // Animations toggle
+      document.getElementById('animations').addEventListener('change', (e) => {
+        state.animations = e.target.checked;
+        updateAll();
+      });
+
+      // Copy button
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(promptText.textContent).then(() => {
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.add('copied');
+          setTimeout(() => {
+            copyBtn.textContent = 'Copy to Clipboard';
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        });
+      });
+    }
+
+    function applyPreset(presetName) {
+      state.preset = presetName;
+      const preset = PRESETS[presetName];
+      Object.assign(state, preset);
+
+      // Update color inputs
+      ['primary', 'secondary', 'accent', 'success', 'warning', 'error'].forEach(color => {
+        document.getElementById(`${color}Color`).value = preset[`${color}Color`];
+        document.getElementById(`${color}Value`).textContent = preset[`${color}Color`];
+      });
+
+      updateAll();
+    }
+
+    function getShadow() {
+      const base = state.darkMode ? '0, 0, 0' : '0, 0, 0';
+      switch (state.shadowStyle) {
+        case 'subtle': return `0 2px 8px rgba(${base}, 0.1)`;
+        case 'medium': return `0 4px 16px rgba(${base}, 0.15)`;
+        case 'strong': return `0 8px 32px rgba(${base}, 0.25)`;
+        case 'glow': return `0 4px 24px ${state.primaryColor}40`;
+        default: return `0 4px 16px rgba(${base}, 0.15)`;
+      }
+    }
+
+    function getBadgeRadius() {
+      switch (state.badgeStyle) {
+        case 'rounded': return '20px';
+        case 'square': return `${state.borderRadius / 2}px`;
+        case 'sharp': return '4px';
+        default: return '20px';
+      }
+    }
+
+    function getThemeColors() {
+      if (state.darkMode) {
+        return {
+          bg: '#0f172a',
+          surface: '#1e293b',
+          surfaceAlt: '#334155',
+          text: '#f1f5f9',
+          textMuted: '#94a3b8',
+          border: '#475569'
+        };
+      }
+      return {
+        bg: '#f8fafc',
+        surface: '#ffffff',
+        surfaceAlt: '#f1f5f9',
+        text: '#0f172a',
+        textMuted: '#64748b',
+        border: '#e2e8f0'
+      };
+    }
+
+    function renderColorSwatches() {
+      const theme = getThemeColors();
+      const colors = [
+        { name: 'Primary', color: state.primaryColor },
+        { name: 'Secondary', color: state.secondaryColor },
+        { name: 'Accent', color: state.accentColor },
+        { name: 'Success', color: state.successColor },
+        { name: 'Warning', color: state.warningColor },
+        { name: 'Error', color: state.errorColor },
+        { name: 'Background', color: theme.bg },
+        { name: 'Surface', color: theme.surface }
+      ];
+
+      document.getElementById('colorSwatches').innerHTML = colors.map(c => `
+        <div class="swatch" style="background: ${theme.surface}; box-shadow: ${getShadow()}">
+          <div class="swatch-color" style="background: ${c.color}"></div>
+          <div class="swatch-info" style="color: ${theme.text}">
+            <div class="swatch-name">${c.name}</div>
+            <div class="swatch-hex">${c.color}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTypography() {
+      const theme = getThemeColors();
+      const sizes = [
+        { name: 'Display', size: state.baseSize * 2.5, weight: 700 },
+        { name: 'H1', size: state.baseSize * 2, weight: 700 },
+        { name: 'H2', size: state.baseSize * 1.5, weight: 600 },
+        { name: 'H3', size: state.baseSize * 1.25, weight: 600 },
+        { name: 'Body', size: state.baseSize, weight: 400 },
+        { name: 'Small', size: state.baseSize * 0.875, weight: 400 },
+        { name: 'Caption', size: state.baseSize * 0.75, weight: 500 }
+      ];
+
+      document.getElementById('typographySamples').innerHTML = sizes.map(s => `
+        <div class="typography-sample">
+          <div class="type-label" style="color: ${theme.textMuted}">${s.name} - ${s.size}px / ${s.weight}</div>
+          <div style="font-size: ${s.size}px; font-weight: ${s.weight}; color: ${theme.text}">
+            ExtraTime - Your Betting League
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderButtons() {
+      const theme = getThemeColors();
+      document.getElementById('buttonsRow').innerHTML = `
+        <button class="btn" style="
+          background: ${state.primaryColor};
+          color: white;
+          border-radius: ${state.borderRadius}px;
+        ">Primary</button>
+        <button class="btn" style="
+          background: ${state.secondaryColor};
+          color: white;
+          border-radius: ${state.borderRadius}px;
+        ">Secondary</button>
+        <button class="btn" style="
+          background: transparent;
+          color: ${state.primaryColor};
+          border: 2px solid ${state.primaryColor};
+          border-radius: ${state.borderRadius}px;
+        ">Outline</button>
+        <button class="btn" style="
+          background: ${theme.surfaceAlt};
+          color: ${theme.text};
+          border-radius: ${state.borderRadius}px;
+        ">Ghost</button>
+        <button class="btn" style="
+          background: ${state.accentColor};
+          color: #000;
+          border-radius: ${state.borderRadius}px;
+        ">Accent</button>
+      `;
+    }
+
+    function renderCards() {
+      const theme = getThemeColors();
+      document.getElementById('cardsGrid').innerHTML = `
+        <div class="card" style="background: ${theme.surface}; box-shadow: ${getShadow()}; border-radius: ${state.borderRadius}px;">
+          <div class="card-header" style="background: ${state.primaryColor}; color: white;">
+            <span style="font-weight: 600;">Premier League</span>
+            <span style="font-size: 12px; opacity: 0.9;">Matchday 15</span>
+          </div>
+          <div class="card-body" style="color: ${theme.text}; padding-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span>Manchester United</span>
+              <span style="font-weight: 700; font-size: 20px;">2</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Liverpool</span>
+              <span style="font-weight: 700; font-size: 20px;">1</span>
+            </div>
+          </div>
+          <div class="card-footer" style="background: ${theme.surfaceAlt}; color: ${theme.textMuted}; border-radius: 0 0 ${state.borderRadius}px ${state.borderRadius}px;">
+            <span>Final</span>
+            <span style="color: ${state.successColor}; font-weight: 600;">+3 pts</span>
+          </div>
+        </div>
+
+        <div class="card" style="background: ${theme.surface}; box-shadow: ${getShadow()}; border-radius: ${state.borderRadius}px;">
+          <div class="card-header" style="color: ${theme.text}; border-bottom: 1px solid ${theme.border};">
+            <span style="font-weight: 600;">Your Prediction</span>
+            <span style="background: ${state.accentColor}; color: #000; padding: 4px 8px; border-radius: ${getBadgeRadius()}; font-size: 11px; font-weight: 600;">PENDING</span>
+          </div>
+          <div class="card-body" style="color: ${theme.text}; padding-top: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center; justify-content: center;">
+              <input type="number" value="2" style="
+                width: 60px;
+                height: 60px;
+                text-align: center;
+                font-size: 24px;
+                font-weight: 700;
+                border: 2px solid ${theme.border};
+                border-radius: ${state.borderRadius}px;
+                background: ${theme.surfaceAlt};
+                color: ${theme.text};
+              ">
+              <span style="font-size: 20px; color: ${theme.textMuted};">-</span>
+              <input type="number" value="1" style="
+                width: 60px;
+                height: 60px;
+                text-align: center;
+                font-size: 24px;
+                font-weight: 700;
+                border: 2px solid ${theme.border};
+                border-radius: ${state.borderRadius}px;
+                background: ${theme.surfaceAlt};
+                color: ${theme.text};
+              ">
+            </div>
+          </div>
+          <div class="card-footer" style="justify-content: center; border-top: 1px solid ${theme.border};">
+            <button style="
+              background: ${state.primaryColor};
+              color: white;
+              border: none;
+              padding: 10px 32px;
+              border-radius: ${state.borderRadius}px;
+              font-weight: 600;
+              cursor: pointer;
+            ">Place Bet</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBadges() {
+      const theme = getThemeColors();
+      const badgeRadius = getBadgeRadius();
+
+      document.getElementById('badgesRow').innerHTML = `
+        <span class="badge" style="background: ${state.primaryColor}; color: white; border-radius: ${badgeRadius};">Active</span>
+        <span class="badge" style="background: ${state.successColor}; color: white; border-radius: ${badgeRadius};">Won</span>
+        <span class="badge" style="background: ${state.errorColor}; color: white; border-radius: ${badgeRadius};">Lost</span>
+        <span class="badge" style="background: ${state.accentColor}; color: #000; border-radius: ${badgeRadius};">Pending</span>
+        <span class="badge" style="background: ${theme.surfaceAlt}; color: ${theme.text}; border-radius: ${badgeRadius};">Default</span>
+        <span class="badge" style="background: transparent; color: ${state.primaryColor}; border: 2px solid ${state.primaryColor}; border-radius: ${badgeRadius};">Outline</span>
+      `;
+    }
+
+    function renderInputs() {
+      const theme = getThemeColors();
+
+      document.getElementById('inputsSection').innerHTML = `
+        <div class="input-group">
+          <label class="input-label" style="color: ${theme.text};">League Name</label>
+          <input type="text" class="text-input" placeholder="Enter league name..." style="
+            background: ${theme.surface};
+            color: ${theme.text};
+            border-color: ${theme.border};
+            border-radius: ${state.borderRadius}px;
+          ">
+        </div>
+        <div class="input-group">
+          <label class="input-label" style="color: ${theme.text};">Invite Code</label>
+          <input type="text" class="text-input" value="ABC123" style="
+            background: ${theme.surfaceAlt};
+            color: ${theme.text};
+            border-color: ${state.primaryColor};
+            border-radius: ${state.borderRadius}px;
+          ">
+        </div>
+      `;
+    }
+
+    function renderAchievements() {
+      const theme = getThemeColors();
+      const achievements = [
+        { icon: '🎯', name: 'First Bet', color: state.primaryColor },
+        { icon: '🔥', name: 'On Fire', color: state.errorColor },
+        { icon: '⭐', name: 'Perfect', color: state.accentColor },
+        { icon: '🏆', name: 'Champion', color: state.successColor },
+        { icon: '📈', name: 'Rising', color: state.secondaryColor },
+        { icon: '💎', name: 'Diamond', color: '#60a5fa' }
+      ];
+
+      document.getElementById('achievementsGrid').innerHTML = achievements.map(a => `
+        <div class="achievement" style="background: ${theme.surface}; box-shadow: ${getShadow()}; border-radius: ${state.borderRadius}px;">
+          <div class="achievement-icon" style="background: ${a.color}20;">
+            ${a.icon}
+          </div>
+          <div class="achievement-name" style="color: ${theme.text}">${a.name}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderGamification() {
+      const theme = getThemeColors();
+
+      document.getElementById('gamificationSection').innerHTML = `
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 24px;">
+          <div class="streak-display" style="background: linear-gradient(135deg, ${state.accentColor}, ${state.errorColor}); color: white;">
+            <span class="streak-icon">🔥</span>
+            <span>7 Day Streak!</span>
+          </div>
+
+          <div class="points-display" style="color: ${state.primaryColor}">
+            <span class="points-value">1,247</span>
+            <span class="points-label" style="color: ${theme.textMuted}">points</span>
+          </div>
+
+          <div class="level-badge" style="background: ${state.secondaryColor}20; color: ${state.secondaryColor};">
+            <span class="level-icon">👑</span>
+            <span>Level 12</span>
+          </div>
+        </div>
+
+        <div class="progress-container" style="max-width: 400px;">
+          <div class="progress-label" style="color: ${theme.text}">
+            <span>Progress to Level 13</span>
+            <span style="color: ${theme.textMuted}">750 / 1000 XP</span>
+          </div>
+          <div class="progress-bar" style="background: ${theme.surfaceAlt};">
+            <div class="progress-fill" style="width: 75%; background: linear-gradient(90deg, ${state.primaryColor}, ${state.secondaryColor});"></div>
+          </div>
+        </div>
+
+        <div class="progress-container" style="max-width: 400px;">
+          <div class="progress-label" style="color: ${theme.text}">
+            <span>Weekly Challenge</span>
+            <span style="color: ${state.successColor}">3 / 5 correct predictions</span>
+          </div>
+          <div class="progress-bar" style="background: ${theme.surfaceAlt};">
+            <div class="progress-fill" style="width: 60%; background: ${state.successColor};"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAnimations() {
+      const theme = getThemeColors();
+
+      document.getElementById('animationDemos').innerHTML = `
+        <div class="animation-box pulse" style="background: ${state.primaryColor}; color: white;">Pulse</div>
+        <div class="animation-box bounce" style="background: ${state.secondaryColor}; color: white;">Bounce</div>
+        <div class="animation-box shake" style="background: ${state.accentColor}; color: #000;">Shake</div>
+        <div class="animation-box glow" style="background: ${state.successColor}; color: white;">Glow</div>
+        <button class="confetti-trigger" id="confettiBtn" style="background: linear-gradient(135deg, ${state.primaryColor}, ${state.secondaryColor}); color: white;">
+          🎉 Celebrate!
+        </button>
+      `;
+
+      document.getElementById('confettiBtn').addEventListener('click', triggerConfetti);
+    }
+
+    function triggerConfetti() {
+      const colors = [state.primaryColor, state.secondaryColor, state.accentColor, state.successColor];
+      const confettiCount = 50;
+
+      for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti-piece';
+        confetti.style.cssText = `
+          left: ${Math.random() * 100}%;
+          top: -10px;
+          background: ${colors[Math.floor(Math.random() * colors.length)]};
+          border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+          transform: rotate(${Math.random() * 360}deg);
+        `;
+        document.body.appendChild(confetti);
+
+        const animation = confetti.animate([
+          { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+          { transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+        ], {
+          duration: 2000 + Math.random() * 1000,
+          easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          delay: Math.random() * 200
+        });
+
+        animation.onfinish = () => confetti.remove();
+      }
+    }
+
+    function renderPreview() {
+      const theme = getThemeColors();
+
+      preview.style.background = theme.bg;
+      preview.style.fontFamily = FONTS[state.fontFamily];
+      preview.style.fontSize = `${state.baseSize}px`;
+
+      document.querySelectorAll('.preview-title').forEach(el => {
+        el.style.color = theme.text;
+        el.style.borderColor = theme.border;
+      });
+
+      renderColorSwatches();
+      renderTypography();
+      renderButtons();
+      renderCards();
+      renderBadges();
+      renderInputs();
+      renderAchievements();
+      renderGamification();
+      renderAnimations();
+    }
+
+    function updatePrompt() {
+      const parts = [];
+
+      // Theme mode
+      parts.push(`Use a ${state.darkMode ? 'dark' : 'light'} theme`);
+
+      // Preset if not custom
+      if (state.preset !== 'vibrant') {
+        parts.push(`with a "${state.preset}" color palette`);
+      }
+
+      // Colors (only if different from preset)
+      const presetColors = PRESETS[state.preset];
+      const customColors = [];
+      if (state.primaryColor !== presetColors.primaryColor) customColors.push(`primary: ${state.primaryColor}`);
+      if (state.secondaryColor !== presetColors.secondaryColor) customColors.push(`secondary: ${state.secondaryColor}`);
+      if (state.accentColor !== presetColors.accentColor) customColors.push(`accent: ${state.accentColor}`);
+      if (customColors.length > 0) {
+        parts.push(`\n\nCustom colors: ${customColors.join(', ')}`);
+      }
+
+      // Typography
+      if (state.fontFamily !== DEFAULTS.fontFamily) {
+        parts.push(`\n\nTypography: Use ${state.fontFamily === 'system' ? 'system fonts' : state.fontFamily} font family`);
+      }
+      if (state.baseSize !== DEFAULTS.baseSize) {
+        parts.push(`with ${state.baseSize}px base font size`);
+      }
+
+      // Styling
+      const styleNotes = [];
+      if (state.borderRadius !== DEFAULTS.borderRadius) {
+        styleNotes.push(`${state.borderRadius}px border radius`);
+      }
+      if (state.shadowStyle !== DEFAULTS.shadowStyle) {
+        styleNotes.push(`${state.shadowStyle} shadow style`);
+      }
+      if (state.badgeStyle !== DEFAULTS.badgeStyle) {
+        styleNotes.push(`${state.badgeStyle} badge style`);
+      }
+      if (styleNotes.length > 0) {
+        parts.push(`\n\nStyling: ${styleNotes.join(', ')}`);
+      }
+
+      // Animations
+      if (!state.animations) {
+        parts.push(`\n\nNote: Minimize animations for reduced motion preference`);
+      }
+
+      const colorPalette = `
+Color Palette:
+- Primary: ${state.primaryColor} (main actions, links, active states)
+- Secondary: ${state.secondaryColor} (secondary actions, accents)
+- Accent: ${state.accentColor} (highlights, special elements, pending states)
+- Success: ${state.successColor} (wins, correct predictions, positive feedback)
+- Warning: ${state.warningColor} (caution states, deadlines)
+- Error: ${state.errorColor} (losses, errors, wrong predictions)
+${state.darkMode ? `
+Dark Theme Colors:
+- Background: #0f172a
+- Surface: #1e293b
+- Text: #f1f5f9
+- Muted: #94a3b8
+` : `
+Light Theme Colors:
+- Background: #f8fafc
+- Surface: #ffffff
+- Text: #0f172a
+- Muted: #64748b
+`}`;
+
+      const designSystem = `
+## ExtraTime Design System
+
+${parts.join(' ')}
+
+${colorPalette}
+
+### Design Principles
+1. **Playful & Gamified**: Duolingo-inspired celebrations, streaks, achievements
+2. **Sports-focused**: FotMob-style data presentation, match cards, scores
+3. **Social & Engaging**: Discord-like community feel, fun interactions
+
+### Component Guidelines
+- Cards: ${state.borderRadius}px radius, ${state.shadowStyle} shadow
+- Buttons: Bold, clear CTAs with hover lift effect
+- Badges: ${state.badgeStyle} style for status indicators
+- Progress bars: Gradient fills for engagement
+- Animations: ${state.animations ? 'Pulse, bounce, glow effects for celebrations' : 'Minimal, respect reduced motion'}
+
+### Gamification Elements
+- Streak counters with fire emoji and gradient backgrounds
+- Achievement badges with category icons
+- Level indicators with crown icons
+- Progress bars with gradient fills
+- Points display with large, bold numbers
+- Celebration animations (confetti on wins)
+`;
+
+      promptText.textContent = designSystem.trim();
+    }
+
+    function updateAll() {
+      renderPreview();
+      updatePrompt();
+    }
+
+    // Initialize
+    initControls();
+    updateAll();
+  </script>
+</body>
+</html>
