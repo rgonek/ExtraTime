@@ -1,7 +1,10 @@
 # ExtraTime - Betting App MVP Plan
 
 > **Detailed Plans:** Phase-specific detailed implementation plans are in separate files:
-> - `.claude/phase-1-detailed.md` - Project Foundation (Backend + Frontend setup)
+> - `.claude/plan/phase-1-detailed.md` - Project Foundation (Backend + Frontend setup)
+> - `.claude/plan/phase-7-detailed.md` - Bot System (Basic AI bots for league activity)
+> - `.claude/plan/phase-7.5-detailed.md` - Intelligent Stats-Based Bots (Configurable analytics bots)
+> - `.claude/plan/phase-9.5-detailed.md` - External Data Sources (xG, Odds, Injuries)
 > - Future phases will be planned iteratively before implementation
 
 ## Implementation Progress
@@ -22,6 +25,10 @@
 | Phase 6.4 | ✅ Complete | Leaderboard & Statistics |
 | Phase 6.5 | ✅ Complete | Gamification System |
 | Phase 6.6 | ✅ Complete | UX Polish & Dark Mode |
+| Phase 7 | ⬜ Pending | Bot System (Basic Bots) |
+| Phase 7.5 | ⬜ Pending | Intelligent Stats-Based Bots |
+| Phase 9 | ⬜ Pending | Extended Football Data (Standings, Lineups) |
+| Phase 9.5 | ⬜ Pending | External Data Sources (xG, Odds, Injuries) |
 
 ## Project Overview
 A social betting app (no real money) where friends create leagues, bet on football matches, and compete for points. Portfolio project showcasing frontend skills.
@@ -319,21 +326,68 @@ When adding Azure Functions/Service Bus:
 
 ---
 
-## Phase 7: Bot System
+## Phase 7: Bot System (Basic Bots)
 **Goal**: Add AI bots to make leagues feel active
+**Detailed Plan**: `.claude/plan/phase-7-detailed.md`
 
 ### Backend
 - [ ] Bot entity (name, avatar, betting strategy)
-- [ ] Predefined bot strategies:
+- [ ] LeagueBotMember join table
+- [ ] Predefined basic bot strategies:
   - Random bot
   - Home team favorer
   - Underdog supporter
-  - Stats-based predictor
-- [ ] Azure Function to place bot bets before deadline
+  - Draw predictor
+  - High scorer
+- [ ] BotBettingService to place bets
+- [ ] Background service (runs every 30 min during active hours)
+- [ ] Bot seeder (5 default bots)
 
 ### Frontend
 - [ ] Bot indicator on leaderboard
-- [ ] Option to add bots when creating league
+- [ ] Option to add bots when creating/editing league
+- [ ] League bots management tab
+
+---
+
+## Phase 7.5: Intelligent Stats-Based Bots
+**Goal**: Add configurable bots that use statistical analysis
+**Detailed Plan**: `.claude/plan/phase-7.5-detailed.md`
+**Prerequisite**: Phase 7 complete
+
+### Backend
+- [ ] TeamFormCache entity (cached team performance stats)
+- [ ] StatsAnalystConfig value object (configurable weights)
+- [ ] TeamFormCalculator service (calculates form from match history)
+- [ ] StatsAnalystStrategy implementation:
+  - Form analysis (last N matches)
+  - Home/away performance trends
+  - Goal scoring/conceding patterns
+  - Streak tracking
+  - High stakes detection (late season)
+- [ ] Form cache background service (refreshes every 4 hours)
+- [ ] 6 intelligent bot personalities:
+  - Stats Genius (balanced)
+  - Form Master (recent results focused)
+  - Fortress Fred (home advantage focused)
+  - Goal Hunter (high-scoring focused)
+  - Safe Steve (conservative)
+  - Chaos Carl (unpredictable)
+
+### Frontend
+- [ ] Bot strategy descriptions
+- [ ] Bot performance comparison view
+
+### Future (Phase 9)
+- Enhanced with standings data for position-based analysis
+- Head-to-head historical records
+- Derby/rivalry detection
+- **Lineup analysis** - detect weakened squads:
+  - Goalkeeper/defender changes
+  - Top scorer absence (-12% strength)
+  - Captain absence (-5% strength)
+  - Formation changes
+  - New bot: "Lineup Larry" (lineup-focused predictions)
 
 ---
 
@@ -362,12 +416,13 @@ When adding Azure Functions/Service Bus:
 
 ## Phase 9: Extended Football Data
 
-**Goal**: Sync additional Football-Data.org subresources for richer match display.
+**Goal**: Sync additional Football-Data.org subresources for richer match display and smarter bot predictions.
 
 ### New Entities
 - **Standing** - League table (position, team, points, wins, draws, losses, goals)
 - **Scorer** - Top scorers (player name, team, goals, assists, penalties)
-- **MatchSquad** / **MatchLineup** - Match lineups and substitutes
+- **MatchLineup** - Match lineups and substitutes
+- **TeamUsualLineup** - Cached typical starting XI for lineup comparison
 
 ### New Endpoints (Football-Data.org)
 - `GET /competitions/{id}/standings` - League standings
@@ -379,10 +434,107 @@ When adding Azure Functions/Service Bus:
 - `GET /api/competitions/{id}/scorers` - Top scorers list
 - `GET /api/matches/{id}/lineups` - Match squad/lineup data
 
+### Bot Integration (StatsAnalyst Enhancement)
+When this phase is complete, intelligent bots gain new analysis capabilities:
+
+**Standings-based analysis:**
+- League position gap detection (top 4 vs relegation)
+- Title race / relegation battle high stakes boost
+- Derby/rivalry detection (same city teams)
+
+**Lineup analysis (new):**
+- Goalkeeper change detection (-8% strength)
+- Central defender changes (-6% each)
+- Midfielder/forward rotation impact
+- Top scorer absence detection (-12% strength)
+- Captain absence detection (-5% strength)
+- Formation change detection (-3% strength)
+- New bot personality: "Lineup Larry" (heavy lineup weight)
+
+**Head-to-head analysis:**
+- Historical matchup records
+- Home/away dominance patterns
+
 ### Notes
 - Standings and scorers are subresources of the competition resource
 - Match lineups available via expanded match endpoint
 - This phase enables displaying league tables, top scorers, and match lineups in the UI
+- Bot lineup analysis requires TeamUsualLineup cache (calculated from recent matches)
+
+---
+
+## Phase 9.5: External Data Sources Integration
+
+**Goal**: Integrate free external data sources for enhanced bot predictions.
+**Detailed Plan**: `.claude/plan/phase-9.5-detailed.md`
+**Prerequisite**: Phase 9 complete
+
+### Data Sources
+
+| Source | Data Type | Sync Schedule | Limit |
+|--------|-----------|---------------|-------|
+| Understat | xG statistics | Daily 4 AM | None (scraping) |
+| Football-Data.co.uk | Betting odds | Weekly Monday | None (CSV files) |
+| API-Football | Injuries | On-demand | 100/day free |
+
+### New Entities
+- **TeamXgStats** - Team expected goals (xG, xGA, overperformance)
+- **MatchXgStats** - Per-match xG data
+- **MatchOdds** - Historical betting odds with implied probabilities
+- **TeamInjuries** - Aggregated injury status
+- **PlayerInjury** - Individual player injuries
+
+### Understat Integration (Primary)
+- [ ] Scrape xG data for supported leagues (PL, La Liga, Bundesliga, Serie A, Ligue 1)
+- [ ] Track: xG per match, xGA per match, xG overperformance
+- [ ] Calculate recent xG form (last 5 matches)
+- [ ] Background sync daily at 4 AM UTC
+
+### Football-Data.co.uk Integration (Primary)
+- [ ] Import historical betting odds from CSV files
+- [ ] Calculate implied probabilities (remove bookmaker margin)
+- [ ] Detect market favorite and confidence level
+- [ ] Track Over/Under 2.5 odds
+- [ ] Weekly sync on Monday
+
+### API-Football Integration (Optional - Limited)
+- [ ] Fetch injuries for teams in upcoming matches
+- [ ] Track key player injuries (top scorer, captain, GK)
+- [ ] Calculate injury impact score (0-100)
+- [ ] Respect 100 requests/day limit
+
+### Enhanced Bot Strategy
+New configuration weights for StatsAnalyst bots:
+- `XgWeight` (0.20) - Expected goals trend
+- `XgDefensiveWeight` (0.10) - xGA trend
+- `OddsWeight` (0.05) - Market consensus
+- `InjuryWeight` (0.05) - Squad availability
+
+### New Bot Personalities
+- 🔬 **Data Scientist** - Uses all available data sources
+- 📊 **xG Expert** - Heavy xG weighting (40%)
+- 💰 **Market Follower** - Follows betting odds (50%)
+- 🏥 **Injury Tracker** - Focuses on squad availability
+
+### Integration Health Monitoring
+- [ ] Track status of each external data source
+- [ ] Record sync success/failure with timestamps
+- [ ] Calculate success rate and consecutive failures
+- [ ] Detect stale data based on configurable thresholds
+- [ ] Allow manual enable/disable of integrations
+
+### Graceful Degradation
+- [ ] Bots check data availability before predictions
+- [ ] Redistribute weights when data sources unavailable
+- [ ] Fall back to simpler strategy if data quality < 50%
+- [ ] Log degradation warnings for monitoring
+
+### Admin Bot Management
+- [ ] CRUD operations for bots from admin panel
+- [ ] Configuration presets for easy bot creation
+- [ ] Custom weight configuration with sliders
+- [ ] Bot statistics (bets placed, avg points, leagues joined)
+- [ ] Activate/deactivate bots
 
 ---
 
@@ -444,7 +596,92 @@ LeagueStandings ✅
 - CurrentStreak, BestStreak, LastUpdatedAt
 
 Bots (Phase 7)
-- Id, Name, AvatarUrl, Strategy
+- Id, UserId (FK), Name, AvatarUrl, Strategy, Configuration (JSON)
+- IsActive, CreatedAt, LastBetPlacedAt
+
+LeagueBotMembers (Phase 7)
+- Id, LeagueId (FK), BotId (FK), AddedAt
+
+TeamFormCaches (Phase 7.5)
+- Id, TeamId (FK), CompetitionId (FK)
+- MatchesPlayed, Wins, Draws, Losses, GoalsScored, GoalsConceded
+- HomeMatchesPlayed, HomeWins, HomeGoalsScored, HomeGoalsConceded
+- AwayMatchesPlayed, AwayWins, AwayGoalsScored, AwayGoalsConceded
+- PointsPerMatch, GoalsPerMatch, GoalsConcededPerMatch
+- HomeWinRate, AwayWinRate, CurrentStreak, RecentForm
+- MatchesAnalyzed, CalculatedAt, LastMatchDate
+
+Standings (Phase 9)
+- Id, CompetitionId (FK), TeamId (FK), Season
+- Position, PlayedGames, Won, Draw, Lost
+- Points, GoalsFor, GoalsAgainst, GoalDifference
+- LastUpdatedAt
+
+Scorers (Phase 9)
+- Id, CompetitionId (FK), TeamId (FK), Season
+- PlayerName, PlayerId (external), Goals, Assists, Penalties
+- LastUpdatedAt
+
+MatchLineups (Phase 9)
+- Id, MatchId (FK), TeamId (FK)
+- Formation, GoalkeeperId, DefenderIds (JSON), MidfielderIds (JSON), ForwardIds (JSON)
+- SubstituteIds (JSON), Coach
+
+TeamUsualLineups (Phase 9 - for bot analysis)
+- Id, TeamId (FK), CompetitionId (FK)
+- UsualFormation, UsualGoalkeeper
+- UsualDefenders (JSON), UsualMidfielders (JSON), UsualForwards (JSON)
+- TopScorerId, TopScorerName, TopScorerGoals
+- CaptainId, CaptainName
+- MatchesAnalyzed, CalculatedAt
+
+TeamXgStats (Phase 9.5 - Understat)
+- Id, TeamId (FK), CompetitionId (FK), Season
+- XgFor, XgAgainst, XgDiff
+- XgPerMatch, XgAgainstPerMatch
+- GoalsScored, GoalsConceded
+- XgOverperformance, XgaOverperformance
+- RecentXgPerMatch, RecentXgAgainstPerMatch
+- MatchesPlayed, UnderstatTeamId, LastSyncedAt
+
+MatchXgStats (Phase 9.5 - Understat)
+- Id, MatchId (FK)
+- HomeXg, HomeShots, HomeShotsOnTarget
+- AwayXg, AwayShots, AwayShotsOnTarget
+- HomeXgWin, ActualHomeWin, XgMatchedResult
+- UnderstatMatchId, SyncedAt
+
+MatchOdds (Phase 9.5 - Football-Data.co.uk)
+- Id, MatchId (FK)
+- HomeWinOdds, DrawOdds, AwayWinOdds
+- HomeWinProbability, DrawProbability, AwayWinProbability
+- Over25Odds, Under25Odds, BttsYesOdds, BttsNoOdds
+- MarketFavorite, FavoriteConfidence
+- DataSource, ImportedAt
+
+TeamInjuries (Phase 9.5 - API-Football)
+- Id, TeamId (FK)
+- TotalInjured, KeyPlayersInjured
+- LongTermInjuries, ShortTermInjuries, Doubtful
+- InjuredPlayerNames (JSON)
+- TopScorerInjured, CaptainInjured, FirstChoiceGkInjured
+- InjuryImpactScore, LastSyncedAt
+
+PlayerInjuries (Phase 9.5 - API-Football)
+- Id, TeamId (FK)
+- ExternalPlayerId, PlayerName, Position, IsKeyPlayer
+- InjuryType, InjurySeverity, InjuryDate, ExpectedReturn
+- IsDoubtful, IsActive, LastUpdatedAt
+
+IntegrationStatuses (Phase 9.5 - Health Monitoring)
+- Id, IntegrationName
+- Health (enum: Unknown, Healthy, Degraded, Failed, Disabled)
+- LastSuccessfulSync, LastAttemptedSync, LastFailedSync
+- ConsecutiveFailures, TotalFailures24h, SuccessfulSyncs24h
+- LastErrorMessage, LastErrorDetails
+- DataFreshAsOf, StaleThreshold
+- IsManuallyDisabled, DisabledReason, DisabledBy, DisabledAt
+- CreatedAt, UpdatedAt
 ```
 
 ---
