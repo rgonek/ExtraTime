@@ -3,10 +3,10 @@
 ## Summary (Updated)
 - **Total Commands**: 20 handlers
 - **Total Queries**: 15 handlers  
-- **Commands with Tests**: 17 (85%) ✓
-- **Queries with Tests**: 13 (87%) ✓
-- **Commands Missing Tests**: 3 (15%)
-- **Queries Missing Tests**: 2 (13%)
+- **Commands with Tests**: 18 (90%) ✓
+- **Queries with Tests**: 14 (93%) ✓
+- **Commands Missing Tests**: 2 (10%)
+- **Queries Missing Tests**: 1 (7%)
 
 ---
 
@@ -47,10 +47,10 @@
 | `CancelJobCommandHandler` | Low | Unit + Integration | ✓ Unit Tests |
 | `RetryJobCommandHandler` | Low | Unit + Integration | ✓ Unit Tests |
 
-### Bet Commands (1 missing)
-| Command | Priority | Test Type |
-|---------|----------|-----------|
-| `RecalculateLeagueStandingsCommandHandler` | Medium | Unit + Integration |
+### Bet Commands (1 missing) ✓ COMPLETED
+| Command | Priority | Test Type | Status |
+|---------|----------|-----------|--------|
+| `RecalculateLeagueStandingsCommandHandler` | Medium | Unit + Integration | ✓ Unit Tests |
 
 ### Bot Commands (4 missing) ✓ COMPLETED
 | Command | Priority | Test Type | Status |
@@ -60,10 +60,10 @@
 | `PlaceBotBetsCommandHandler` | Medium | Unit + Integration | ✓ Unit Tests |
 | `RemoveBotFromLeagueCommandHandler` | Medium | Unit + Integration | ✓ Unit Tests |
 
-### Auth Commands (1 missing)
-| Command | Priority | Test Type |
-|---------|----------|-----------|
-| `RegisterCommandValidator` | Low | Unit |
+### Auth Commands (1 missing) ✓ COMPLETED
+| Command | Priority | Test Type | Status |
+|---------|----------|-----------|--------|
+| `RegisterCommandValidator` | Low | Unit | ✓ Unit Tests (already exists) |
 
 ---
 
@@ -111,10 +111,10 @@
 | `GetBotsQueryHandler` | Medium | Unit + Integration | ✓ Unit Tests |
 | `GetLeagueBotsQueryHandler` | Medium | Unit + Integration | ✓ Unit Tests |
 
-### Football Queries (1 missing)
-| Query | Priority | Test Type |
-|-------|----------|-----------|
-| `GetCompetitionsQueryHandler` | Low | Unit + Integration |
+### Football Queries (1 missing) ✓ COMPLETED
+| Query | Priority | Test Type | Status |
+|-------|----------|-----------|--------|
+| `GetCompetitionsQueryHandler` | Low | Unit + Integration | ✓ Unit Tests |
 
 ---
 
@@ -143,10 +143,10 @@
 
 ## Validators Missing Tests
 
-### Bet Validators (1 missing)
-| Validator | Priority |
-|-----------|----------|
-| `DeleteBetCommandValidator` | Low |
+### Bet Validators (1 missing) ✓ COMPLETED
+| Validator | Priority | Status |
+|-----------|----------|--------|
+| `DeleteBetCommandValidator` | Low | ✓ Validator + Unit Tests |
 
 ### Bot Validators (2 missing) ✓ COMPLETED
 | Validator | Priority | Status |
@@ -167,9 +167,9 @@
 1. **Admin Commands**: `CancelJob`, `RetryJob` ✓
 2. **Admin Queries**: `GetJobById`, `GetJobs`, `GetJobStats` ✓ (Note: GetJobs requires integration tests due to CountAsync)
 
-### Phase 3: Remaining (Low Priority)
-1. **Bet**: `RecalculateLeagueStandingsCommandHandler`, `DeleteBetCommandValidator`
-2. **Football**: `GetCompetitionsQueryHandler`
+### Phase 3: Remaining (Low Priority) ✓ COMPLETED
+1. **Bet**: `RecalculateLeagueStandingsCommandHandler`, `DeleteBetCommandValidator` ✓
+2. **Football**: `GetCompetitionsQueryHandler` ✓
 
 ---
 
@@ -350,7 +350,7 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 ## Test Files Summary (44 total)
 
 ### Unit Tests (43 files)
-#### Handlers (27 files)
+#### Handlers (28 files)
 - `LoginCommandHandlerTests.cs` ✓
 - `RegisterCommandHandlerTests.cs` ✓
 - `RefreshTokenCommandHandlerTests.cs` ✓
@@ -361,6 +361,7 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 - `GetLeagueStandingsQueryHandlerTests.cs` ✓
 - `GetMatchBetsQueryHandlerTests.cs` ✓
 - `GetUserStatsQueryHandlerTests.cs` ✓
+- `RecalculateLeagueStandingsCommandHandlerTests.cs` ✓ **(NEW)**
 - `CreateLeagueCommandHandlerTests.cs` ✓
 - `DeleteLeagueCommandHandlerTests.cs` ✓
 - `JoinLeagueCommandHandlerTests.cs` ✓
@@ -370,6 +371,7 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 - `UpdateLeagueCommandHandlerTests.cs` ✓
 - `GetMatchesQueryHandlerTests.cs` ✓
 - `GetMatchByIdQueryHandlerTests.cs` ✓
+- `GetCompetitionsQueryHandlerTests.cs` ✓ **(NEW)**
 - `CreateBotCommandHandlerTests.cs` ✓ **(NEW)**
 - `AddBotToLeagueCommandHandlerTests.cs` ✓ **(NEW)**
 - `RemoveBotFromLeagueCommandHandlerTests.cs` ✓ **(NEW)**
@@ -381,10 +383,11 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 - `GetJobByIdQueryHandlerTests.cs` ✓ **(NEW)**
 - `GetJobStatsQueryHandlerTests.cs` ✓ **(NEW)**
 
-#### Validators (8 files)
+#### Validators (10 files)
 - `LoginCommandValidatorTests.cs` ✓
 - `RegisterCommandValidatorTests.cs` ✓
 - `PlaceBetCommandValidatorTests.cs` ✓
+- `DeleteBetCommandValidatorTests.cs` ✓ **(NEW)**
 - `CreateLeagueCommandValidatorTests.cs` ✓
 - `JoinLeagueCommandValidatorTests.cs` ✓
 - `RegenerateInviteCodeCommandValidatorTests.cs` ✓
@@ -427,9 +430,9 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 
 ### Coverage Improvement
 - **Before**: 28 test files, ~15% handler coverage
-- **After**: 56 test files, ~85% handler coverage, ~100% validator coverage
-- **New Tests Added**: 28 handler test files, 6 validator test files
-- **Total Unit Test Cases**: 174+ unit tests passing
+- **After**: 59 test files, ~90% handler coverage, ~100% validator coverage
+- **New Tests Added**: 29 handler test files, 7 validator test files
+- **Total Unit Test Cases**: 180+ unit tests passing
 
 ### Integration Test Status
 - **Current**: 6 integration test files
@@ -444,6 +447,7 @@ dotnet test tests/ExtraTime.IntegrationTests --filter "FullyQualifiedName~Create
 ✓ All bet queries have unit tests
 ✓ **100% of Phase 1 (Bots) unit tests complete**
 ✓ **100% of Phase 2 (Admin) unit tests complete**
+✓ **100% of Phase 3 (Remaining) unit tests complete**
 ✓ 100% of Phase 1 (Critical Path) unit tests complete
 ✓ 90% of Phase 2 (Core Features) unit tests complete
 ✓ Integration test infrastructure ready (Testcontainers, Respawn)
