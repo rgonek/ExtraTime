@@ -383,3 +383,252 @@ public sealed class BetBuilder
         return bet;
     }
 }
+
+public sealed class BotBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private Guid _userId = Guid.NewGuid();
+    private string _name = new Faker().Name.FirstName() + "Bot";
+    private string? _avatarUrl = null;
+    private BotStrategy _strategy = BotStrategy.Random;
+    private string? _configuration = null;
+    private bool _isActive = true;
+    private DateTime _createdAt = Clock.UtcNow;
+    private DateTime? _lastBetPlacedAt = null;
+
+    public BotBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public BotBuilder WithUserId(Guid userId)
+    {
+        _userId = userId;
+        return this;
+    }
+
+    public BotBuilder WithName(string name)
+    {
+        _name = name;
+        return this;
+    }
+
+    public BotBuilder WithAvatarUrl(string? avatarUrl)
+    {
+        _avatarUrl = avatarUrl;
+        return this;
+    }
+
+    public BotBuilder WithStrategy(BotStrategy strategy)
+    {
+        _strategy = strategy;
+        return this;
+    }
+
+    public BotBuilder WithConfiguration(string? configuration)
+    {
+        _configuration = configuration;
+        return this;
+    }
+
+    public BotBuilder WithIsActive(bool isActive)
+    {
+        _isActive = isActive;
+        return this;
+    }
+
+    public BotBuilder WithCreatedAt(DateTime createdAt)
+    {
+        _createdAt = createdAt;
+        return this;
+    }
+
+    public BotBuilder WithLastBetPlacedAt(DateTime? lastBetPlacedAt)
+    {
+        _lastBetPlacedAt = lastBetPlacedAt;
+        return this;
+    }
+
+    public Bot Build()
+    {
+        return new Bot
+        {
+            Id = _id,
+            UserId = _userId,
+            Name = _name,
+            AvatarUrl = _avatarUrl,
+            Strategy = _strategy,
+            Configuration = _configuration,
+            IsActive = _isActive,
+            CreatedAt = _createdAt,
+            LastBetPlacedAt = _lastBetPlacedAt
+        };
+    }
+}
+
+public sealed class LeagueBotMemberBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private Guid _leagueId = Guid.NewGuid();
+    private Guid _botId = Guid.NewGuid();
+    private DateTime _addedAt = Clock.UtcNow;
+
+    public LeagueBotMemberBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public LeagueBotMemberBuilder WithLeagueId(Guid leagueId)
+    {
+        _leagueId = leagueId;
+        return this;
+    }
+
+    public LeagueBotMemberBuilder WithBotId(Guid botId)
+    {
+        _botId = botId;
+        return this;
+    }
+
+    public LeagueBotMemberBuilder WithAddedAt(DateTime addedAt)
+    {
+        _addedAt = addedAt;
+        return this;
+    }
+
+    public LeagueBotMember Build()
+    {
+        return new LeagueBotMember
+        {
+            Id = _id,
+            LeagueId = _leagueId,
+            BotId = _botId,
+            AddedAt = _addedAt
+        };
+    }
+}
+
+public sealed class BackgroundJobBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private string _jobType = "TestJob";
+    private JobStatus _status = JobStatus.Pending;
+    private string? _payload = null;
+    private string? _result = null;
+    private string? _error = null;
+    private int _retryCount = 0;
+    private int _maxRetries = 3;
+    private DateTime _createdAt = Clock.UtcNow;
+    private DateTime? _startedAt = null;
+    private DateTime? _completedAt = null;
+    private DateTime? _scheduledAt = null;
+    private Guid? _createdByUserId = null;
+    private string? _correlationId = null;
+
+    public BackgroundJobBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithJobType(string jobType)
+    {
+        _jobType = jobType;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithStatus(JobStatus status)
+    {
+        _status = status;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithPayload(string? payload)
+    {
+        _payload = payload;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithResult(string? result)
+    {
+        _result = result;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithError(string? error)
+    {
+        _error = error;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithRetryCount(int retryCount)
+    {
+        _retryCount = retryCount;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithMaxRetries(int maxRetries)
+    {
+        _maxRetries = maxRetries;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithCreatedAt(DateTime createdAt)
+    {
+        _createdAt = createdAt;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithStartedAt(DateTime? startedAt)
+    {
+        _startedAt = startedAt;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithCompletedAt(DateTime? completedAt)
+    {
+        _completedAt = completedAt;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithScheduledAt(DateTime? scheduledAt)
+    {
+        _scheduledAt = scheduledAt;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithCreatedByUserId(Guid? createdByUserId)
+    {
+        _createdByUserId = createdByUserId;
+        return this;
+    }
+
+    public BackgroundJobBuilder WithCorrelationId(string? correlationId)
+    {
+        _correlationId = correlationId;
+        return this;
+    }
+
+    public BackgroundJob Build()
+    {
+        return new BackgroundJob
+        {
+            Id = _id,
+            JobType = _jobType,
+            Status = _status,
+            Payload = _payload,
+            Result = _result,
+            Error = _error,
+            RetryCount = _retryCount,
+            MaxRetries = _maxRetries,
+            CreatedAt = _createdAt,
+            StartedAt = _startedAt,
+            CompletedAt = _completedAt,
+            ScheduledAt = _scheduledAt,
+            CreatedByUserId = _createdByUserId,
+            CorrelationId = _correlationId
+        };
+    }
+}
