@@ -115,6 +115,12 @@ public sealed class LeagueBuilder
         return this;
     }
 
+    public LeagueBuilder WithBettingDeadlineMinutes(int minutes)
+    {
+        _bettingDeadlineMinutes = minutes;
+        return this;
+    }
+
     private Guid[]? _allowedCompetitionIds = null;
 
     public LeagueBuilder WithAllowedCompetitions(params Guid[] competitionIds)
