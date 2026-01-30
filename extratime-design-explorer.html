@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExtraTime Design System Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ui-bg: #1a1a2e;
+      --ui-surface: #16213e;
+      --ui-border: #2a2a4a;
+      --ui-text: #e8e8f0;
+      --ui-text-muted: #8888aa;
+      --ui-accent: #4f46e5;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--ui-border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header .subtitle {
+      color: var(--ui-text-muted);
+      font-size: 14px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .controls {
+      background: var(--ui-surface);
+      border-right: 1px solid var(--ui-border);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .control-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ui-text-muted);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--ui-border);
+    }
+
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-label {
+      font-size: 13px;
+      color: var(--ui-text);
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      padding: 10px 12px;
+      border: 1px solid var(--ui-border);
+      border-radius: 8px;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--ui-accent);
+      background: rgba(79, 70, 229, 0.1);
+    }
+
+    .preset-btn.active {
+      border-color: var(--ui-accent);
+      background: rgba(79, 70, 229, 0.2);
+    }
+
+    .preset-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .preset-desc {
+      font-size: 10px;
+      color: var(--ui-text-muted);
+    }
+
+    .theme-toggle {
+      display: flex;
+      background: var(--ui-bg);
+      border-radius: 8px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .theme-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ui-text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .theme-btn.active {
+      background: var(--ui-accent);
+      color: white;
+    }
+
+    select, input[type="range"] {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--ui-border);
+      border-radius: 6px;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      font-size: 13px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--ui-accent);
+      cursor: pointer;
+    }
+
+    .slider-value {
+      font-size: 12px;
+      color: var(--ui-accent);
+      font-family: monospace;
+    }
+
+    .preview-area {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .preview-container {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .preview-section {
+      margin-bottom: 48px;
+    }
+
+    .preview-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(128,128,128,0.2);
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .swatch-label {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .typography-scale {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .type-sample {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+
+    .type-meta {
+      font-size: 11px;
+      opacity: 0.5;
+      min-width: 80px;
+      font-family: monospace;
+    }
+
+    .components-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .btn-preview {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-preview:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid;
+    }
+
+    .btn-ghost {
+      background: transparent;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .avatar-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .avatar {
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: white;
+    }
+
+    .progress-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .streak-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .streak-icon {
+      font-size: 20px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .match-card {
+      padding: 20px;
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .match-teams {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .team-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .team-name {
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .match-vs {
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .match-footer {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(128,128,128,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bet-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bet-input {
+      width: 48px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .league-card {
+      padding: 20px;
+    }
+
+    .league-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .league-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .league-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .league-info p {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .league-stats {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    .leaderboard-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+
+    .rank {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .player-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .player-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: white;
+    }
+
+    .player-name {
+      font-weight: 500;
+    }
+
+    .player-streak {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .player-points {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .achievement-grid {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .achievement {
+      width: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .achievement-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      position: relative;
+    }
+
+    .achievement-icon.locked {
+      opacity: 0.4;
+      filter: grayscale(1);
+    }
+
+    .achievement-name {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .level-indicator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-radius: 12px;
+    }
+
+    .level-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .level-info {
+      flex: 1;
+    }
+
+    .level-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .level-progress {
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .level-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .xp-text {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .points-animation {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: 700;
+      animation: pointsBounce 0.5s ease-out;
+    }
+
+    @keyframes pointsBounce {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .output-area {
+      border-top: 1px solid var(--ui-border);
+      padding: 20px;
+      background: var(--ui-surface);
+    }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .output-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ui-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .copy-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: var(--ui-accent);
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover {
+      opacity: 0.9;
+    }
+
+    .copy-btn.copied {
+      background: #10b981;
+    }
+
+    .output-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .output-tab {
+      padding: 6px 12px;
+      border: 1px solid var(--ui-border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ui-text-muted);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .output-tab.active {
+      background: var(--ui-accent);
+      border-color: var(--ui-accent);
+      color: white;
+    }
+
+    .output-content {
+      background: var(--ui-bg);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ExtraTime Design System</h1>
+    <span class="subtitle">Interactive Style Explorer</span>
+  </header>
+
+  <div class="container">
+    <div class="controls">
+      <div class="control-group">
+        <div class="control-group-title">Theme Mode</div>
+        <div class="theme-toggle">
+          <button class="theme-btn active" data-theme="light">Light</button>
+          <button class="theme-btn" data-theme="dark">Dark</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">Design Presets</div>
+        <div class="preset-grid">
+          <button class="preset-btn active" data-preset="vibrant">
+            <div class="preset-name">Vibrant Sports</div>
+            <div class="preset-desc">Bold, energetic, sports-focused</div>
+          </button>
+          <button class="preset-btn" data-preset="duolingo">
+            <div class="preset-name">Duolingo Style</div>
+            <div class="preset-desc">Playful, gamified, friendly</div>
+          </button>
+          <button class="preset-btn" data-preset="discord">
+            <div class="preset-name">Discord Style</div>
+            <div class="preset-desc">Modern, sleek, community</div>
+          </button>
+          <button class="preset-btn" data-preset="minimal">
+            <div class="preset-name">Modern Minimal</div>
+            <div class="preset-desc">Clean, sophisticated, subtle</div>
+          </button>
+          <button class="preset-btn" data-preset="fotmob">
+            <div class="preset-name">FotMob Style</div>
+            <div class="preset-desc">Data-rich, professional</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">Border Radius</div>
+        <div class="control-row">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="control-label">Card Radius</span>
+            <span class="slider-value" id="radiusValue">16px</span>
+          </div>
+          <input type="range" id="radiusSlider" min="0" max="24" value="16">
+        </div>
+        <div class="control-row">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="control-label">Button Radius</span>
+            <span class="slider-value" id="btnRadiusValue">8px</span>
+          </div>
+          <input type="range" id="btnRadiusSlider" min="0" max="24" value="8">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">Shadows</div>
+        <div class="control-row">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="control-label">Shadow Intensity</span>
+            <span class="slider-value" id="shadowValue">Medium</span>
+          </div>
+          <input type="range" id="shadowSlider" min="0" max="3" value="2">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">Typography</div>
+        <div class="control-row">
+          <span class="control-label">Font Family</span>
+          <select id="fontSelect">
+            <option value="system">System (San Francisco/Segoe)</option>
+            <option value="inter">Inter</option>
+            <option value="poppins">Poppins</option>
+            <option value="nunito">Nunito</option>
+            <option value="space-grotesk">Space Grotesk</option>
+            <option value="plus-jakarta">Plus Jakarta Sans</option>
+            <option value="dm-sans">DM Sans</option>
+            <option value="outfit">Outfit</option>
+            <option value="manrope">Manrope</option>
+            <option value="rubik">Rubik</option>
+            <option value="geist">Geist</option>
+            <option value="sora">Sora</option>
+          </select>
+        </div>
+        <div class="control-row">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="control-label">Base Size</span>
+            <span class="slider-value" id="fontSizeValue">16px</span>
+          </div>
+          <input type="range" id="fontSizeSlider" min="14" max="18" value="16">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-group-title">Accent Hue</div>
+        <div class="control-row">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="control-label">Primary Hue</span>
+            <span class="slider-value" id="hueValue">142</span>
+          </div>
+          <input type="range" id="hueSlider" min="0" max="360" value="142">
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <div class="preview-container" id="preview">
+        <!-- Colors Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Color Palette</div>
+          <div class="color-palette" id="colorPalette"></div>
+        </div>
+
+        <!-- Typography Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Typography Scale</div>
+          <div class="typography-scale" id="typographyScale"></div>
+        </div>
+
+        <!-- Buttons Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Buttons</div>
+          <div class="components-grid" id="buttonsPreview"></div>
+        </div>
+
+        <!-- Badges Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Badges & Status</div>
+          <div class="badge-row" id="badgesPreview"></div>
+        </div>
+
+        <!-- Avatars Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Avatars</div>
+          <div class="avatar-row" id="avatarsPreview"></div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Progress Bars</div>
+          <div class="progress-container" id="progressPreview"></div>
+        </div>
+
+        <!-- Streak Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Streak Counter</div>
+          <div id="streakPreview"></div>
+        </div>
+
+        <!-- Achievements Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Achievement Badges</div>
+          <div class="achievement-grid" id="achievementsPreview"></div>
+        </div>
+
+        <!-- Level Indicator Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Level Indicator</div>
+          <div id="levelPreview"></div>
+        </div>
+
+        <!-- Points Animation Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Points Animation</div>
+          <div id="pointsPreview"></div>
+        </div>
+
+        <!-- Cards Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Sample Cards</div>
+          <div class="cards-grid" id="cardsPreview"></div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div class="preview-section">
+          <div class="preview-section-title">Leaderboard Row</div>
+          <div id="leaderboardPreview"></div>
+        </div>
+      </div>
+
+      <div class="output-area">
+        <div class="output-header">
+          <span class="output-title">Design Specification</span>
+          <button class="copy-btn" id="copyBtn">Copy to Clipboard</button>
+        </div>
+        <div class="output-tabs">
+          <button class="output-tab active" data-tab="prompt">Prompt</button>
+          <button class="output-tab" data-tab="tailwind">Tailwind Config</button>
+          <button class="output-tab" data-tab="css">CSS Variables</button>
+        </div>
+        <div class="output-content" id="outputContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Presets configuration
+    const presets = {
+      vibrant: {
+        name: 'Vibrant Sports',
+        light: {
+          bg: '#ffffff',
+          surface: '#f8fafc',
+          surfaceElevated: '#ffffff',
+          border: '#e2e8f0',
+          text: '#0f172a',
+          textMuted: '#64748b',
+          primary: '#10b981',
+          primaryHover: '#059669',
+          secondary: '#3b82f6',
+          accent: '#f59e0b',
+          success: '#22c55e',
+          warning: '#eab308',
+          error: '#ef4444',
+          info: '#06b6d4'
+        },
+        dark: {
+          bg: '#0f172a',
+          surface: '#1e293b',
+          surfaceElevated: '#334155',
+          border: '#334155',
+          text: '#f1f5f9',
+          textMuted: '#94a3b8',
+          primary: '#10b981',
+          primaryHover: '#34d399',
+          secondary: '#3b82f6',
+          accent: '#f59e0b',
+          success: '#22c55e',
+          warning: '#eab308',
+          error: '#ef4444',
+          info: '#06b6d4'
+        },
+        radius: 16,
+        btnRadius: 10,
+        shadow: 2,
+        font: 'system',
+        fontSize: 16,
+        hue: 158
+      },
+      duolingo: {
+        name: 'Duolingo Style',
+        light: {
+          bg: '#ffffff',
+          surface: '#f7f7f7',
+          surfaceElevated: '#ffffff',
+          border: '#e5e5e5',
+          text: '#3c3c3c',
+          textMuted: '#777777',
+          primary: '#58cc02',
+          primaryHover: '#46a302',
+          secondary: '#1cb0f6',
+          accent: '#ff9600',
+          success: '#58cc02',
+          warning: '#ff9600',
+          error: '#ff4b4b',
+          info: '#1cb0f6'
+        },
+        dark: {
+          bg: '#131f24',
+          surface: '#1a2f38',
+          surfaceElevated: '#233d49',
+          border: '#37464f',
+          text: '#ffffff',
+          textMuted: '#afafaf',
+          primary: '#58cc02',
+          primaryHover: '#89e219',
+          secondary: '#1cb0f6',
+          accent: '#ff9600',
+          success: '#58cc02',
+          warning: '#ff9600',
+          error: '#ff4b4b',
+          info: '#1cb0f6'
+        },
+        radius: 16,
+        btnRadius: 12,
+        shadow: 2,
+        font: 'nunito',
+        fontSize: 16,
+        hue: 100
+      },
+      discord: {
+        name: 'Discord Style',
+        light: {
+          bg: '#ffffff',
+          surface: '#f2f3f5',
+          surfaceElevated: '#ffffff',
+          border: '#e3e5e8',
+          text: '#060607',
+          textMuted: '#4e5058',
+          primary: '#5865f2',
+          primaryHover: '#4752c4',
+          secondary: '#23a55a',
+          accent: '#eb459e',
+          success: '#23a55a',
+          warning: '#f0b232',
+          error: '#da373c',
+          info: '#5865f2'
+        },
+        dark: {
+          bg: '#313338',
+          surface: '#2b2d31',
+          surfaceElevated: '#404249',
+          border: '#3f4147',
+          text: '#f2f3f5',
+          textMuted: '#b5bac1',
+          primary: '#5865f2',
+          primaryHover: '#7289da',
+          secondary: '#23a55a',
+          accent: '#eb459e',
+          success: '#23a55a',
+          warning: '#f0b232',
+          error: '#da373c',
+          info: '#5865f2'
+        },
+        radius: 8,
+        btnRadius: 4,
+        shadow: 1,
+        font: 'system',
+        fontSize: 16,
+        hue: 235
+      },
+      minimal: {
+        name: 'Modern Minimal',
+        light: {
+          bg: '#ffffff',
+          surface: '#fafafa',
+          surfaceElevated: '#ffffff',
+          border: '#eaeaea',
+          text: '#171717',
+          textMuted: '#666666',
+          primary: '#000000',
+          primaryHover: '#333333',
+          secondary: '#666666',
+          accent: '#0070f3',
+          success: '#0070f3',
+          warning: '#f5a623',
+          error: '#e00',
+          info: '#0070f3'
+        },
+        dark: {
+          bg: '#000000',
+          surface: '#111111',
+          surfaceElevated: '#1a1a1a',
+          border: '#333333',
+          text: '#ededed',
+          textMuted: '#888888',
+          primary: '#ffffff',
+          primaryHover: '#cccccc',
+          secondary: '#888888',
+          accent: '#0070f3',
+          success: '#0070f3',
+          warning: '#f5a623',
+          error: '#e00',
+          info: '#0070f3'
+        },
+        radius: 8,
+        btnRadius: 6,
+        shadow: 1,
+        font: 'inter',
+        fontSize: 15,
+        hue: 210
+      },
+      fotmob: {
+        name: 'FotMob Style',
+        light: {
+          bg: '#f5f5f5',
+          surface: '#ffffff',
+          surfaceElevated: '#ffffff',
+          border: '#e0e0e0',
+          text: '#1a1a1a',
+          textMuted: '#666666',
+          primary: '#1a73e8',
+          primaryHover: '#1557b0',
+          secondary: '#34a853',
+          accent: '#ea4335',
+          success: '#34a853',
+          warning: '#fbbc04',
+          error: '#ea4335',
+          info: '#1a73e8'
+        },
+        dark: {
+          bg: '#121212',
+          surface: '#1e1e1e',
+          surfaceElevated: '#2d2d2d',
+          border: '#3d3d3d',
+          text: '#ffffff',
+          textMuted: '#a0a0a0',
+          primary: '#8ab4f8',
+          primaryHover: '#aecbfa',
+          secondary: '#81c995',
+          accent: '#f28b82',
+          success: '#81c995',
+          warning: '#fdd663',
+          error: '#f28b82',
+          info: '#8ab4f8'
+        },
+        radius: 12,
+        btnRadius: 8,
+        shadow: 1,
+        font: 'system',
+        fontSize: 14,
+        hue: 217
+      }
+    };
+
+    // State
+    const state = {
+      theme: 'light',
+      preset: 'vibrant',
+      radius: 16,
+      btnRadius: 10,
+      shadow: 2,
+      font: 'system',
+      fontSize: 16,
+      hue: 158,
+      outputTab: 'prompt'
+    };
+
+    const fonts = {
+      system: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      inter: '"Inter", -apple-system, sans-serif',
+      poppins: '"Poppins", -apple-system, sans-serif',
+      nunito: '"Nunito", -apple-system, sans-serif',
+      'space-grotesk': '"Space Grotesk", -apple-system, sans-serif',
+      'plus-jakarta': '"Plus Jakarta Sans", -apple-system, sans-serif',
+      'dm-sans': '"DM Sans", -apple-system, sans-serif',
+      outfit: '"Outfit", -apple-system, sans-serif',
+      manrope: '"Manrope", -apple-system, sans-serif',
+      rubik: '"Rubik", -apple-system, sans-serif',
+      geist: '"Geist", -apple-system, sans-serif',
+      sora: '"Sora", -apple-system, sans-serif'
+    };
+
+    const shadowLevels = ['None', 'Subtle', 'Medium', 'Pronounced'];
+
+    function getColors() {
+      const preset = presets[state.preset];
+      return state.theme === 'light' ? preset.light : preset.dark;
+    }
+
+    function getShadow(level = state.shadow) {
+      const colors = getColors();
+      const isDark = state.theme === 'dark';
+      const alpha = isDark ? 0.4 : 0.1;
+
+      switch(level) {
+        case 0: return 'none';
+        case 1: return `0 1px 3px rgba(0,0,0,${alpha})`;
+        case 2: return `0 4px 12px rgba(0,0,0,${alpha * 1.5})`;
+        case 3: return `0 8px 24px rgba(0,0,0,${alpha * 2})`;
+        default: return 'none';
+      }
+    }
+
+    function renderColorPalette() {
+      const colors = getColors();
+      const palette = document.getElementById('colorPalette');
+
+      const colorDefs = [
+        { key: 'primary', label: 'Primary' },
+        { key: 'secondary', label: 'Secondary' },
+        { key: 'accent', label: 'Accent' },
+        { key: 'success', label: 'Success' },
+        { key: 'warning', label: 'Warning' },
+        { key: 'error', label: 'Error' },
+        { key: 'surface', label: 'Surface' },
+        { key: 'text', label: 'Text' }
+      ];
+
+      palette.innerHTML = colorDefs.map(c => `
+        <div class="color-swatch">
+          <div class="swatch" style="background: ${colors[c.key]}"></div>
+          <div class="swatch-label">${c.label}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTypography() {
+      const colors = getColors();
+      const scale = document.getElementById('typographyScale');
+      const baseSize = state.fontSize;
+
+      const sizes = [
+        { name: 'H1', size: baseSize * 2.25, weight: 700 },
+        { name: 'H2', size: baseSize * 1.875, weight: 600 },
+        { name: 'H3', size: baseSize * 1.5, weight: 600 },
+        { name: 'H4', size: baseSize * 1.25, weight: 600 },
+        { name: 'Body', size: baseSize, weight: 400 },
+        { name: 'Small', size: baseSize * 0.875, weight: 400 },
+        { name: 'Caption', size: baseSize * 0.75, weight: 500 }
+      ];
+
+      scale.innerHTML = sizes.map(s => `
+        <div class="type-sample">
+          <span class="type-meta">${s.name} ${Math.round(s.size)}px</span>
+          <span style="font-size: ${s.size}px; font-weight: ${s.weight}; color: ${colors.text}">
+            The quick brown fox
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function renderButtons() {
+      const colors = getColors();
+      const container = document.getElementById('buttonsPreview');
+
+      container.innerHTML = `
+        <button class="btn-preview" style="
+          background: ${colors.primary};
+          color: white;
+          border-radius: ${state.btnRadius}px;
+          box-shadow: ${getShadow(1)};
+        ">Primary Button</button>
+        <button class="btn-preview btn-secondary" style="
+          border-color: ${colors.primary};
+          color: ${colors.primary};
+          border-radius: ${state.btnRadius}px;
+        ">Secondary</button>
+        <button class="btn-preview btn-ghost" style="
+          color: ${colors.primary};
+          border-radius: ${state.btnRadius}px;
+        ">Ghost Button</button>
+        <button class="btn-preview" style="
+          background: ${colors.success};
+          color: white;
+          border-radius: ${state.btnRadius}px;
+        ">Place Bet</button>
+      `;
+    }
+
+    function renderBadges() {
+      const colors = getColors();
+      const container = document.getElementById('badgesPreview');
+
+      container.innerHTML = `
+        <span class="badge" style="background: ${colors.success}20; color: ${colors.success}">Live</span>
+        <span class="badge" style="background: ${colors.primary}20; color: ${colors.primary}">Premier League</span>
+        <span class="badge" style="background: ${colors.accent}20; color: ${colors.accent}">+3 pts</span>
+        <span class="badge" style="background: ${colors.warning}20; color: ${colors.warning}">Pending</span>
+        <span class="badge" style="background: ${colors.error}20; color: ${colors.error}">Missed</span>
+      `;
+    }
+
+    function renderAvatars() {
+      const colors = getColors();
+      const container = document.getElementById('avatarsPreview');
+
+      const avatarColors = [colors.primary, colors.secondary, colors.accent, colors.success];
+      const initials = ['JD', 'MK', 'AS', 'TR'];
+      const sizes = [32, 40, 48, 56];
+
+      container.innerHTML = sizes.map((s, i) => `
+        <div class="avatar" style="
+          width: ${s}px;
+          height: ${s}px;
+          background: ${avatarColors[i]};
+          font-size: ${s * 0.4}px;
+        ">${initials[i]}</div>
+      `).join('');
+    }
+
+    function renderProgress() {
+      const colors = getColors();
+      const container = document.getElementById('progressPreview');
+
+      container.innerHTML = `
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; color: ${colors.textMuted}">
+            <span>Weekly Challenge</span>
+            <span>7/10 bets</span>
+          </div>
+          <div class="progress-bar" style="background: ${colors.border}">
+            <div class="progress-fill" style="width: 70%; background: ${colors.primary}"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; color: ${colors.textMuted}">
+            <span>Level Progress</span>
+            <span>1,250/2,000 XP</span>
+          </div>
+          <div class="progress-bar" style="background: ${colors.border}">
+            <div class="progress-fill" style="width: 62%; background: linear-gradient(90deg, ${colors.primary}, ${colors.secondary})"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStreak() {
+      const colors = getColors();
+      const container = document.getElementById('streakPreview');
+
+      container.innerHTML = `
+        <div class="streak-counter" style="background: ${colors.accent}20; color: ${colors.accent}">
+          <span class="streak-icon">🔥</span>
+          <span style="font-size: 24px">7</span>
+          <span style="font-size: 14px; opacity: 0.8">day streak!</span>
+        </div>
+      `;
+    }
+
+    function renderAchievements() {
+      const colors = getColors();
+      const container = document.getElementById('achievementsPreview');
+
+      const achievements = [
+        { icon: '🎯', name: 'First Bet', unlocked: true },
+        { icon: '✨', name: 'Perfect Score', unlocked: true },
+        { icon: '🔥', name: '7 Day Streak', unlocked: true },
+        { icon: '🏆', name: 'League Winner', unlocked: false },
+        { icon: '💎', name: 'Diamond', unlocked: false }
+      ];
+
+      container.innerHTML = achievements.map(a => `
+        <div class="achievement">
+          <div class="achievement-icon ${a.unlocked ? '' : 'locked'}" style="
+            background: ${a.unlocked ? colors.accent + '30' : colors.border};
+            box-shadow: ${a.unlocked ? `0 0 20px ${colors.accent}40` : 'none'};
+          ">${a.icon}</div>
+          <div class="achievement-name" style="color: ${a.unlocked ? colors.text : colors.textMuted}">${a.name}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderLevel() {
+      const colors = getColors();
+      const container = document.getElementById('levelPreview');
+
+      container.innerHTML = `
+        <div class="level-indicator" style="background: ${colors.surface}; border-radius: ${state.radius}px; box-shadow: ${getShadow()}">
+          <div class="level-badge" style="background: linear-gradient(135deg, ${colors.primary}, ${colors.secondary}); color: white">
+            12
+          </div>
+          <div class="level-info">
+            <div class="level-title" style="color: ${colors.text}">Rising Star</div>
+            <div class="xp-text" style="color: ${colors.textMuted}">750 XP to next level</div>
+            <div class="level-progress" style="background: ${colors.border}">
+              <div class="level-progress-fill" style="width: 62%; background: linear-gradient(90deg, ${colors.primary}, ${colors.secondary})"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPoints() {
+      const colors = getColors();
+      const container = document.getElementById('pointsPreview');
+
+      container.innerHTML = `
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+          <div class="points-animation" style="background: ${colors.success}20; color: ${colors.success}">
+            +3 <span style="font-size: 14px; font-weight: 500">Exact Score!</span>
+          </div>
+          <div class="points-animation" style="background: ${colors.primary}20; color: ${colors.primary}">
+            +1 <span style="font-size: 14px; font-weight: 500">Correct Result</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCards() {
+      const colors = getColors();
+      const container = document.getElementById('cardsPreview');
+
+      container.innerHTML = `
+        <!-- Match Card -->
+        <div class="card match-card" style="background: ${colors.surfaceElevated}; box-shadow: ${getShadow()}; border-radius: ${state.radius}px">
+          <div class="match-header" style="color: ${colors.textMuted}">
+            <span>Premier League</span>
+            <span>Today, 15:00</span>
+          </div>
+          <div class="match-teams">
+            <div class="team">
+              <div class="team-logo" style="background: ${colors.primary}20; color: ${colors.primary}">ARS</div>
+              <div class="team-name" style="color: ${colors.text}">Arsenal</div>
+            </div>
+            <div class="match-vs" style="color: ${colors.textMuted}">VS</div>
+            <div class="team">
+              <div class="team-logo" style="background: ${colors.secondary}20; color: ${colors.secondary}">CHE</div>
+              <div class="team-name" style="color: ${colors.text}">Chelsea</div>
+            </div>
+          </div>
+          <div class="match-footer">
+            <div class="bet-inputs">
+              <input class="bet-input" value="2" style="background: ${colors.bg}; border-color: ${colors.primary}; color: ${colors.text}; border-radius: ${state.btnRadius}px">
+              <span style="color: ${colors.textMuted}">:</span>
+              <input class="bet-input" value="1" style="background: ${colors.bg}; border-color: ${colors.primary}; color: ${colors.text}; border-radius: ${state.btnRadius}px">
+            </div>
+            <button class="btn-preview" style="background: ${colors.primary}; color: white; border-radius: ${state.btnRadius}px; padding: 8px 16px; font-size: 13px">
+              Save Bet
+            </button>
+          </div>
+        </div>
+
+        <!-- League Card -->
+        <div class="card league-card" style="background: ${colors.surfaceElevated}; box-shadow: ${getShadow()}; border-radius: ${state.radius}px">
+          <div class="league-header">
+            <div class="league-icon" style="background: linear-gradient(135deg, ${colors.primary}, ${colors.secondary})">⚽</div>
+            <div class="league-info">
+              <h3 style="color: ${colors.text}">Office Champions</h3>
+              <p style="color: ${colors.textMuted}">12 members · Season 2024</p>
+            </div>
+          </div>
+          <div class="league-stats">
+            <div class="stat">
+              <div class="stat-value" style="color: ${colors.primary}">847</div>
+              <div class="stat-label" style="color: ${colors.textMuted}">Your Points</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" style="color: ${colors.text}">#3</div>
+              <div class="stat-label" style="color: ${colors.textMuted}">Ranking</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" style="color: ${colors.accent}">🔥 7</div>
+              <div class="stat-label" style="color: ${colors.textMuted}">Streak</div>
+            </div>
+          </div>
+          <button class="btn-preview" style="background: ${colors.primary}; color: white; border-radius: ${state.btnRadius}px; width: 100%; padding: 10px">
+            View League
+          </button>
+        </div>
+      `;
+    }
+
+    function renderLeaderboard() {
+      const colors = getColors();
+      const container = document.getElementById('leaderboardPreview');
+
+      const players = [
+        { rank: 1, name: 'Sarah M.', initials: 'SM', streak: 12, points: 1247, color: colors.accent },
+        { rank: 2, name: 'John D.', initials: 'JD', streak: 7, points: 1198, color: colors.primary },
+        { rank: 3, name: 'You', initials: 'ME', streak: 5, points: 1156, color: colors.secondary }
+      ];
+
+      const rankColors = {
+        1: `linear-gradient(135deg, #ffd700, #ffb800)`,
+        2: `linear-gradient(135deg, #c0c0c0, #a8a8a8)`,
+        3: `linear-gradient(135deg, #cd7f32, #b87333)`
+      };
+
+      container.innerHTML = players.map(p => `
+        <div class="leaderboard-row" style="background: ${p.rank === 3 ? colors.primary + '15' : colors.surface}; box-shadow: ${getShadow(1)}; border-radius: ${state.radius}px">
+          <div class="rank" style="background: ${rankColors[p.rank]}; color: white">${p.rank}</div>
+          <div class="player-info">
+            <div class="player-avatar" style="background: ${p.color}">${p.initials}</div>
+            <div>
+              <div class="player-name" style="color: ${colors.text}">${p.name}</div>
+              <div class="player-streak" style="color: ${colors.textMuted}">🔥 ${p.streak} streak</div>
+            </div>
+          </div>
+          <div class="player-points" style="color: ${colors.primary}">${p.points}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderPreview() {
+      const colors = getColors();
+      const preview = document.getElementById('preview');
+
+      preview.style.background = colors.bg;
+      preview.style.color = colors.text;
+      preview.style.fontFamily = fonts[state.font];
+      preview.style.fontSize = state.fontSize + 'px';
+
+      // Update section titles
+      document.querySelectorAll('.preview-section-title').forEach(el => {
+        el.style.color = colors.text;
+        el.style.borderColor = colors.border;
+      });
+
+      renderColorPalette();
+      renderTypography();
+      renderButtons();
+      renderBadges();
+      renderAvatars();
+      renderProgress();
+      renderStreak();
+      renderAchievements();
+      renderLevel();
+      renderPoints();
+      renderCards();
+      renderLeaderboard();
+    }
+
+    function generatePrompt() {
+      const colors = getColors();
+      const preset = presets[state.preset];
+
+      return `Design the ExtraTime betting app using the "${preset.name}" style with a ${state.theme} theme.
+
+Visual Direction:
+- Style: ${preset.name} - ${state.preset === 'vibrant' ? 'Bold, energetic, sports-focused with strong color contrast' :
+  state.preset === 'duolingo' ? 'Playful, gamified, friendly with rounded shapes and celebratory elements' :
+  state.preset === 'discord' ? 'Modern, sleek, community-focused with subtle shadows' :
+  state.preset === 'minimal' ? 'Clean, sophisticated, subtle with monochromatic accents' :
+  'Data-rich, professional, information-dense layouts'}
+- Theme: ${state.theme === 'light' ? 'Light mode with bright surfaces' : 'Dark mode with elevated surfaces'}
+
+Colors:
+- Primary: ${colors.primary} (main actions, active states, CTAs)
+- Secondary: ${colors.secondary} (supporting elements)
+- Accent: ${colors.accent} (highlights, streaks, achievements)
+- Success: ${colors.success} / Warning: ${colors.warning} / Error: ${colors.error}
+- Background: ${colors.bg}
+- Surface: ${colors.surface} (cards, elevated elements)
+- Text: ${colors.text} / Muted: ${colors.textMuted}
+
+Shape & Depth:
+- Card border-radius: ${state.radius}px
+- Button border-radius: ${state.btnRadius}px
+- Shadow style: ${shadowLevels[state.shadow]} (${getShadow()})
+
+Typography:
+- Font: ${state.font === 'system' ? 'System fonts (SF Pro, Segoe UI)' : state.font.charAt(0).toUpperCase() + state.font.slice(1)}
+- Base size: ${state.fontSize}px
+- Scale: H1 ${Math.round(state.fontSize * 2.25)}px, H2 ${Math.round(state.fontSize * 1.875)}px, H3 ${Math.round(state.fontSize * 1.5)}px, Body ${state.fontSize}px
+
+Gamification Elements:
+- Streak counters with fire emoji and ${colors.accent} accent
+- Achievement badges with glow effects when unlocked
+- Level indicators with gradient progress bars
+- Points animations with bounce effect
+- Rank badges (gold/silver/bronze gradients for top 3)
+
+Component Patterns:
+- Match cards: Teams with logos, score inputs, deadline badge
+- League cards: Icon, stats row, member count, action button
+- Leaderboard rows: Rank badge, avatar, name/streak, points
+- Progress bars: Gradient fill from primary to secondary`;
+    }
+
+    function generateTailwindConfig() {
+      const colors = getColors();
+
+      return `// tailwind.config.ts
+const config = {
+  theme: {
+    extend: {
+      colors: {
+        background: '${colors.bg}',
+        surface: '${colors.surface}',
+        'surface-elevated': '${colors.surfaceElevated}',
+        border: '${colors.border}',
+        foreground: '${colors.text}',
+        muted: '${colors.textMuted}',
+        primary: {
+          DEFAULT: '${colors.primary}',
+          hover: '${colors.primaryHover}',
+        },
+        secondary: '${colors.secondary}',
+        accent: '${colors.accent}',
+        success: '${colors.success}',
+        warning: '${colors.warning}',
+        error: '${colors.error}',
+      },
+      borderRadius: {
+        card: '${state.radius}px',
+        btn: '${state.btnRadius}px',
+      },
+      boxShadow: {
+        card: '${getShadow()}',
+        'card-hover': '${getShadow(Math.min(state.shadow + 1, 3))}',
+      },
+      fontFamily: {
+        sans: ['${state.font === 'system' ? '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto' : state.font}', 'sans-serif'],
+      },
+      fontSize: {
+        base: '${state.fontSize}px',
+        h1: '${Math.round(state.fontSize * 2.25)}px',
+        h2: '${Math.round(state.fontSize * 1.875)}px',
+        h3: '${Math.round(state.fontSize * 1.5)}px',
+        h4: '${Math.round(state.fontSize * 1.25)}px',
+        sm: '${Math.round(state.fontSize * 0.875)}px',
+        xs: '${Math.round(state.fontSize * 0.75)}px',
+      },
+    },
+  },
+};`;
+    }
+
+    function generateCSSVariables() {
+      const colors = getColors();
+
+      return `:root {
+  /* Colors - ${state.theme} mode */
+  --color-background: ${colors.bg};
+  --color-surface: ${colors.surface};
+  --color-surface-elevated: ${colors.surfaceElevated};
+  --color-border: ${colors.border};
+  --color-text: ${colors.text};
+  --color-text-muted: ${colors.textMuted};
+
+  --color-primary: ${colors.primary};
+  --color-primary-hover: ${colors.primaryHover};
+  --color-secondary: ${colors.secondary};
+  --color-accent: ${colors.accent};
+  --color-success: ${colors.success};
+  --color-warning: ${colors.warning};
+  --color-error: ${colors.error};
+
+  /* Shape */
+  --radius-card: ${state.radius}px;
+  --radius-btn: ${state.btnRadius}px;
+  --radius-badge: 20px;
+  --radius-avatar: 50%;
+
+  /* Shadows */
+  --shadow-card: ${getShadow()};
+  --shadow-card-hover: ${getShadow(Math.min(state.shadow + 1, 3))};
+
+  /* Typography */
+  --font-family: ${fonts[state.font]};
+  --font-size-base: ${state.fontSize}px;
+  --font-size-h1: ${Math.round(state.fontSize * 2.25)}px;
+  --font-size-h2: ${Math.round(state.fontSize * 1.875)}px;
+  --font-size-h3: ${Math.round(state.fontSize * 1.5)}px;
+  --font-size-h4: ${Math.round(state.fontSize * 1.25)}px;
+  --font-size-sm: ${Math.round(state.fontSize * 0.875)}px;
+  --font-size-xs: ${Math.round(state.fontSize * 0.75)}px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+}`;
+    }
+
+    function updateOutput() {
+      const content = document.getElementById('outputContent');
+
+      switch(state.outputTab) {
+        case 'prompt':
+          content.textContent = generatePrompt();
+          break;
+        case 'tailwind':
+          content.textContent = generateTailwindConfig();
+          break;
+        case 'css':
+          content.textContent = generateCSSVariables();
+          break;
+      }
+    }
+
+    function updateAll() {
+      renderPreview();
+      updateOutput();
+
+      // Update slider displays
+      document.getElementById('radiusValue').textContent = state.radius + 'px';
+      document.getElementById('btnRadiusValue').textContent = state.btnRadius + 'px';
+      document.getElementById('shadowValue').textContent = shadowLevels[state.shadow];
+      document.getElementById('fontSizeValue').textContent = state.fontSize + 'px';
+      document.getElementById('hueValue').textContent = state.hue;
+    }
+
+    function applyPreset(presetKey) {
+      const preset = presets[presetKey];
+      state.preset = presetKey;
+      state.radius = preset.radius;
+      state.btnRadius = preset.btnRadius;
+      state.shadow = preset.shadow;
+      state.font = preset.font;
+      state.fontSize = preset.fontSize;
+      state.hue = preset.hue;
+
+      // Update controls
+      document.getElementById('radiusSlider').value = state.radius;
+      document.getElementById('btnRadiusSlider').value = state.btnRadius;
+      document.getElementById('shadowSlider').value = state.shadow;
+      document.getElementById('fontSelect').value = state.font;
+      document.getElementById('fontSizeSlider').value = state.fontSize;
+      document.getElementById('hueSlider').value = state.hue;
+
+      // Update active preset button
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === presetKey);
+      });
+
+      updateAll();
+    }
+
+    // Event listeners
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.theme = btn.dataset.theme;
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b === btn));
+        updateAll();
+      });
+    });
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyPreset(btn.dataset.preset));
+    });
+
+    document.getElementById('radiusSlider').addEventListener('input', (e) => {
+      state.radius = parseInt(e.target.value);
+      updateAll();
+    });
+
+    document.getElementById('btnRadiusSlider').addEventListener('input', (e) => {
+      state.btnRadius = parseInt(e.target.value);
+      updateAll();
+    });
+
+    document.getElementById('shadowSlider').addEventListener('input', (e) => {
+      state.shadow = parseInt(e.target.value);
+      updateAll();
+    });
+
+    document.getElementById('fontSelect').addEventListener('change', (e) => {
+      state.font = e.target.value;
+      updateAll();
+    });
+
+    document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
+      state.fontSize = parseInt(e.target.value);
+      updateAll();
+    });
+
+    document.getElementById('hueSlider').addEventListener('input', (e) => {
+      state.hue = parseInt(e.target.value);
+      updateAll();
+    });
+
+    document.querySelectorAll('.output-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        state.outputTab = tab.dataset.tab;
+        document.querySelectorAll('.output-tab').forEach(t => t.classList.toggle('active', t === tab));
+        updateOutput();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const content = document.getElementById('outputContent').textContent;
+      navigator.clipboard.writeText(content).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy to Clipboard';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+
+    // Initialize
+    updateAll();
+  </script>
+</body>
+</html>

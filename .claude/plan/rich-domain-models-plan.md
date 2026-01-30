@@ -105,6 +105,116 @@ Transform anemic domain models into **rich domain models** that:
 - [ ] Add value object `StandingStats` to group related stats
 - [ ] Write tests for standings calculation logic
 
+### Phase 6.5: Enrich Remaining Anemic Entities
+
+**Priority: HIGH - These entities are currently pure data containers with no behavior:**
+
+#### BetResult Entity
+**Location:** `src/ExtraTime.Domain/Entities/BetResult.cs`
+**Current Problems:**
+- Pure data container with public setters
+- Result creation logic in `CalculateBetResultsCommandHandler` (lines 62-83)
+- No encapsulation of scoring result lifecycle
+
+**Changes:**
+- [ ] Add `BetResult.Create()` factory method
+- [ ] Add `BetResult.Update()` for recalculation scenarios
+- [ ] Add `BetResult.CalculateFrom()` static method
+- [ ] Make properties private setters
+- [ ] Add `BetResultCalculated` domain event
+- [ ] Write tests for result creation and updates
+
+#### Bot Entity
+**Location:** `src/ExtraTime.Domain/Entities/Bot.cs`
+**Current Problems:**
+- All public setters, no encapsulation
+- Creation logic scattered in `CreateBotCommandHandler` (lines 24-42)
+- No lifecycle management (activation/deactivation)
+
+**Changes:**
+- [ ] Add `Bot.Create()` factory method with validation
+- [ ] Add `Bot.Activate()` / `Bot.Deactivate()` methods
+- [ ] Add `Bot.RecordBetPlaced()` to update timestamp
+- [ ] Add `Bot.UpdateConfiguration()` method
+- [ ] Add `BotCreated`, `BotStatusChanged` domain events
+- [ ] Write tests for bot lifecycle
+
+#### BackgroundJob Entity
+**Location:** `src/ExtraTime.Domain/Entities/BackgroundJob.cs`
+**Current Problems:**
+- State transitions scattered across handlers
+- Logic in `RetryJobCommandHandler` (lines 25-39)
+- Logic in `CancelJobCommandHandler` (lines 25-31)
+- No validation of state transitions
+
+**Changes:**
+- [ ] Add `BackgroundJob.Create()` factory method
+- [ ] Add `BackgroundJob.MarkAsProcessing()` with validation
+- [ ] Add `BackgroundJob.MarkAsCompleted()` method
+- [ ] Add `BackgroundJob.MarkAsFailed()` with error capture
+- [ ] Add `BackgroundJob.Cancel()` with validation (only Pending/Processing)
+- [ ] Add `BackgroundJob.Retry()` with max retries check
+- [ ] Add `JobStatusChanged`, `JobFailed` domain events
+- [ ] Write tests for all state transitions
+
+#### LeagueMember Entity
+**Location:** `src/ExtraTime.Domain/Entities/LeagueMember.cs`
+**Current Problems:**
+- Pure data container with all public setters
+- No behavior or lifecycle management
+- Role change logic in `KickMemberCommandHandler` (lines 41-45)
+
+**Changes:**
+- [ ] Add `LeagueMember.Create()` factory method
+- [ ] Add `LeagueMember.ChangeRole()` with validation (cannot demote Owner directly)
+- [ ] Add `LeagueMember.IsOwner()` helper method
+- [ ] Make properties private setters
+- [ ] Write tests for member role management
+
+#### RefreshToken Entity
+**Location:** `src/ExtraTime.Domain/Entities/RefreshToken.cs`
+**Current Problems:**
+- Has computed properties but no behavior methods
+- Revocation logic in `RefreshTokenCommandHandler` (lines 35-38)
+- No encapsulation of token lifecycle
+
+**Changes:**
+- [ ] Add `RefreshToken.Create()` factory method
+- [ ] Add `RefreshToken.Revoke()` method with reason tracking
+- [ ] Add `RefreshToken.IsValidForUse()` validation method
+- [ ] Add `RefreshToken.ReplaceWith()` for rotation
+- [ ] Make properties private setters (except computed ones)
+- [ ] Write tests for token lifecycle
+
+#### Competition Entity
+**Location:** `src/ExtraTime.Domain/Entities/Competition.cs`
+**Current Problems:**
+- Simple data container
+- Sync logic scattered in sync services
+
+**Changes:**
+- [ ] Add `Competition.Create()` factory method
+- [ ] Add `Competition.UpdateDetails()` for metadata changes
+- [ ] Add `Competition.RecordSync()` to update sync timestamp
+- [ ] Add `Competition.UpdateCurrentSeason()` method
+- [ ] Write tests for competition lifecycle
+
+#### Team Entity
+**Location:** `src/ExtraTime.Domain/Entities/Team.cs`
+**Current Problems:**
+- Simple data container with no behavior
+- No encapsulation of team data updates
+
+**Changes:**
+- [ ] Add `Team.Create()` factory method
+- [ ] Add `Team.UpdateDetails()` for team info changes
+- [ ] Add `Team.RecordSync()` to update sync timestamp
+- [ ] Write tests for team data management
+
+**Priority: MEDIUM - Minor improvements:**
+- [ ] Add `TeamFormCache.Update()` method
+- [ ] Add `CompetitionTeam.Create()` factory method
+
 ### Phase 7: Add Value Objects
 - [ ] Create `Email` value object (validation, immutability)
 - [ ] Create `Username` value object (min/max length, allowed characters)
@@ -126,15 +236,33 @@ Transform anemic domain models into **rich domain models** that:
 
 ### Phase 9: Refactor Application Layer
 **Remove business logic from handlers:**
+
+#### Core Entity Handlers
 - [ ] Update `CreateLeagueCommandHandler` to use `League.Create()`
 - [ ] Update `PlaceBetCommandHandler` to use `Bet.Place()` and `Bet.Update()`
 - [ ] Update `JoinLeagueCommandHandler` to use `League.AddMember()`
 - [ ] Update `LeaveLeagueCommandHandler` to use `League.RemoveMember()`
-- [ ] Update `CalculateBetResultsCommandHandler` to use `Bet.CalculatePoints()`
+- [ ] Update `CalculateBetResultsCommandHandler` to use `Bet.CalculatePoints()` and `BetResult.Create()`
 - [ ] Update `RecalculateLeagueStandingsCommandHandler` to use `LeagueStanding.ApplyBetResult()`
 - [ ] Update `RegisterCommandHandler` to use `User.Register()`
 - [ ] Update `LoginCommandHandler` to use `User.VerifyPassword()`
-- [ ] Remove business logic from handlers, keep only orchestration
+
+#### Additional Entity Handlers (from Phase 6.5)
+- [ ] Update `CreateBotCommandHandler` to use `Bot.Create()`
+- [ ] Update `AddBotToLeagueCommandHandler` to use `Bot.Activate()` if needed
+- [ ] Update `RemoveBotFromLeagueCommandHandler` to use `Bot.Deactivate()` if needed
+- [ ] Update `PlaceBotBetsCommandHandler` to use `Bot.RecordBetPlaced()`
+- [ ] Update `RetryJobCommandHandler` to use `BackgroundJob.Retry()`
+- [ ] Update `CancelJobCommandHandler` to use `BackgroundJob.Cancel()`
+- [ ] Update `RefreshTokenCommandHandler` to use `RefreshToken.Revoke()` and `RefreshToken.ReplaceWith()`
+- [ ] Update `KickMemberCommandHandler` to use `LeagueMember.IsOwner()` check
+
+#### Handler Refactoring Guidelines
+- [ ] Remove all validation logic from handlers (move to entities)
+- [ ] Remove state transition logic from handlers (move to entities)
+- [ ] Keep only orchestration: fetch entity → call domain method → save
+- [ ] Ensure all handlers use Result pattern consistently
+- [ ] Add integration tests for all updated handlers
 
 ### Phase 10: Update Integration Tests
 - [ ] Update existing integration tests to work with new domain model API
@@ -312,6 +440,9 @@ public async ValueTask<Result<LeagueDto>> Handle(...)
 6. ✅ 95%+ code coverage on Domain layer
 7. ✅ All existing integration tests still pass
 8. ✅ No breaking changes to API contracts
+9. ✅ All entities enriched: League, Bet, Match, User, LeagueStanding, BetResult, Bot, BackgroundJob, LeagueMember, RefreshToken, Competition, Team
+10. ✅ CompetitionFilter value object integrated into League entity
+11. ✅ No anemic domain models remain in the codebase
 
 ---
 
@@ -338,12 +469,13 @@ Minimal - internal implementation changes, but:
 ### Estimated Effort
 - **Phase 1:** 2-3 hours (testing infrastructure)
 - **Phases 2-6:** 3-4 hours each (per entity)
+- **Phase 6.5:** 6-8 hours (remaining anemic entities: BetResult, Bot, BackgroundJob, LeagueMember, RefreshToken, Competition, Team)
 - **Phase 7:** 4-5 hours (all value objects)
 - **Phase 8:** 3-4 hours (domain events)
-- **Phase 9:** 5-6 hours (refactor handlers)
-- **Phase 10:** 2-3 hours (update tests)
+- **Phase 9:** 8-10 hours (refactor all handlers - core + additional)
+- **Phase 10:** 3-4 hours (update all tests)
 
-**Total:** ~40-50 hours
+**Total:** ~50-60 hours (updated to include additional entities)
 
 ---
 
