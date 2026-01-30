@@ -20,6 +20,7 @@ public interface IApplicationDbContext
     DbSet<Bot> Bots { get; }
     DbSet<BetResult> BetResults { get; }
     DbSet<LeagueStanding> LeagueStandings { get; }
+    DbSet<TeamFormCache> TeamFormCaches { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(

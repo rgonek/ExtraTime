@@ -6,5 +6,6 @@ public enum BotStrategy
     HomeFavorer = 1,
     UnderdogSupporter = 2,
     DrawPredictor = 3,
-    HighScorer = 4
+    HighScorer = 4,
+    StatsAnalyst = 10
 }

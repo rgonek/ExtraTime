@@ -1,27 +1,33 @@
+using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ExtraTime.Application.Features.Bots.Strategies;
 
 public sealed class BotStrategyFactory
 {
-    private readonly Dictionary<BotStrategy, IBotBettingStrategy> _strategies;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly Dictionary<BotStrategy, Func<IBotBettingStrategy>> _factories;
 
-    public BotStrategyFactory()
+    public BotStrategyFactory(IServiceProvider serviceProvider)
     {
-        _strategies = new Dictionary<BotStrategy, IBotBettingStrategy>
+        _serviceProvider = serviceProvider;
+        _factories = new Dictionary<BotStrategy, Func<IBotBettingStrategy>>
         {
-            { BotStrategy.Random, new RandomStrategy() },
-            { BotStrategy.HomeFavorer, new HomeFavorerStrategy() },
-            { BotStrategy.UnderdogSupporter, new UnderdogSupporterStrategy() },
-            { BotStrategy.DrawPredictor, new DrawPredictorStrategy() },
-            { BotStrategy.HighScorer, new HighScorerStrategy() }
+            { BotStrategy.Random, () => new RandomStrategy() },
+            { BotStrategy.HomeFavorer, () => new HomeFavorerStrategy() },
+            { BotStrategy.UnderdogSupporter, () => new UnderdogSupporterStrategy() },
+            { BotStrategy.DrawPredictor, () => new DrawPredictorStrategy() },
+            { BotStrategy.HighScorer, () => new HighScorerStrategy() },
+            { BotStrategy.StatsAnalyst, () => new StatsAnalystStrategy(
+                _serviceProvider.GetRequiredService<ITeamFormCalculator>()) }
         };
     }
 
     public IBotBettingStrategy GetStrategy(BotStrategy strategy)
     {
-        return _strategies.TryGetValue(strategy, out var impl)
-            ? impl
-            : _strategies[BotStrategy.Random];
+        return _factories.TryGetValue(strategy, out var factory)
+            ? factory()
+            : _factories[BotStrategy.Random]();
     }
 }

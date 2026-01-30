@@ -27,6 +27,7 @@ public sealed class ApplicationDbContext(
     public DbSet<BetResult> BetResults => Set<BetResult>();
     public DbSet<LeagueStanding> LeagueStandings => Set<LeagueStanding>();
     public DbSet<Bot> Bots => Set<Bot>();
+    public DbSet<TeamFormCache> TeamFormCaches => Set<TeamFormCache>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

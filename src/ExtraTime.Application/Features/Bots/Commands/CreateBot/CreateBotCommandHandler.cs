@@ -33,6 +33,7 @@ public sealed class CreateBotCommandHandler(
             Name = request.Name,
             AvatarUrl = request.AvatarUrl,
             Strategy = request.Strategy,
+            Configuration = request.Configuration,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };

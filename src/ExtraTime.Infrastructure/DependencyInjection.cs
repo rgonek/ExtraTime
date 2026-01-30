@@ -92,9 +92,11 @@ public static class DependencyInjection
 
         // Bot Services
         services.AddScoped<BotSeeder>();
-        services.AddSingleton<BotStrategyFactory>();
+        services.AddScoped<ITeamFormCalculator, TeamFormCalculator>();
+        services.AddScoped<BotStrategyFactory>();
         services.AddScoped<IBotBettingService, BotBettingService>();
         services.AddHostedService<BotBettingBackgroundService>();
+        services.AddHostedService<FormCacheBackgroundService>();
 
         // Football Data Services
         services.Configure<FootballDataSettings>(configuration.GetSection(FootballDataSettings.SectionName));

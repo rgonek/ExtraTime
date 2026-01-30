@@ -1,6 +1,7 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.Infrastructure.Services.Bots;
@@ -14,11 +15,17 @@ public sealed class BotSeeder(IApplicationDbContext context, IPasswordHasher pas
 
         var bots = new[]
         {
-            CreateBot("Lucky Larry", BotStrategy.Random, "🎲"),
-            CreateBot("Home Hero", BotStrategy.HomeFavorer, "🏠"),
-            CreateBot("Underdog Dave", BotStrategy.UnderdogSupporter, "🐕"),
-            CreateBot("Draw Dan", BotStrategy.DrawPredictor, "🤝"),
-            CreateBot("Goal Gary", BotStrategy.HighScorer, "⚽"),
+            CreateBot("Lucky Larry", BotStrategy.Random, null, "🎲"),
+            CreateBot("Home Hero", BotStrategy.HomeFavorer, null, "🏠"),
+            CreateBot("Underdog Dave", BotStrategy.UnderdogSupporter, null, "🐕"),
+            CreateBot("Draw Dan", BotStrategy.DrawPredictor, null, "🤝"),
+            CreateBot("Goal Gary", BotStrategy.HighScorer, null, "⚽"),
+            CreateBot("Stats Genius", BotStrategy.StatsAnalyst, StatsAnalystConfig.Balanced.ToJson(), "🧠"),
+            CreateBot("Form Master", BotStrategy.StatsAnalyst, StatsAnalystConfig.FormFocused.ToJson(), "📈"),
+            CreateBot("Fortress Fred", BotStrategy.StatsAnalyst, StatsAnalystConfig.HomeAdvantage.ToJson(), "🏰"),
+            CreateBot("Goal Hunter", BotStrategy.StatsAnalyst, StatsAnalystConfig.GoalFocused.ToJson(), "🎯"),
+            CreateBot("Safe Steve", BotStrategy.StatsAnalyst, StatsAnalystConfig.Conservative.ToJson(), "🛡️"),
+            CreateBot("Chaos Carl", BotStrategy.StatsAnalyst, StatsAnalystConfig.Chaotic.ToJson(), "🌪️"),
         };
 
         foreach (var (user, bot) in bots)
@@ -30,7 +37,7 @@ public sealed class BotSeeder(IApplicationDbContext context, IPasswordHasher pas
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private (User user, Bot bot) CreateBot(string name, BotStrategy strategy, string avatarEmoji)
+    private (User user, Bot bot) CreateBot(string name, BotStrategy strategy, string? configuration, string avatarEmoji)
     {
         var email = $"bot_{name.ToLower().Replace(" ", "_")}@extratime.local";
         var user = User.Register(email, name, passwordHasher.Hash(Guid.NewGuid().ToString()));
@@ -43,6 +50,7 @@ public sealed class BotSeeder(IApplicationDbContext context, IPasswordHasher pas
             Name = name,
             AvatarUrl = null,
             Strategy = strategy,
+            Configuration = configuration,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };

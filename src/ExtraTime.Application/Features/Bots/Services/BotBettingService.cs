@@ -10,6 +10,7 @@ namespace ExtraTime.Application.Features.Bots.Services;
 public sealed class BotBettingService(
     IApplicationDbContext context,
     BotStrategyFactory strategyFactory,
+    ITeamFormCalculator formCalculator,
     TimeProvider timeProvider,
     ILogger<BotBettingService> logger) : IBotBettingService
 {
@@ -17,6 +18,8 @@ public sealed class BotBettingService(
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var cutoffTime = now.AddHours(24);
+
+        await formCalculator.RefreshAllFormCachesAsync(cancellationToken);
 
         var leagues = await context.Leagues
             .Include(l => l.BotMembers)
@@ -85,7 +88,16 @@ public sealed class BotBettingService(
 
                 if (!match.IsOpenForBetting(league.BettingDeadlineMinutes, now)) continue;
 
-                var (homeScore, awayScore) = strategy.GeneratePrediction(match, bot.Configuration);
+                int homeScore, awayScore;
+                if (strategy is StatsAnalystStrategy statsStrategy)
+                {
+                    (homeScore, awayScore) = await statsStrategy.GeneratePredictionAsync(
+                        match, bot.Configuration, cancellationToken);
+                }
+                else
+                {
+                    (homeScore, awayScore) = strategy.GeneratePrediction(match, bot.Configuration);
+                }
 
                 var bet = Bet.Place(
                     league.Id,
@@ -98,8 +110,8 @@ public sealed class BotBettingService(
                 betsPlaced++;
 
                 logger.LogDebug(
-                    "Bot {BotName} placed bet {HomeScore}-{AwayScore} for match {MatchId} in league {LeagueId}",
-                    bot.Name, homeScore, awayScore, match.Id, league.Id);
+                    "Bot {BotName} ({Strategy}) placed bet {HomeScore}-{AwayScore} for match {MatchId} in league {LeagueId}",
+                    bot.Name, bot.Strategy, homeScore, awayScore, match.Id, league.Id);
             }
 
             bot.LastBetPlacedAt = now;

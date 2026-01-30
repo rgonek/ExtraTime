@@ -10,4 +10,5 @@ namespace ExtraTime.Application.Features.Bots.Commands.CreateBot;
 public sealed record CreateBotCommand(
     string Name,
     string? AvatarUrl,
-    BotStrategy Strategy) : IRequest<Result<BotDto>>;
+    BotStrategy Strategy,
+    string? Configuration = null) : IRequest<Result<BotDto>>;

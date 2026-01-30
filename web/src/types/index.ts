@@ -54,3 +54,15 @@ export type {
   MatchesPagedResponse,
   MatchFilters,
 } from './match';
+
+// Bot types
+export type {
+  BotStrategy,
+  StatsAnalystConfig,
+  BotDto,
+  BotSummaryDto,
+  LeagueBotDto,
+  CreateBotRequest,
+  CreateStatsAnalystBotRequest,
+  AddBotToLeagueRequest,
+} from './bot';
