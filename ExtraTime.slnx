@@ -1,0 +1,24 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/ExtraTime.API/ExtraTime.API.csproj" />
+    <Project Path="src/ExtraTime.AppHost/ExtraTime.AppHost.csproj" />
+    <Project Path="src/ExtraTime.Application/ExtraTime.Application.csproj" />
+    <Project Path="src/ExtraTime.Domain/ExtraTime.Domain.csproj" />
+    <Project Path="src/ExtraTime.Infrastructure/ExtraTime.Infrastructure.csproj" />
+    <Project Path="src/ExtraTime.ServiceDefaults/ExtraTime.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ExtraTime.API.Tests/ExtraTime.API.Tests.csproj" />
+    <Project Path="tests/ExtraTime.Domain.Tests/ExtraTime.Domain.Tests.csproj" />
+    <Project Path="tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj" />
+    <Project Path="tests/ExtraTime.UnitTests/ExtraTime.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/web/">
+    <Project Path="web/web.esproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
+  </Folder>
+</Solution>

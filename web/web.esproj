@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.1184077">
+
+  <PropertyGroup>
+    <JavaScriptTestRoot>src\</JavaScriptTestRoot>
+    <JavaScriptTestFramework>Jest</JavaScriptTestFramework>
+    <BuildCommand>npm run build</BuildCommand>
+    <CleanCommand>npm run clean</CleanCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Script Include="**\*.ts" />
+    <Script Include="**\*.tsx" />
+    <Script Include="**\*.js" />
+    <Script Include="**\*.jsx" />
+    <Script Include="**\*.json" />
+    <Script Include="**\*.css" />
+    <Script Include="**\*.mjs" />
+  </ItemGroup>
+
+</Project>
