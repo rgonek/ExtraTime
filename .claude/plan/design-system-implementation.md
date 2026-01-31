@@ -101,7 +101,7 @@ Replace current OKLCh colors with Vibrant Sports palette:
 
 **Tasks:**
 - [x] Update radius CSS variables
-- [ ] Ensure components use correct radius tokens (Phase 2)
+- [x] Ensure components use correct radius tokens (Phase 2)
 
 #### 1.3 Update Shadow Tokens
 **Current:** Uses `shadow-xs` default
@@ -140,8 +140,9 @@ const spaceGrotesk = Space_Grotesk({
 
 ---
 
-### Phase 2: Core UI Components Update
+### Phase 2: Core UI Components Update ✅ COMPLETED
 **Goal:** Update existing shadcn components to match design system
+**Status:** Completed on 2026-01-31
 
 #### 2.1 Button Component
 **File:** `web/src/components/ui/button.tsx`
@@ -152,12 +153,13 @@ const spaceGrotesk = Space_Grotesk({
 - Add hover lift effect (`translateY(-2px)`)
 - Add accent variant
 - Update focus ring to use primary color
+- Added active scale effect for tactile feedback
 
 **Tasks:**
-- [ ] Add `accent` variant to button variants
-- [ ] Update shadow styles for each variant
-- [ ] Add hover transform animation
-- [ ] Update border-radius
+- [x] Add `accent` variant to button variants
+- [x] Update shadow styles for each variant
+- [x] Add hover transform animation
+- [x] Update border-radius
 
 #### 2.2 Card Component
 **File:** `web/src/components/ui/card.tsx`
@@ -167,11 +169,12 @@ const spaceGrotesk = Space_Grotesk({
 - Add box-shadow by default
 - Add hover state with lift effect
 - Add gradient card variant for headers
+- Added CVA for variant management
 
 **Tasks:**
-- [ ] Update Card base styles
-- [ ] Add `variant` prop (default, gradient, elevated)
-- [ ] Add hover animation styles
+- [x] Update Card base styles
+- [x] Add `variant` prop (default, gradient, elevated, ghost)
+- [x] Add `interactive` prop for hover animation styles
 
 #### 2.3 Badge Component
 **File:** `web/src/components/ui/badge.tsx`
@@ -182,45 +185,51 @@ const spaceGrotesk = Space_Grotesk({
 - Add live badge animation (pulse)
 - Add points badge styling (+3 pts format)
 
-**New Variants:**
+**Implemented Variants:**
 ```tsx
-success: "bg-success/15 text-success"
-warning: "bg-warning/15 text-warning"
-live: "bg-destructive text-white animate-pulse"
-points: "bg-primary/15 text-primary font-bold"
-accent: "bg-accent/15 text-accent"
+success: "bg-success/15 text-success border-success/20"
+warning: "bg-warning/15 text-warning border-warning/20"
+info: "bg-info/15 text-info border-info/20"
+live: "bg-destructive text-white animate-pulse shadow-sm"
+points: "bg-primary/15 text-primary font-bold border-primary/20"
+streak: "bg-accent/15 text-accent font-bold border-accent/20"
+rank: "bg-secondary/15 text-secondary font-semibold border-secondary/20"
+accent: "bg-accent text-accent-foreground"
 ```
 
 **Tasks:**
-- [ ] Add new badge variants
-- [ ] Update border-radius
-- [ ] Add pulse animation for live badge
+- [x] Add new badge variants
+- [x] Update border-radius
+- [x] Add pulse animation for live badge
 
 #### 2.4 Avatar Component
 **File:** `web/src/components/ui/avatar.tsx`
 
 **Changes:**
 - Add size variants (xs, sm, md, lg, xl)
-- Add gradient background support
 - Add hover scale effect
-- Add avatar stack component
+- Updated AvatarFallback font sizes for each size
+- Updated AvatarBadge sizes for each avatar size
+- Updated AvatarGroupCount for new sizes
 
 **Tasks:**
-- [ ] Add size variant prop
-- [ ] Create AvatarStack component
-- [ ] Add hover animation
+- [x] Add size variant prop (xs, sm, md, lg, xl)
+- [x] Existing AvatarGroup component serves as AvatarStack
+- [x] Add hover animation (scale effect)
 
 #### 2.5 Progress Component
 **File:** `web/src/components/ui/progress.tsx`
 
 **Changes:**
 - Add gradient fill option
-- Add accent color option
-- Update border-radius
+- Add accent/secondary/success color options
+- Added size variants (sm, default, lg)
+- Added CVA for variant management
 
 **Tasks:**
-- [ ] Add `variant` prop (default, gradient, accent)
-- [ ] Update styling
+- [x] Add `variant` prop (default, secondary, accent, success, muted)
+- [x] Add `indicatorVariant` prop with gradient option
+- [x] Add `size` prop (sm, default, lg)
 
 #### 2.6 Input Component
 **File:** `web/src/components/ui/input.tsx`
@@ -228,10 +237,11 @@ accent: "bg-accent/15 text-accent"
 **Changes:**
 - Update focus ring to primary color
 - Add score input variant (large, centered, bold)
+- Updated border-radius to use design tokens
 
 **Tasks:**
-- [ ] Update focus styles
-- [ ] Create ScoreInput variant component
+- [x] Update focus styles (primary color ring)
+- [x] Create ScoreInput variant component
 
 ---
 
