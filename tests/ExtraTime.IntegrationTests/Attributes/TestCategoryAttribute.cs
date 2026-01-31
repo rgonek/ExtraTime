@@ -1,15 +1,8 @@
+using TUnit.Core;
+
 namespace ExtraTime.IntegrationTests.Attributes;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-public sealed class TestCategoryAttribute : Attribute
-{
-    public string Category { get; }
-
-    public TestCategoryAttribute(string category)
-    {
-        Category = category;
-    }
-}
+public sealed class TestCategoryAttribute(string category) : PropertyAttribute("Category", category);
 
 public static class TestCategories
 {

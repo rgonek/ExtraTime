@@ -71,6 +71,7 @@ public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
     [Test]
     [TestCategory(TestCategories.RequiresDatabase)]
     public async Task Handle_ValidLeague_ReturnsLeagueDetail()
+
     {
         // Arrange
         var userId = Guid.NewGuid();
