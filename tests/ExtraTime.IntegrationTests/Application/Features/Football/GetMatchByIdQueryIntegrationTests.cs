@@ -4,7 +4,6 @@ using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Enums;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Football;
 

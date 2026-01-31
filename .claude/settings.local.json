@@ -71,7 +71,8 @@
       "Bash(pushd:*)",
       "WebFetch(domain:docs.football-data.org)",
       "WebFetch(domain:www.football-data.org)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(Select-Object -ExpandProperty Name)"
     ]
   }
 }

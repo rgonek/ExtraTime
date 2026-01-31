@@ -31,6 +31,9 @@ public sealed class DeleteLeagueCommandIntegrationTests : IntegrationTestBase
         league.AddMember(memberId, MemberRole.Member);
         await Context.SaveChangesAsync();
 
+        // Reload league to avoid concurrency issues with InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(ownerId);
 
         var handler = new DeleteLeagueCommandHandler(Context, CurrentUserService);

@@ -30,6 +30,9 @@ public sealed class KickMemberCommandIntegrationTests : IntegrationTestBase
         league.AddMember(memberId, MemberRole.Member);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(ownerId);
 
         var handler = new KickMemberCommandHandler(Context, CurrentUserService);
@@ -72,6 +75,9 @@ public sealed class KickMemberCommandIntegrationTests : IntegrationTestBase
         league.AddMember(memberId, MemberRole.Member);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(otherUserId); // Not the owner
 
         var handler = new KickMemberCommandHandler(Context, CurrentUserService);
@@ -107,6 +113,9 @@ public sealed class KickMemberCommandIntegrationTests : IntegrationTestBase
         // Add owner as a member with Owner role
         league.AddMember(ownerId, MemberRole.Owner);
         await Context.SaveChangesAsync();
+
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
 
         SetCurrentUser(ownerId);
 

@@ -39,6 +39,9 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
 
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(ownerId);
 
         var handler = new AddBotToLeagueCommandHandler(Context, CurrentUserService);
@@ -166,6 +169,9 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
         league.AddBot(bot.Id);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(ownerId);
 
         var handler = new AddBotToLeagueCommandHandler(Context, CurrentUserService);
@@ -214,6 +220,10 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
         }
 
         await Context.SaveChangesAsync();
+
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(ownerId);
 
         // Act - Add all bots

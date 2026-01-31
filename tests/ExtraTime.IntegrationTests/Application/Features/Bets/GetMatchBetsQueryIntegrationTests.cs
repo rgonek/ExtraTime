@@ -1,3 +1,4 @@
+using ExtraTime.Application.Features.Bets;
 using ExtraTime.Application.Features.Bets.Queries.GetMatchBets;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
@@ -179,9 +180,9 @@ public sealed class GetMatchBetsQueryIntegrationTests : IntegrationTestBase
         // Act
         var result = await handler.Handle(query, default);
 
-        // Assert
+        // Assert - Handler checks membership first, returns NotALeagueMember
         await Assert.That(result.IsSuccess).IsFalse();
-        await Assert.That(result.Error).Contains("Not a league member");
+        await Assert.That(result.Error).IsEqualTo(BetErrors.NotALeagueMember);
     }
 
     [Test]
@@ -191,19 +192,26 @@ public sealed class GetMatchBetsQueryIntegrationTests : IntegrationTestBase
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
         Context.Users.Add(user);
+
+        // Create a league and add user as member so the membership check passes
+        var league = new LeagueBuilder()
+            .WithOwnerId(userId)
+            .Build();
+        Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
         SetCurrentUser(userId);
 
         var handler = new GetMatchBetsQueryHandler(Context, CurrentUserService);
+        // Query with non-existent league ID but user IS a member of an existing league
         var query = new GetMatchBetsQuery(Guid.NewGuid(), Guid.NewGuid());
 
         // Act
         var result = await handler.Handle(query, default);
 
-        // Assert
+        // Assert - Handler checks membership first (passes), then league existence (fails)
         await Assert.That(result.IsSuccess).IsFalse();
-        await Assert.That(result.Error).Contains("League not found");
+        await Assert.That(result.Error).IsEqualTo(BetErrors.LeagueNotFound);
     }
 
     [Test]

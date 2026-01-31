@@ -6,10 +6,15 @@ var sqlServer = builder.AddSqlServer("sql")
 
 var database = sqlServer.AddDatabase("extratime");
 
-// API project with reference to the database
+// Migration service - runs migrations and seeds data, then exits
+var migrations = builder.AddProject<Projects.ExtraTime_MigrationService>("migrations")
+    .WithReference(database)
+    .WaitFor(database);
+
+// API project with reference to the database - waits for migrations to complete
 var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WithReference(database)
-    .WaitFor(database)
+    .WaitForCompletion(migrations)
     .WithExternalHttpEndpoints();
 
 // Next.js frontend (using Bun)

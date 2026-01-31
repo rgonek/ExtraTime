@@ -10,6 +10,7 @@
     <Project Path="src/ExtraTime.Application/ExtraTime.Application.csproj" />
     <Project Path="src/ExtraTime.Domain/ExtraTime.Domain.csproj" />
     <Project Path="src/ExtraTime.Infrastructure/ExtraTime.Infrastructure.csproj" />
+    <Project Path="src/ExtraTime.MigrationService/ExtraTime.MigrationService.csproj" />
     <Project Path="src/ExtraTime.ServiceDefaults/ExtraTime.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/">

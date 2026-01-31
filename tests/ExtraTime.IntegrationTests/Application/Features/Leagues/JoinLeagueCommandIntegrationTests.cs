@@ -26,6 +26,9 @@ public sealed class JoinLeagueCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         var newUserId = Guid.NewGuid();
         var newUser = new UserBuilder().WithId(newUserId).Build();
         Context.Users.Add(newUser);
@@ -64,6 +67,9 @@ public sealed class JoinLeagueCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         var newUserId = Guid.NewGuid();
         var newUser = new UserBuilder().WithId(newUserId).Build();
         Context.Users.Add(newUser);
@@ -97,6 +103,9 @@ public sealed class JoinLeagueCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         var newUserId = Guid.NewGuid();
         var newUser = new UserBuilder().WithId(newUserId).Build();
         Context.Users.Add(newUser);
@@ -128,6 +137,9 @@ public sealed class JoinLeagueCommandIntegrationTests : IntegrationTestBase
             .Build();
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
+
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
 
         var newUserId = Guid.NewGuid();
         var newUser = new UserBuilder().WithId(newUserId).Build();
@@ -168,6 +180,9 @@ public sealed class JoinLeagueCommandIntegrationTests : IntegrationTestBase
         // Add as member first
         league.AddMember(existingMemberId, MemberRole.Member);
         await Context.SaveChangesAsync();
+
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
 
         SetCurrentUser(existingMemberId);
 

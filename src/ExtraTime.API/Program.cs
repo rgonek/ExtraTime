@@ -5,7 +5,6 @@ using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Bots.Services;
 using ExtraTime.Infrastructure;
 using ExtraTime.Infrastructure.Data;
-using ExtraTime.Infrastructure.Services;
 using ExtraTime.API.Features.Admin;
 using ExtraTime.API.Features.Auth;
 using ExtraTime.API.Features.Bots;
@@ -82,11 +81,7 @@ builder.Services.AddHangfireServer(options =>
     options.WorkerCount = 1;
 });
 
-// Run database migrations on startup in development
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddHostedService<DatabaseMigrationService>();
-}
+// Database migrations are handled by the MigrationService project in Aspire
 
 // Swagger with JWT support
 builder.Services.AddEndpointsApiExplorer();

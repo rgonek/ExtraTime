@@ -95,6 +95,13 @@ public sealed class ApplicationDbContext(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
         CancellationToken cancellationToken = default)
     {
+        // Check if using InMemory database - transactions are not supported
+        if (Database.ProviderName?.Contains("InMemory") == true)
+        {
+            // Execute without transaction for InMemory database
+            return await operation(cancellationToken);
+        }
+
         var strategy = Database.CreateExecutionStrategy();
 
         return await strategy.ExecuteAsync(async ct =>

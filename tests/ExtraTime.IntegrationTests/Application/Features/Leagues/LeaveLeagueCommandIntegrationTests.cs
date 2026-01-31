@@ -32,6 +32,9 @@ public sealed class LeaveLeagueCommandIntegrationTests : IntegrationTestBase
         league.AddMember(memberId, MemberRole.Member);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(memberId);
 
         var handler = new LeaveLeagueCommandHandler(Context, CurrentUserService);
@@ -66,6 +69,9 @@ public sealed class LeaveLeagueCommandIntegrationTests : IntegrationTestBase
         // Owner is added as Owner member
         league.AddMember(ownerId, MemberRole.Owner);
         await Context.SaveChangesAsync();
+
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
 
         SetCurrentUser(ownerId);
 

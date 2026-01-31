@@ -31,8 +31,10 @@ public sealed class RefreshTokenCommandHandler(
             if (existingToken.IsRevoked)
             {
                 // Revoke all active tokens for this user (potential token theft)
+                // IsActive = !IsRevoked && !IsExpired, expanded here for LINQ translation
+                var now = Clock.UtcNow;
                 var userTokens = await context.RefreshTokens
-                    .Where(rt => rt.UserId == existingToken.UserId && rt.IsActive)
+                    .Where(rt => rt.UserId == existingToken.UserId && rt.RevokedAt == null && rt.ExpiresAt > now)
                     .ToListAsync(cancellationToken);
 
                 foreach (var token in userTokens)

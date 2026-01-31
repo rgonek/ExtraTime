@@ -224,10 +224,13 @@ public sealed class CalculateBetResultsJobIntegrationTests : IntegrationTestBase
             .WithPointsEarned(0)
             .WithIsExactMatch(false)
             .WithIsCorrectResult(false)
-            .WithCalculatedAt(DateTime.UtcNow.AddHours(-1))
+            .WithCalculatedAt(DateTime.UtcNow.AddHours(-2))
             .Build();
         Context.BetResults.Add(existingResult);
         await Context.SaveChangesAsync();
+
+        // Small delay to ensure the new CalculatedAt will be different
+        await Task.Delay(50);
 
         var jobDispatcher = Substitute.For<IJobDispatcher>();
         var handler = new CalculateBetResultsCommandHandler(Context, jobDispatcher);

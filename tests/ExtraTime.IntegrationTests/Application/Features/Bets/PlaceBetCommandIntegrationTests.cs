@@ -44,6 +44,14 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
+        // Owner is automatically a member via League.Create, but reload to ensure Members collection is populated
+        league = await Context.Leagues
+            .Include(l => l.Members)
+            .FirstAsync(l => l.Id == league.Id);
+
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)
             .WithMatchDate(_now.AddHours(2))
@@ -101,6 +109,9 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
         Context.Matches.Add(match);
         await Context.SaveChangesAsync();
 
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
         SetCurrentUser(nonMemberId);
 
         var handler = new PlaceBetCommandHandler(Context, CurrentUserService);
@@ -130,6 +141,9 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
             .Build();
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
+
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
 
         // Match starts in 30 minutes, deadline is 60 minutes before = 30 minutes ago
         var match = new MatchBuilder()
@@ -167,6 +181,15 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
             .WithOwnerId(userId)
             .Build();
         Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        // Detach league to avoid concurrency issues in InMemory database
+        Context.Entry(league).State = EntityState.Detached;
+
+        // Owner is automatically a member via League.Create, but reload to ensure Members collection is populated
+        league = await Context.Leagues
+            .Include(l => l.Members)
+            .FirstAsync(l => l.Id == league.Id);
 
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)

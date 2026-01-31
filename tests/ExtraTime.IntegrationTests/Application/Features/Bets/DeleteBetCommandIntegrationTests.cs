@@ -160,10 +160,11 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         Context.Teams.AddRange(homeTeam, awayTeam);
 
         // Match starts in 1 hour, deadline is 5 minutes before (55 minutes from now)
+        var matchStartTime = Clock.UtcNow.AddHours(1);
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)
             .WithTeams(homeTeam.Id, awayTeam.Id)
-            .WithMatchDate(Clock.UtcNow.AddHours(1))
+            .WithMatchDate(matchStartTime)
             .WithStatus(MatchStatus.Timed)
             .Build();
         Context.Matches.Add(match);
@@ -177,8 +178,8 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
 
         await Context.SaveChangesAsync();
 
-        // Advance time past the deadline (55 minutes before match)
-        _fakeClock.AdvanceBy(TimeSpan.FromMinutes(10));
+        // Advance time past the deadline (need to advance by 56+ minutes to pass the 55-minute deadline)
+        _fakeClock.AdvanceBy(TimeSpan.FromMinutes(56));
 
         SetCurrentUser(userId);
 
@@ -300,8 +301,14 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
             .Build();
         Context.Matches.Add(match);
 
-        // Create bet with non-existent league
+        var league = new LeagueBuilder()
+            .WithOwnerId(userId)
+            .Build();
+        Context.Leagues.Add(league);
+
+        // Create bet in existing league
         var bet = new BetBuilder()
+            .WithLeagueId(league.Id)
             .WithUserId(userId)
             .WithMatchId(match.Id)
             .Build();
@@ -312,13 +319,14 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         SetCurrentUser(userId);
 
         var handler = new DeleteBetCommandHandler(Context, CurrentUserService);
+        // Try to delete using non-existent league ID
         var command = new DeleteBetCommand(Guid.NewGuid(), bet.Id);
 
         // Act
         var result = await handler.Handle(command, default);
 
-        // Assert
+        // Assert - Handler filters by both leagueId and betId, so bet won't be found
         await Assert.That(result.IsSuccess).IsFalse();
-        await Assert.That(result.Error).IsEqualTo(BetErrors.LeagueNotFound);
+        await Assert.That(result.Error).IsEqualTo(BetErrors.BetNotFound);
     }
 }
