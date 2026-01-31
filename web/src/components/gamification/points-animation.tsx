@@ -15,7 +15,7 @@ interface PointsAnimationProps {
   onComplete?: () => void;
 }
 
-// Styling for each variant
+// Styling for each variant (with enhanced dark mode shadows)
 const variantStyles: Record<PointsVariant, {
   gradient: string;
   shadow: string;
@@ -24,25 +24,25 @@ const variantStyles: Record<PointsVariant, {
 }> = {
   exact: {
     gradient: 'bg-gradient-to-br from-success via-emerald-500 to-green-600',
-    shadow: 'shadow-[0_4px_20px_rgba(34,197,94,0.5)]',
+    shadow: 'shadow-[0_4px_20px_rgba(34,197,94,0.5)] dark:shadow-[0_4px_24px_rgba(74,222,128,0.6),0_0_8px_rgba(74,222,128,0.4)]',
     icon: <Target className="w-5 h-5" />,
     iconBg: 'bg-white/20',
   },
   correct: {
     gradient: 'bg-gradient-to-br from-primary via-emerald-500 to-teal-500',
-    shadow: 'shadow-[0_4px_20px_rgba(16,185,129,0.5)]',
+    shadow: 'shadow-[0_4px_20px_rgba(16,185,129,0.5)] dark:shadow-[0_4px_24px_rgba(52,211,153,0.6),0_0_8px_rgba(52,211,153,0.4)]',
     icon: <CheckCircle2 className="w-5 h-5" />,
     iconBg: 'bg-white/20',
   },
   incorrect: {
     gradient: 'bg-gradient-to-br from-destructive to-red-600',
-    shadow: 'shadow-[0_4px_20px_rgba(239,68,68,0.5)]',
+    shadow: 'shadow-[0_4px_20px_rgba(239,68,68,0.5)] dark:shadow-[0_4px_24px_rgba(248,113,113,0.6),0_0_8px_rgba(248,113,113,0.4)]',
     icon: <XCircle className="w-5 h-5" />,
     iconBg: 'bg-white/20',
   },
   default: {
     gradient: 'bg-gradient-to-br from-primary to-secondary',
-    shadow: 'shadow-[0_4px_20px_rgba(16,185,129,0.4)]',
+    shadow: 'shadow-[0_4px_20px_rgba(16,185,129,0.4)] dark:shadow-[0_4px_24px_rgba(52,211,153,0.5),0_0_8px_rgba(52,211,153,0.3)]',
     icon: null,
     iconBg: '',
   },

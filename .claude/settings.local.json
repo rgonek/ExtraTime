@@ -66,7 +66,9 @@
       "Bash(Remove-Item -Path \"D:\\\\Dev\\\\ExtraTime\\\\web\\\\src\\\\components\\\\standings\\\\rank-badge.tsx\" -Force)",
       "Bash(npm run type-check:*)",
       "Bash(npm run)",
-      "Bash(Select-Object -First 100)"
+      "Bash(Select-Object -First 100)",
+      "Bash(Select-Object -First 30)",
+      "Bash(pushd:*)"
     ]
   }
 }

@@ -47,12 +47,12 @@ const tierGradients = {
   bronze: 'bg-gradient-to-br from-orange-400 via-amber-600 to-orange-500',
 };
 
-// Glow colors for each tier
+// Glow colors for each tier (with dark mode enhanced values)
 const tierGlows = {
-  default: 'shadow-[0_0_20px_rgba(16,185,129,0.4)]',
-  gold: 'shadow-[0_0_20px_rgba(251,191,36,0.5)]',
-  silver: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
-  bronze: 'shadow-[0_0_20px_rgba(251,146,60,0.5)]',
+  default: 'shadow-[0_0_20px_rgba(16,185,129,0.4)] dark:shadow-[0_0_24px_rgba(52,211,153,0.5),0_0_8px_rgba(52,211,153,0.3)]',
+  gold: 'shadow-[0_0_20px_rgba(251,191,36,0.5)] dark:shadow-[0_0_24px_rgba(251,191,36,0.6),0_0_8px_rgba(251,191,36,0.4)]',
+  silver: 'shadow-[0_0_20px_rgba(148,163,184,0.5)] dark:shadow-[0_0_24px_rgba(203,213,225,0.5),0_0_8px_rgba(203,213,225,0.3)]',
+  bronze: 'shadow-[0_0_20px_rgba(251,146,60,0.5)] dark:shadow-[0_0_24px_rgba(251,146,60,0.6),0_0_8px_rgba(251,146,60,0.4)]',
 };
 
 // Ring colors for outer decoration

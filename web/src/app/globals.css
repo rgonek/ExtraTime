@@ -170,7 +170,7 @@
   --background: #0f172a;
   --foreground: #f1f5f9;
 
-  /* Card */
+  /* Card - slightly lighter for better separation */
   --card: #1e293b;
   --card-foreground: #f1f5f9;
 
@@ -178,46 +178,46 @@
   --popover: #1e293b;
   --popover-foreground: #f1f5f9;
 
-  /* Primary - Emerald Green (slightly brighter for dark mode) */
-  --primary: #10b981;
-  --primary-foreground: #ffffff;
-  --primary-hover: #34d399;
-  --primary-light: rgba(16, 185, 129, 0.2);
+  /* Primary - Emerald Green (brighter for dark mode visibility) */
+  --primary: #34d399;
+  --primary-foreground: #0f172a;
+  --primary-hover: #6ee7b7;
+  --primary-light: rgba(52, 211, 153, 0.15);
 
-  /* Secondary - Blue */
-  --secondary: #3b82f6;
-  --secondary-foreground: #ffffff;
-  --secondary-hover: #60a5fa;
-  --secondary-light: rgba(59, 130, 246, 0.2);
+  /* Secondary - Blue (brighter for dark mode) */
+  --secondary: #60a5fa;
+  --secondary-foreground: #0f172a;
+  --secondary-hover: #93c5fd;
+  --secondary-light: rgba(96, 165, 250, 0.15);
 
-  /* Accent - Amber */
-  --accent: #f59e0b;
-  --accent-foreground: #ffffff;
-  --accent-hover: #fbbf24;
-  --accent-light: rgba(245, 158, 11, 0.2);
+  /* Accent - Amber (brighter for dark mode) */
+  --accent: #fbbf24;
+  --accent-foreground: #0f172a;
+  --accent-hover: #fcd34d;
+  --accent-light: rgba(251, 191, 36, 0.15);
 
-  /* Muted */
+  /* Muted - slightly lighter for better contrast */
   --muted: #1e293b;
   --muted-foreground: #94a3b8;
 
-  /* Destructive */
+  /* Destructive - brighter red for visibility */
   --destructive: #f87171;
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: #0f172a;
 
-  /* Semantic Colors */
+  /* Semantic Colors - brighter for dark mode visibility */
   --success: #4ade80;
   --success-foreground: #0f172a;
-  --warning: #facc15;
+  --warning: #fde047;
   --warning-foreground: #0f172a;
   --info: #38bdf8;
   --info-foreground: #0f172a;
 
-  /* Border & Input */
-  --border: #334155;
+  /* Border & Input - more visible */
+  --border: #475569;
   --input: #334155;
-  --ring: #10b981;
+  --ring: #34d399;
 
-  /* Chart Colors */
+  /* Chart Colors - vibrant for dark backgrounds */
   --chart-1: #34d399;
   --chart-2: #60a5fa;
   --chart-3: #fbbf24;
@@ -227,17 +227,17 @@
   /* Sidebar */
   --sidebar: #1e293b;
   --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #10b981;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: #34d399;
+  --sidebar-primary-foreground: #0f172a;
   --sidebar-accent: #334155;
   --sidebar-accent-foreground: #f1f5f9;
-  --sidebar-border: #334155;
-  --sidebar-ring: #10b981;
+  --sidebar-border: #475569;
+  --sidebar-ring: #34d399;
 
-  /* Rank Colors - for leaderboard (adjusted for dark mode) */
-  --rank-gold: linear-gradient(135deg, #fcd34d, #fbbf24);
-  --rank-silver: linear-gradient(135deg, #cbd5e1, #64748b);
-  --rank-bronze: linear-gradient(135deg, #fb923c, #ea580c);
+  /* Rank Colors - brighter for dark mode */
+  --rank-gold: linear-gradient(135deg, #fde047, #fbbf24);
+  --rank-silver: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  --rank-bronze: linear-gradient(135deg, #fdba74, #f97316);
 }
 
 /* ============ BASE STYLES ============ */
@@ -455,4 +455,134 @@
 
 .glow-success {
   box-shadow: 0 0 20px color-mix(in srgb, var(--success) 40%, transparent);
+}
+
+/* ============ DARK MODE SPECIFIC STYLES ============ */
+
+/* Dark mode shadows - use colored/lighter shadows for visibility */
+.dark .shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.dark .shadow-md {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow-lg {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+.dark .shadow-xl {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark mode enhanced glows - more visible on dark backgrounds */
+.dark .glow-primary {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--primary) 50%, transparent),
+              0 0 8px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.dark .glow-secondary {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--secondary) 50%, transparent),
+              0 0 8px color-mix(in srgb, var(--secondary) 30%, transparent);
+}
+
+.dark .glow-accent {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 50%, transparent),
+              0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.dark .glow-success {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--success) 50%, transparent),
+              0 0 8px color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+/* Dark mode card hover - add subtle border glow */
+.dark .hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5),
+              0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+/* Dark mode shimmer - use softer white for visibility */
+.dark .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Dark mode pulse-glow - enhanced visibility */
+.dark .animate-pulse-glow {
+  animation: pulse-glow-dark 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-dark {
+  0%, 100% {
+    box-shadow: 0 0 12px var(--primary), 0 0 4px var(--primary);
+  }
+  50% {
+    box-shadow: 0 0 28px var(--primary), 0 0 8px var(--primary);
+  }
+}
+
+/* Dark mode card backgrounds - subtle gradients */
+.dark .bg-gradient-card {
+  background: linear-gradient(135deg,
+    rgba(30, 41, 59, 1) 0%,
+    rgba(51, 65, 85, 0.5) 100%);
+}
+
+/* Dark mode text gradient - brighter colors */
+.dark .text-gradient-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Dark mode rank badges - enhanced vibrancy */
+.dark .bg-rank-gold {
+  background: linear-gradient(135deg, #fde047, #fbbf24);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+}
+
+.dark .bg-rank-silver {
+  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  box-shadow: 0 0 12px rgba(148, 163, 184, 0.3);
+}
+
+.dark .bg-rank-bronze {
+  background: linear-gradient(135deg, #fdba74, #f97316);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+}
+
+/* Dark mode input focus - more visible ring */
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+}
+
+/* Dark mode border visibility improvements */
+.dark .border {
+  border-color: var(--border);
+}
+
+/* Dark mode card elevated variant */
+.dark [data-variant="elevated"] {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5),
+              0 0 0 1px color-mix(in srgb, var(--border) 30%, transparent);
+}
+
+/* Dark mode card gradient variant - enhanced colors */
+.dark [data-variant="gradient"] {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--primary) 15%, var(--card)),
+    var(--card) 50%,
+    color-mix(in srgb, var(--secondary) 15%, var(--card)));
 }

@@ -44,7 +44,7 @@ export function AppShell({ children }: AppShellProps) {
             href="/dashboard"
             className="flex items-center gap-3 group"
           >
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary shadow-md shadow-primary/20 group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow duration-200">
+            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary shadow-md shadow-primary/20 group-hover:shadow-lg group-hover:shadow-primary/30 dark:shadow-primary/30 dark:group-hover:shadow-primary/40 transition-shadow duration-200">
               <Trophy className="h-5 w-5 text-white" />
             </div>
             <span className="font-bold text-xl tracking-tight">

@@ -29,7 +29,7 @@ const badgeVariants = cva(
           "bg-info/15 text-info border-info/20 dark:bg-info/20",
         // Sports/Gamification variants
         live:
-          "bg-destructive text-white animate-pulse shadow-sm shadow-destructive/50",
+          "bg-destructive text-white animate-pulse shadow-sm shadow-destructive/50 dark:bg-destructive dark:shadow-destructive/60",
         points:
           "bg-primary/15 text-primary font-bold border-primary/20 dark:bg-primary/20",
         streak:

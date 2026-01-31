@@ -53,24 +53,24 @@ export function RankBadge({
     switch (rank) {
       case 1:
         return {
-          gradient: 'bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-500',
-          shadow: 'shadow-[0_2px_12px_rgba(251,191,36,0.4)]',
+          gradient: 'bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-500 dark:from-yellow-300 dark:via-amber-400 dark:to-yellow-500',
+          shadow: 'shadow-[0_2px_12px_rgba(251,191,36,0.4)] dark:shadow-[0_2px_16px_rgba(251,191,36,0.5),0_0_8px_rgba(251,191,36,0.3)]',
           icon: <Crown className="w-3/5 h-3/5" />,
-          ring: 'ring-2 ring-yellow-300/50',
+          ring: 'ring-2 ring-yellow-300/50 dark:ring-yellow-400/40',
         };
       case 2:
         return {
-          gradient: 'bg-gradient-to-br from-slate-300 via-gray-200 to-slate-400',
-          shadow: 'shadow-[0_2px_12px_rgba(148,163,184,0.4)]',
+          gradient: 'bg-gradient-to-br from-slate-300 via-gray-200 to-slate-400 dark:from-slate-200 dark:via-slate-300 dark:to-slate-400',
+          shadow: 'shadow-[0_2px_12px_rgba(148,163,184,0.4)] dark:shadow-[0_2px_16px_rgba(203,213,225,0.4),0_0_8px_rgba(203,213,225,0.2)]',
           icon: <Medal className="w-3/5 h-3/5" />,
-          ring: 'ring-2 ring-slate-300/50',
+          ring: 'ring-2 ring-slate-300/50 dark:ring-slate-300/40',
         };
       case 3:
         return {
-          gradient: 'bg-gradient-to-br from-orange-400 via-amber-500 to-orange-500',
-          shadow: 'shadow-[0_2px_12px_rgba(251,146,60,0.4)]',
+          gradient: 'bg-gradient-to-br from-orange-400 via-amber-500 to-orange-500 dark:from-orange-300 dark:via-amber-400 dark:to-orange-500',
+          shadow: 'shadow-[0_2px_12px_rgba(251,146,60,0.4)] dark:shadow-[0_2px_16px_rgba(251,146,60,0.5),0_0_8px_rgba(251,146,60,0.3)]',
           icon: <Award className="w-3/5 h-3/5" />,
-          ring: 'ring-2 ring-orange-300/50',
+          ring: 'ring-2 ring-orange-300/50 dark:ring-orange-400/40',
         };
       default:
         return {

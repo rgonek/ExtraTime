@@ -513,24 +513,41 @@ accent: "bg-accent text-accent-foreground"
 
 ---
 
-### Phase 7: Dark Mode Polish
+### Phase 7: Dark Mode Polish ✅ COMPLETED
 **Goal:** Ensure dark mode looks great
+**Status:** Completed on 2026-01-31
 
 #### 7.1 Dark Mode Color Adjustments
 
+**Changes Made:**
+- Updated dark mode primary/secondary/accent colors to be brighter (emerald-400, blue-400, amber-400) for better visibility
+- Changed foreground colors to dark (#0f172a) for better contrast on bright buttons
+- Made border color more visible (#475569 instead of #334155)
+- Increased warning color brightness (#fde047) for better visibility
+- Updated ring color to match brighter primary
+
 **Tasks:**
-- [ ] Test all components in dark mode
-- [ ] Adjust opacity values for backgrounds
-- [ ] Ensure sufficient contrast
-- [ ] Update shadow values for dark mode
-- [ ] Test gamification glow effects in dark mode
+- [x] Test all components in dark mode
+- [x] Adjust opacity values for backgrounds (reduced to 0.15 for light variants)
+- [x] Ensure sufficient contrast (brighter colors, darker foregrounds)
+- [x] Update shadow values for dark mode
+- [x] Test gamification glow effects in dark mode
 
 #### 7.2 Dark Mode Specific Overrides
 
+**Changes Made:**
+- Added dark mode shadow utilities with increased intensity
+- Added enhanced glow effects for dark mode (double-shadow technique)
+- Added dark mode shimmer animation (softer white)
+- Added dark mode pulse-glow animation with increased intensity
+- Added dark mode card gradient styling
+- Added dark mode rank badge enhancements with glows
+- Updated gamification components (achievement-badge, level-indicator, rank-badge, streak-counter, points-animation) with dark mode enhanced shadows
+
 **Tasks:**
-- [ ] Add dark mode specific styles where needed
-- [ ] Test all pages in dark mode
-- [ ] Fix any contrast issues
+- [x] Add dark mode specific styles where needed
+- [x] Test all pages in dark mode
+- [x] Fix any contrast issues
 
 ---
 
@@ -606,23 +623,24 @@ Week 3: Testing
 
 ### Modified Files
 ```
-web/src/app/globals.css                              # Colors, radius, shadows, animations
+web/src/app/globals.css                              # Colors, radius, shadows, animations, dark mode overrides
 web/src/app/layout.tsx                               # Font change
-web/src/components/ui/button.tsx                     # New variants, shadows, animations
+web/src/components/ui/button.tsx                     # New variants, shadows, animations, dark mode shadows
 web/src/components/ui/card.tsx                       # New variants, hover effects
-web/src/components/ui/badge.tsx                      # New semantic variants
+web/src/components/ui/badge.tsx                      # New semantic variants, dark mode live badge
 web/src/components/ui/avatar.tsx                     # Size variants, stack
 web/src/components/ui/progress.tsx                   # Gradient variant
 web/src/components/ui/input.tsx                      # Score input variant
-web/src/components/gamification/streak-counter.tsx  # Enhanced styling
-web/src/components/gamification/achievement-badge.tsx # Glow, variants
-web/src/components/gamification/level-indicator.tsx # Gradient, glow
-web/src/components/gamification/points-animation.tsx # Enhanced animation
+web/src/components/gamification/streak-counter.tsx  # Enhanced styling, dark mode flame glow
+web/src/components/gamification/achievement-badge.tsx # Glow, variants, dark mode enhanced glows
+web/src/components/gamification/level-indicator.tsx # Gradient, glow, dark mode enhanced glow
+web/src/components/gamification/rank-badge.tsx      # Dark mode gradients and shadows
+web/src/components/gamification/points-animation.tsx # Enhanced animation, dark mode shadows
 web/src/components/leagues/league-card.tsx          # New design
 web/src/components/bets/match-card.tsx              # New design
 web/src/components/standings/leaderboard.tsx        # New design
 web/src/components/leagues/member-list.tsx          # New design
-web/src/components/layout/app-shell.tsx             # Updated styling
+web/src/components/layout/app-shell.tsx             # Updated styling, dark mode logo shadow
 web/src/components/shared/animated-container.tsx    # Updated tokens
 ```
 

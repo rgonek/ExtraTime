@@ -77,7 +77,7 @@ export function LevelIndicator({
         className={cn(
           'relative flex items-center justify-center rounded-full',
           'bg-gradient-to-br from-primary via-primary to-secondary',
-          'shadow-[0_0_20px_rgba(16,185,129,0.3)]',
+          'shadow-[0_0_20px_rgba(16,185,129,0.3)] dark:shadow-[0_0_24px_rgba(52,211,153,0.4),0_0_8px_rgba(52,211,153,0.25)]',
           badgeSizeClasses[resolvedSize]
         )}
         whileHover={{ scale: 1.05 }}

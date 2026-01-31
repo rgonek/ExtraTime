@@ -10,17 +10,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-md shadow-primary/25 hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30",
+          "bg-primary text-primary-foreground shadow-md shadow-primary/25 hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 dark:shadow-primary/35 dark:hover:shadow-primary/45",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-md shadow-secondary/25 hover:bg-secondary/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-secondary/30",
+          "bg-secondary text-secondary-foreground shadow-md shadow-secondary/25 hover:bg-secondary/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-secondary/30 dark:shadow-secondary/35 dark:hover:shadow-secondary/45",
         accent:
-          "bg-accent text-accent-foreground shadow-md shadow-accent/25 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/30",
+          "bg-accent text-accent-foreground shadow-md shadow-accent/25 hover:bg-accent/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/30 dark:shadow-accent/35 dark:hover:shadow-accent/45",
         destructive:
-          "bg-destructive text-white shadow-md shadow-destructive/25 hover:bg-destructive/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-destructive/30 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/80",
+          "bg-destructive text-white shadow-md shadow-destructive/25 hover:bg-destructive/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-destructive/30 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive dark:shadow-destructive/40 dark:hover:shadow-destructive/50",
         outline:
-          "border bg-background shadow-sm hover:bg-muted hover:border-primary/50 hover:-translate-y-0.5 dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border bg-background shadow-sm hover:bg-muted hover:border-primary/50 hover:-translate-y-0.5 dark:bg-input/30 dark:border-input dark:hover:bg-input/50 dark:hover:border-primary/40",
         ghost:
-          "hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+          "hover:bg-muted hover:text-foreground dark:hover:bg-muted/60",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

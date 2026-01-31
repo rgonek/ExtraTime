@@ -73,8 +73,8 @@ export function StreakCounter({
           className={cn(
             iconSizeClass,
             flameColorClass,
-            isOnFire && 'drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]',
-            isHotStreak && 'drop-shadow-[0_0_14px_rgba(249,115,22,0.6)]'
+            isOnFire && 'drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] dark:drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]',
+            isHotStreak && 'drop-shadow-[0_0_14px_rgba(249,115,22,0.6)] dark:drop-shadow-[0_0_18px_rgba(251,146,60,0.7)]'
           )}
         />
       </div>
