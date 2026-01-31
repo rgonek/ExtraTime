@@ -5,8 +5,12 @@ using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
+using ExtraTime.IntegrationTests.Attributes;
+
 namespace ExtraTime.IntegrationTests.Application.Features.Bots;
 
+[TestCategory(TestCategories.Significant)]
+[TestCategory(TestCategories.RequiresDatabase)]
 public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
 {
     [Test]

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 
 [TestCategory(TestCategories.Significant)]
+[TestCategory(TestCategories.RequiresDatabase)]
 public sealed class LeaveLeagueCommandIntegrationTests : IntegrationTestBase
 {
     [Test]

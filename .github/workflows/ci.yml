@@ -27,6 +27,16 @@ jobs:
       - run: dotnet restore
       - run: dotnet build --no-restore --configuration Release
 
+      # Run Integration tests with InMemory (excluding tests that fail with InMemory)
+      - name: Run Integration Tests
+        run: |
+          dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj \
+            --no-build --configuration Release \
+            --filter "Category!=RequiresDatabase" \
+            -- --coverage --coverage-output-format cobertura
+        env:
+          TEST_DATABASE_TYPE: InMemory
+
       # Run all unit and domain tests (they're fast and work with InMemory)
       - name: Run Unit Tests
         run: |

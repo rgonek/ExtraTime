@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
-[TestCategory(TestCategories.Significant)]
+[TestCategory(TestCategories.RequiresDatabase)]
 public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
 {
     private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);

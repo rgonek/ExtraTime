@@ -1,15 +1,18 @@
 using ExtraTime.Application.Features.Leagues.Commands.DeleteLeague;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class DeleteLeagueCommandIntegrationTests : IntegrationTestBase
 {
     [Test]
+    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task DeleteLeague_AsOwner_DeletesLeagueAndMembers()
     {
         // Arrange
