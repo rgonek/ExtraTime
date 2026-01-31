@@ -17,18 +17,18 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
     private FakeClock _fakeClock = null!;
 
     [Before(Test)]
-    public new async Task InitializeAsync()
+    public new async Task SetupAsync()
     {
-        await base.InitializeAsync();
+        await base.SetupAsync();
         _fakeClock = new FakeClock(DateTime.UtcNow);
         Clock.Current = _fakeClock;
     }
 
     [After(Test)]
-    public new async ValueTask DisposeAsync()
+    public new async ValueTask TeardownAsync()
     {
         Clock.Current = null!;
-        await base.DisposeAsync();
+        await base.TeardownAsync();
     }
 
     [Test]

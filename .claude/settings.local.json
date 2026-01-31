@@ -68,7 +68,10 @@
       "Bash(npm run)",
       "Bash(Select-Object -First 100)",
       "Bash(Select-Object -First 30)",
-      "Bash(pushd:*)"
+      "Bash(pushd:*)",
+      "WebFetch(domain:docs.football-data.org)",
+      "WebFetch(domain:www.football-data.org)",
+      "Bash(xargs ls:*)"
     ]
   }
 }

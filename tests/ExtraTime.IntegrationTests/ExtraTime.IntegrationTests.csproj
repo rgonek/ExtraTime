@@ -27,6 +27,11 @@
     <Using Include="TUnit.Assertions.Extensions" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="tunit.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\ExtraTime.Infrastructure\ExtraTime.Infrastructure.csproj" />
     <ProjectReference Include="..\ExtraTime.UnitTests\ExtraTime.UnitTests.csproj" />
   </ItemGroup>

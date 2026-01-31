@@ -9,22 +9,132 @@ using Testcontainers.MsSql;
 
 namespace ExtraTime.IntegrationTests.Fixtures;
 
+/// <summary>
+/// Manages a pool of test databases for parallel test execution.
+/// Uses Testcontainers for SQL Server and Respawn for fast database resets.
+/// </summary>
 public sealed class DatabaseFixture : IAsyncDisposable
 {
-    private static readonly int PoolSize = 4; // Number of parallel databases
+    private static readonly int PoolSize = Environment.ProcessorCount > 4
+        ? 4
+        : Math.Max(2, Environment.ProcessorCount);
+
     private MsSqlContainer? _container;
-    private Respawner[] _respawners = new Respawner[PoolSize];
-    private SqlConnection[] _connections = new SqlConnection[PoolSize];
-    private bool[] _initialized = new bool[PoolSize];
+    private readonly Respawner?[] _respawners;
+    private readonly SqlConnection?[] _connections;
+    private readonly SemaphoreSlim[] _poolLocks;
     private int _currentIndex = -1;
+
+    private bool _isInitialized;
     private readonly SemaphoreSlim _initLock = new(1, 1);
-    private readonly SemaphoreSlim[] _poolLocks = Enumerable.Range(0, PoolSize).Select(_ => new SemaphoreSlim(1, 1)).ToArray();
 
     public bool UseInMemory { get; private set; }
-    public string ConnectionString => UseInMemory || _container == null ? string.Empty : _container.GetConnectionString();
+    public string BaseConnectionString { get; private set; } = string.Empty;
+
+    public DatabaseFixture()
+    {
+        _respawners = new Respawner?[PoolSize];
+        _connections = new SqlConnection?[PoolSize];
+        _poolLocks = Enumerable.Range(0, PoolSize)
+            .Select(_ => new SemaphoreSlim(1, 1))
+            .ToArray();
+    }
 
     /// <summary>
-    /// Gets a database from the pool. Must be released after use.
+    /// Initializes the fixture. Should be called once before any tests run.
+    /// Thread-safe and idempotent.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        if (_isInitialized)
+            return;
+
+        await _initLock.WaitAsync();
+        try
+        {
+            if (_isInitialized)
+                return;
+
+            var dbType = Environment.GetEnvironmentVariable("TEST_DATABASE_TYPE");
+            if (string.Equals(dbType, "InMemory", StringComparison.OrdinalIgnoreCase))
+            {
+                UseInMemory = true;
+                _isInitialized = true;
+                return;
+            }
+
+            try
+            {
+                await InitializeSqlServerAsync();
+                _isInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                await Console.Error.WriteLineAsync(
+                    $"[DatabaseFixture] Failed to initialize SQL Server container, falling back to InMemory: {ex.Message}");
+                UseInMemory = true;
+                _isInitialized = true;
+            }
+        }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+
+    private async Task InitializeSqlServerAsync()
+    {
+        _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
+            .WithReuse(true)
+            .Build();
+
+        await _container.StartAsync();
+        BaseConnectionString = _container.GetConnectionString();
+
+        // Initialize all databases in the pool in parallel
+        var initTasks = Enumerable.Range(0, PoolSize)
+            .Select(InitializeDatabaseAsync)
+            .ToArray();
+
+        await Task.WhenAll(initTasks);
+    }
+
+    private async Task InitializeDatabaseAsync(int index)
+    {
+        var dbName = $"ExtraTime_Test_{index}";
+
+        // Create database
+        await using (var masterConnection = new SqlConnection(BaseConnectionString))
+        {
+            await masterConnection.OpenAsync();
+            await using var cmd = new SqlCommand(
+                $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{dbName}') CREATE DATABASE [{dbName}]",
+                masterConnection);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        // Connect to specific database and run migrations
+        var dbConnectionString = $"{BaseConnectionString};Database={dbName}";
+        _connections[index] = new SqlConnection(dbConnectionString);
+        await _connections[index]!.OpenAsync();
+
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseSqlServer(dbConnectionString)
+            .Options;
+
+        var mockCurrentUserService = Substitute.For<ICurrentUserService>();
+        var mockMediator = Substitute.For<IMediator>();
+        await using var context = new ApplicationDbContext(options, mockCurrentUserService, mockMediator);
+        await context.Database.MigrateAsync();
+
+        _respawners[index] = await Respawner.CreateAsync(_connections[index]!, new RespawnerOptions
+        {
+            DbAdapter = DbAdapter.SqlServer
+        });
+    }
+
+    /// <summary>
+    /// Acquires a database from the pool. The returned item must be disposed after use.
     /// </summary>
     public async Task<DatabasePoolItem> AcquireDatabaseAsync()
     {
@@ -33,157 +143,55 @@ public sealed class DatabaseFixture : IAsyncDisposable
             return new DatabasePoolItem(-1, string.Empty, null, null, null);
         }
 
-        await _initLock.WaitAsync();
-        try
-        {
-            await EnsureInitializedAsync();
-        }
-        finally
-        {
-            _initLock.Release();
-        }
+        // Round-robin selection with atomic increment
+        var index = (uint)Interlocked.Increment(ref _currentIndex) % PoolSize;
 
-        // Round-robin selection
-        var index = Interlocked.Increment(ref _currentIndex) % PoolSize;
-        
+        // Wait for this database slot to be available
         await _poolLocks[index].WaitAsync();
-        
-        var dbName = $"ExtraTime_Test_{index}";
-        var connectionString = $"{ConnectionString};Database={dbName}";
-        
-        // Ensure database exists
-        using (var masterConnection = new SqlConnection(ConnectionString))
-        {
-            await masterConnection.OpenAsync();
-            using var cmd = new SqlCommand(
-                $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{dbName}') CREATE DATABASE [{dbName}]", 
-                masterConnection);
-            await cmd.ExecuteNonQueryAsync();
-        }
 
-        // Reset database before use
+        var dbName = $"ExtraTime_Test_{index}";
+        var connectionString = $"{BaseConnectionString};Database={dbName}";
+
+        // Reset database state before returning
         if (_respawners[index] != null && _connections[index] != null)
         {
-            await _respawners[index].ResetAsync(_connections[index]);
+            await _respawners[index]!.ResetAsync(_connections[index]!);
         }
 
-        return new DatabasePoolItem(index, connectionString, _respawners[index], _connections[index], _poolLocks[index]);
-    }
-
-    public async Task EnsureInitializedAsync()
-    {
-        if (_initialized[0])
-            return;
-
-        await _initLock.WaitAsync();
-        try
-        {
-            if (_initialized[0])
-                return;
-
-            // Check for environment variable configuration
-            var dbType = Environment.GetEnvironmentVariable("TEST_DATABASE_TYPE");
-            if (string.Equals(dbType, "InMemory", StringComparison.OrdinalIgnoreCase))
-            {
-                UseInMemory = true;
-                for (int i = 0; i < PoolSize; i++)
-                    _initialized[i] = true;
-                return;
-            }
-
-            try
-            {
-                _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
-                    .WithReuse(true) // Reuse container across test runs
-                    .Build();
-
-                await _container.StartAsync();
-
-                // Initialize all databases in the pool
-                for (int i = 0; i < PoolSize; i++)
-                {
-                    var dbName = $"ExtraTime_Test_{i}";
-                    
-                    // Create database
-                    using (var masterConnection = new SqlConnection(ConnectionString))
-                    {
-                        await masterConnection.OpenAsync();
-                        using var cmd = new SqlCommand(
-                            $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{dbName}') CREATE DATABASE [{dbName}]", 
-                            masterConnection);
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-
-                    // Connect to specific database and run migrations
-                    var dbConnectionString = $"{ConnectionString};Database={dbName}";
-                    _connections[i] = new SqlConnection(dbConnectionString);
-                    await _connections[i].OpenAsync();
-
-                    var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                        .UseSqlServer(dbConnectionString)
-                        .Options;
-
-                    var mockCurrentUserService = Substitute.For<ICurrentUserService>();
-                    var mockMediator = Substitute.For<IMediator>();
-                    await using var context = new ApplicationDbContext(options, mockCurrentUserService, mockMediator);
-                    await context.Database.MigrateAsync();
-
-                    _respawners[i] = await Respawner.CreateAsync(_connections[i], new RespawnerOptions
-                    {
-                        DbAdapter = DbAdapter.SqlServer
-                    });
-
-                    _initialized[i] = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Docker not available, fallback to InMemory
-                await Console.Error.WriteLineAsync($"[DatabaseFixture] Failed to initialize MsSqlContainer: {ex}");
-                UseInMemory = true;
-                for (int i = 0; i < PoolSize; i++)
-                    _initialized[i] = true;
-            }
-        }
-        finally
-        {
-            _initLock.Release();
-        }
-    }
-
-    public async Task ResetDatabaseAsync(int poolIndex)
-    {
-        if (UseInMemory || poolIndex < 0 || poolIndex >= PoolSize) return;
-
-        if (_respawners[poolIndex] != null && _connections[poolIndex] != null)
-        {
-            await _respawners[poolIndex].ResetAsync(_connections[poolIndex]);
-        }
-    }
-
-    public void ReleaseDatabase(int poolIndex)
-    {
-        if (poolIndex >= 0 && poolIndex < PoolSize)
-        {
-            _poolLocks[poolIndex].Release();
-        }
+        return new DatabasePoolItem(
+            (int)index,
+            connectionString,
+            _respawners[index],
+            _connections[index],
+            _poolLocks[index]);
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (UseInMemory) return;
+        if (UseInMemory)
+            return;
 
-        for (int i = 0; i < PoolSize; i++)
+        foreach (var connection in _connections)
         {
-            if (_connections[i] != null)
-                await _connections[i].DisposeAsync();
+            if (connection != null)
+                await connection.DisposeAsync();
         }
+
+        foreach (var lockItem in _poolLocks)
+        {
+            lockItem.Dispose();
+        }
+
+        _initLock.Dispose();
 
         if (_container != null)
             await _container.DisposeAsync();
     }
 }
 
+/// <summary>
+/// Represents a database acquired from the pool. Must be disposed after use.
+/// </summary>
 public sealed class DatabasePoolItem : IAsyncDisposable
 {
     public int PoolIndex { get; }
@@ -191,8 +199,14 @@ public sealed class DatabasePoolItem : IAsyncDisposable
     public Respawner? Respawner { get; }
     public SqlConnection? Connection { get; }
     private readonly SemaphoreSlim? _lock;
+    private bool _released;
 
-    public DatabasePoolItem(int poolIndex, string connectionString, Respawner? respawner, SqlConnection? connection, SemaphoreSlim? lockItem)
+    public DatabasePoolItem(
+        int poolIndex,
+        string connectionString,
+        Respawner? respawner,
+        SqlConnection? connection,
+        SemaphoreSlim? lockItem)
     {
         PoolIndex = poolIndex;
         ConnectionString = connectionString;
@@ -203,6 +217,10 @@ public sealed class DatabasePoolItem : IAsyncDisposable
 
     public void Release()
     {
+        if (_released)
+            return;
+
+        _released = true;
         _lock?.Release();
     }
 

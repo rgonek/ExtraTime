@@ -7,38 +7,31 @@ using NSubstitute;
 
 namespace ExtraTime.IntegrationTests.Common;
 
+/// <summary>
+/// Base class for integration tests. Provides access to database context and common test utilities.
+/// The database fixture is initialized once per test assembly via GlobalHooks.
+/// </summary>
 public abstract class IntegrationTestBase : IAsyncDisposable
 {
-    private static DatabaseFixture? _fixture;
     private DatabasePoolItem? _poolItem;
-    private bool _initialized;
-    
-    private static DatabaseFixture Fixture
-    {
-        get
-        {
-            if (_fixture == null)
-                _fixture = new DatabaseFixture();
-            return _fixture;
-        }
-    }
 
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
     protected IMediator Mediator { get; private set; } = null!;
 
     [Before(Test)]
-    public async Task InitializeAsync()
+    public async Task SetupAsync()
     {
-        try 
+        try
         {
-            // Acquire a database from the pool
-            _poolItem = await Fixture.AcquireDatabaseAsync();
+            // Acquire a database from the pool (fixture already initialized by GlobalHooks)
+            _poolItem = await GlobalHooks.Fixture.AcquireDatabaseAsync();
 
             DbContextOptions<ApplicationDbContext> options;
 
-            if (Fixture.UseInMemory)
+            if (GlobalHooks.Fixture.UseInMemory)
             {
+                // Each test gets a unique in-memory database
                 options = new DbContextOptionsBuilder<ApplicationDbContext>()
                     .UseInMemoryDatabase(Guid.NewGuid().ToString())
                     .Options;
@@ -53,47 +46,45 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             CurrentUserService = Substitute.For<ICurrentUserService>();
             Mediator = Substitute.For<IMediator>();
             Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
-            
-            if (Fixture.UseInMemory)
+
+            if (GlobalHooks.Fixture.UseInMemory)
             {
                 await Context.Database.EnsureCreatedAsync();
             }
-            
-            _initialized = true;
         }
-        catch (Exception)
+        catch
         {
-            if (_poolItem != null)
-            {
-                _poolItem.Release();
-                _poolItem = null;
-            }
+            // Release the pool item if setup fails
+            _poolItem?.Release();
+            _poolItem = null;
             throw;
         }
     }
 
     [After(Test)]
-    public async ValueTask DisposeAsync()
+    public async ValueTask TeardownAsync()
     {
         if (Context != null)
         {
             await Context.DisposeAsync();
+            Context = null!;
         }
-        
+
         if (_poolItem != null)
         {
             _poolItem.Release();
             _poolItem = null;
         }
-        
-        _initialized = false;
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        await DisposeAsync();
+        await TeardownAsync();
     }
 
+    /// <summary>
+    /// Sets the current user for the test. Use this to simulate authenticated requests.
+    /// </summary>
     protected void SetCurrentUser(Guid userId)
     {
         CurrentUserService.UserId.Returns(userId);

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://raw.githubusercontent.com/thomhurst/TUnit/main/TUnit.Core/tunit.schema.json",
+  "maxParallelTests": 4,
+  "retryLimit": 0,
+  "throwOnFailedDependsOnTests": true
+}
