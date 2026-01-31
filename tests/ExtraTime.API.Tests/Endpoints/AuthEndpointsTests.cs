@@ -5,6 +5,7 @@ using ExtraTime.API.Tests.Fixtures;
 
 namespace ExtraTime.API.Tests.Endpoints;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class AuthEndpointsTests : ApiTestBase
 {
     [Test]

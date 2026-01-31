@@ -60,7 +60,9 @@
       "Bash(findstr:*)",
       "Bash(Select-Object -First 50)",
       "Bash(Push-Location \"D:\\\\Dev\\\\ExtraTime\\\\web\")",
-      "Bash(Pop-Location)"
+      "Bash(Pop-Location)",
+      "Bash(Select-Object -First 60)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

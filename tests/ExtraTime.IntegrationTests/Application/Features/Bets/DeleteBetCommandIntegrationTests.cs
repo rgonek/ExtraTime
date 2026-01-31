@@ -3,6 +3,7 @@ using ExtraTime.Application.Features.Bets.Commands.DeleteBet;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
 {
     private FakeClock _fakeClock = null!;

@@ -6,6 +6,7 @@ using ExtraTime.Application.Features.Leagues.DTOs;
 
 namespace ExtraTime.API.Tests.Endpoints;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class LeagueEndpointsTests : ApiTestBase
 {
     [Test]

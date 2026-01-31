@@ -1,11 +1,13 @@
 using ExtraTime.Application.Features.Bots.Commands.CreateBot;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Infrastructure.Services;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bots;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class CreateBotCommandIntegrationTests : IntegrationTestBase
 {
     [Test]

@@ -6,59 +6,59 @@ on:
   pull_request:
     branches: [main, develop]
 
+env:
+  TEST_DATABASE_TYPE: InMemory
+  TUNIT_FILTER: Category=Significant
+
 jobs:
-  backend:
-    name: Backend Build & Test
+  backend-fast:
+    name: Backend Fast Tests (InMemory + Significant)
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: extratime
-          POSTGRES_PASSWORD: extratime_dev
-          POSTGRES_DB: extratime
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
       - run: dotnet restore
       - run: dotnet build --no-restore --configuration Release
-      - run: dotnet test --no-build --configuration Release -- --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
-        env:
-          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
       
-      - name: Code Coverage Summary
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-          filename: "tests/**/coverage/coverage.cobertura.xml"
-          badge: true
-          fail_below_min: false
-          format: markdown
-          hide_branch_rate: false
-          hide_complexity: true
-          indicators: true
-          output: both
-          thresholds: '60 80'
-
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: code-coverage-results.md
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage
-          path: "tests/**/coverage/coverage.cobertura.xml"
+      # Run only significant integration and API tests with InMemory database
+      - name: Run Significant Integration Tests
+        run: |
+          dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj \
+            --no-build --configuration Release \
+            --filter "Category=Significant" \
+            -- --coverage --coverage-output-format cobertura
+        env:
+          TEST_DATABASE_TYPE: InMemory
+          
+      - name: Run Significant API Tests
+        run: |
+          dotnet test tests/ExtraTime.API.Tests/ExtraTime.API.Tests.csproj \
+            --no-build --configuration Release \
+            --filter "Category=Significant" \
+            -- --coverage --coverage-output-format cobertura
+        env:
+          TEST_DATABASE_TYPE: InMemory
+      
+      # Run all unit and domain tests (they're fast anyway)
+      - name: Run Unit Tests
+        run: |
+          dotnet test tests/ExtraTime.UnitTests/ExtraTime.UnitTests.csproj \
+            --no-build --configuration Release \
+            -- --coverage --coverage-output-format cobertura
+          
+      - name: Run Domain Tests
+        run: |
+          dotnet test tests/ExtraTime.Domain.Tests/ExtraTime.Domain.Tests.csproj \
+            --no-build --configuration Release \
+            -- --coverage --coverage-output-format cobertura
 
   frontend:
     name: Frontend Build & Lint

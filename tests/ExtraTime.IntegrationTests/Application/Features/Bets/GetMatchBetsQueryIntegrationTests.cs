@@ -2,12 +2,14 @@ using ExtraTime.Application.Features.Bets.Queries.GetMatchBets;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class GetMatchBetsQueryIntegrationTests : IntegrationTestBase
 {
     private readonly DateTime _matchDate = DateTime.UtcNow.AddDays(1);

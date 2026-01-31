@@ -1,11 +1,13 @@
 using ExtraTime.Application.Features.Leagues.Commands.UpdateLeague;
 using ExtraTime.Domain.Entities;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class UpdateLeagueCommandIntegrationTests : IntegrationTestBase
 {
     [Test]
