@@ -8,18 +8,23 @@ A social betting app where friends create leagues, predict football match outcom
 
 - **User Authentication** - Register, login with JWT tokens, automatic token refresh with rotation
 - **Role-Based Authorization** - User and Admin roles with policy-based access control
-- **Background Job Tracking** - Admin dashboard for monitoring async jobs with retry/cancel capabilities
+- **Background Job Tracking** - Admin dashboard for monitoring async jobs (Azure Functions)
 - **Modern Frontend** - Next.js 16 with React 19, TypeScript, and Tailwind CSS v4
 - **API Documentation** - Swagger/OpenAPI with JWT security
 - **Football Data Integration** - Live match data from Football-Data.org API
 - **League System** - Create private leagues, invite friends with unique codes
 - **Betting System** - Predict match scores, earn points (exact score: 3pts, correct result: 1pt)
 - **Leaderboards** - Track rankings within leagues
+- **Bot Players** - AI opponents with different strategies to keep leagues active (Random, Stats-based)
+- **Gamification** - Achievements, streaks, levels, and celebrations
+- **Design System** - Vibrant sports-themed UI with full dark mode support
 
 ### Planned
 
-- **Gamification** - Achievements, streaks, levels, and celebrations
-- **Bot Players** - AI opponents with different strategies to keep leagues active
+- **Extended Data** - Standings, top scorers, and match lineups
+- **External Sources** - xG statistics, betting odds, and injury data
+- **FastEndpoints** - Migration to a more streamlined API framework
+- **Mobile App** - Dedicated mobile experience
 
 ## Tech Stack
 
@@ -29,6 +34,7 @@ A social betting app where friends create leagues, predict football match outcom
 - **Mediator** (source generator) for CQRS pattern
 - **FluentValidation** for request validation
 - **JWT Authentication** with BCrypt password hashing
+- **Azure Functions** for serverless background jobs
 
 ### Frontend
 - **Next.js 16** (App Router, React 19)

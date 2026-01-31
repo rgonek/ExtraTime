@@ -25,10 +25,13 @@
 | Phase 6.4 | ✅ Complete | Leaderboard & Statistics |
 | Phase 6.5 | ✅ Complete | Gamification System |
 | Phase 6.6 | ✅ Complete | UX Polish & Dark Mode |
-| Phase 7 | ⬜ Pending | Bot System (Basic Bots) |
-| Phase 7.5 | ⬜ Pending | Intelligent Stats-Based Bots |
+| Phase 7 | ✅ Complete | Bot System (Basic Bots) |
+| Phase 7.5 | ✅ Complete | Intelligent Stats-Based Bots |
+| Phase 8 | ⬜ Pending | Deployment & Launch (Azure) |
 | Phase 9 | ⬜ Pending | Extended Football Data (Standings, Lineups) |
 | Phase 9.5 | ⬜ Pending | External Data Sources (xG, Odds, Injuries) |
+| Phase 10 | ⬜ Pending | FastEndpoints Migration & Advanced Tests |
+
 
 ## Project Overview
 A social betting app (no real money) where friends create leagues, bet on football matches, and compete for points. Portfolio project showcasing frontend skills.
@@ -36,18 +39,19 @@ A social betting app (no real money) where friends create leagues, bet on footba
 ## Tech Stack
 
 ### Backend
-- **ASP.NET Core (.NET 9)** with Clean Architecture
-- **Entity Framework Core 9** with SQL Server (Microsoft.EntityFrameworkCore.SqlServer)
+- **ASP.NET Core (.NET 10)** with Clean Architecture
+- **Entity Framework Core 10** with SQL Server (Microsoft.EntityFrameworkCore.SqlServer)
 - **Mediator** (source generator, not MediatR) for CQRS pattern
 - **JWT Authentication** (BCrypt + custom JWT)
 - **FluentValidation** for request validation
 
 ### Frontend
-- **Next.js 15** (App Router)
+- **Next.js 16** (App Router, React 19)
 - **TypeScript**
 - **TanStack Query** for server state management
 - **Zustand** for client state
-- **Tailwind CSS** + **shadcn/ui** for styling
+- **Tailwind CSS 4** + **shadcn/ui** for styling
+
 
 ### Infrastructure (Budget-Friendly)
 - **Frontend**: Azure Static Web Apps (free tier)
@@ -326,47 +330,48 @@ When adding Azure Functions/Service Bus:
 
 ---
 
-## Phase 7: Bot System (Basic Bots)
+## Phase 7: Bot System (Basic Bots) ✅
 **Goal**: Add AI bots to make leagues feel active
 **Detailed Plan**: `.claude/plan/phase-7-detailed.md`
+**Status**: Complete
 
 ### Backend
-- [ ] Bot entity (name, avatar, betting strategy)
-- [ ] LeagueBotMember join table
-- [ ] Predefined basic bot strategies:
+- [x] Bot entity (name, avatar, betting strategy)
+- [x] LeagueBotMember join table
+- [x] Predefined basic bot strategies:
   - Random bot
   - Home team favorer
   - Underdog supporter
   - Draw predictor
   - High scorer
-- [ ] BotBettingService to place bets
-- [ ] Background service (runs every 30 min during active hours)
-- [ ] Bot seeder (5 default bots)
+- [x] BotBettingService to place bets
+- [x] Azure Function (runs every 30 min during active hours)
+- [x] Bot seeder (11 initial bots including stats-based)
 
 ### Frontend
-- [ ] Bot indicator on leaderboard
-- [ ] Option to add bots when creating/editing league
-- [ ] League bots management tab
+- [x] Bot indicator on leaderboard
+- [x] Option to add bots when creating/editing league
+- [x] League bots management tab
 
 ---
 
-## Phase 7.5: Intelligent Stats-Based Bots
+## Phase 7.5: Intelligent Stats-Based Bots ✅
 **Goal**: Add configurable bots that use statistical analysis
 **Detailed Plan**: `.claude/plan/phase-7.5-detailed.md`
-**Prerequisite**: Phase 7 complete
+**Status**: Complete
 
 ### Backend
-- [ ] TeamFormCache entity (cached team performance stats)
-- [ ] StatsAnalystConfig value object (configurable weights)
-- [ ] TeamFormCalculator service (calculates form from match history)
-- [ ] StatsAnalystStrategy implementation:
+- [x] TeamFormCache entity (cached team performance stats)
+- [x] StatsAnalystConfig value object (configurable weights)
+- [x] TeamFormCalculator service (calculates form from match history)
+- [x] StatsAnalystStrategy implementation:
   - Form analysis (last N matches)
   - Home/away performance trends
   - Goal scoring/conceding patterns
   - Streak tracking
   - High stakes detection (late season)
-- [ ] Form cache background service (refreshes every 4 hours)
-- [ ] 6 intelligent bot personalities:
+- [x] Form cache background service (Azure Function)
+- [x] 6 intelligent bot personalities:
   - Stats Genius (balanced)
   - Form Master (recent results focused)
   - Fortress Fred (home advantage focused)
@@ -375,8 +380,9 @@ When adding Azure Functions/Service Bus:
   - Chaos Carl (unpredictable)
 
 ### Frontend
-- [ ] Bot strategy descriptions
-- [ ] Bot performance comparison view
+- [x] Bot strategy descriptions
+- [x] Bot performance comparison view
+
 
 ### Future (Phase 9)
 - Enhanced with standings data for position-based analysis
