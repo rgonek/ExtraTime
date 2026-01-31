@@ -79,7 +79,7 @@ export function MatchList({ leagueId }: MatchListProps) {
     }
 
     return matches;
-  }, [matchesResponse?.items, league, selectedCompetition]);
+  }, [matchesResponse, league, selectedCompetition]);
 
   // Split into upcoming and past matches
   const { upcomingMatches, pastMatches } = useMemo(() => {

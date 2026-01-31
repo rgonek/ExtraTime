@@ -26,7 +26,8 @@ export function ThemeToggle() {
   // Avoid hydration mismatch
   // On server, we don't know the theme, so render placeholder
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) {
@@ -76,7 +77,8 @@ export function ThemeToggleSimple() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) {

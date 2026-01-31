@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, type Variants, type Transition } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
 /**
  * Animation duration tokens (in seconds) matching globals.css
@@ -147,17 +147,6 @@ export function PopIn({
 /**
  * Staggered list container
  */
-const staggerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0,
-    },
-  },
-};
-
 export function StaggeredList({
   children,
   className,

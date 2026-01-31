@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Trophy, Flame, ArrowUpDown, TrendingUp, Target } from 'lucide-react';
+import { Trophy, Flame, ArrowUpDown, Target } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -123,7 +123,6 @@ export function Leaderboard({ leagueId }: LeaderboardProps) {
                 label="Rank"
                 field="rank"
                 currentField={sortField}
-                order={sortOrder}
                 onSort={handleSort}
               />
             </TableHead>
@@ -133,7 +132,6 @@ export function Leaderboard({ leagueId }: LeaderboardProps) {
                 label="Points"
                 field="points"
                 currentField={sortField}
-                order={sortOrder}
                 onSort={handleSort}
               />
             </TableHead>
@@ -142,7 +140,6 @@ export function Leaderboard({ leagueId }: LeaderboardProps) {
                 label="Streak"
                 field="streak"
                 currentField={sortField}
-                order={sortOrder}
                 onSort={handleSort}
               />
             </TableHead>
@@ -153,14 +150,13 @@ export function Leaderboard({ leagueId }: LeaderboardProps) {
                 label="Accuracy"
                 field="accuracy"
                 currentField={sortField}
-                order={sortOrder}
                 onSort={handleSort}
               />
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedStandings.map((standing, index) => {
+          {sortedStandings.map((standing) => {
             const isCurrentUser = standing.userId === currentUser?.id;
             const accuracy = standing.betsPlaced > 0
               ? Math.round(
@@ -327,13 +323,11 @@ function SortableHeader({
   label,
   field,
   currentField,
-  order,
   onSort,
 }: {
   label: string;
   field: SortField;
   currentField: SortField;
-  order: SortOrder;
   onSort: (field: SortField) => void;
 }) {
   const isActive = currentField === field;

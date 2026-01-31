@@ -15,14 +15,17 @@ export function useMediaQuery(query: string): boolean {
   useEffect(() => {
     const media = window.matchMedia(query);
 
-    // Set initial value
-    setMatches(media.matches);
+    // Set initial value (deferred to avoid sync setState warning)
+    const timer = setTimeout(() => setMatches(media.matches), 0);
 
     // Update on change
     const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
     media.addEventListener('change', listener);
 
-    return () => media.removeEventListener('change', listener);
+    return () => {
+      clearTimeout(timer);
+      media.removeEventListener('change', listener);
+    };
   }, [query]);
 
   return matches;

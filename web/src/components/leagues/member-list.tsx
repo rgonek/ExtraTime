@@ -69,7 +69,7 @@ export function MemberList({ members, ownerId, leagueId, isOwner }: MemberListPr
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          {sortedMembers.map((member, index) => {
+          {sortedMembers.map((member) => {
             const isCurrentUser = member.userId === currentUser?.id;
             const isMemberOwner = member.role === 'Owner';
 

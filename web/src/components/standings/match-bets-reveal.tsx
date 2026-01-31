@@ -59,7 +59,7 @@ export function MatchBetsReveal({ leagueId, matchId }: MatchBetsRevealProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Eye className="h-5 w-5" />
-          Everyone's Predictions
+          Everyone&apos;s Predictions
         </CardTitle>
         <CardDescription>
           {match.homeTeam.name} vs {match.awayTeam.name}
