@@ -1,11 +1,13 @@
 using ExtraTime.Application.Features.Leagues.Queries.GetUserLeagues;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class GetUserLeaguesQueryIntegrationTests : IntegrationTestBase
 {
     [Test]
@@ -79,21 +81,17 @@ public sealed class GetUserLeaguesQueryIntegrationTests : IntegrationTestBase
         // Add memberships for user to leagues they don't own
         // Note: league2 is owned by userId, so owner membership is already created
         // league1 and league3 are owned by otherUserId, so their owner memberships are already created
-        var member1 = new LeagueMember
-        {
-            LeagueId = league1.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow.AddDays(-2)
-        };
+        var member1 = new LeagueMemberBuilder()
+            .WithLeagueId(league1.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .Build();
 
-        var member3 = new LeagueMember
-        {
-            LeagueId = league3.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+        var member3 = new LeagueMemberBuilder()
+            .WithLeagueId(league3.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         Context.LeagueMembers.AddRange(member1, member3);
         await Context.SaveChangesAsync();
@@ -140,25 +138,21 @@ public sealed class GetUserLeaguesQueryIntegrationTests : IntegrationTestBase
         await Context.SaveChangesAsync();
 
         // Add two more members to the league (owner membership is already created)
-        var member1 = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+        var member1 = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         var member3Id = Guid.NewGuid();
         var member3User = new UserBuilder().WithId(member3Id).Build();
         Context.Users.Add(member3User);
 
-        var member3 = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = member3Id,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+        var member3 = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(member3Id)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         Context.LeagueMembers.AddRange(member1, member3);
         await Context.SaveChangesAsync();

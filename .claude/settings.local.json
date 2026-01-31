@@ -57,7 +57,10 @@
       "Bash(Write-Host \"Directory created\")",
       "Skill(playground)",
       "Bash(start \"D:\\\\Dev\\\\ExtraTime\\\\extratime-design-system.html\")",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(Select-Object -First 50)",
+      "Bash(Push-Location \"D:\\\\Dev\\\\ExtraTime\\\\web\")",
+      "Bash(Pop-Location)"
     ]
   }
 }

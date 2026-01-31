@@ -2,12 +2,14 @@ using ExtraTime.Application.Features.Leagues;
 using ExtraTime.Application.Features.Leagues.Queries.GetLeague;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
 {
     [Test]
@@ -98,13 +100,11 @@ public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
             .FirstAsync(l => l.Id == league.Id);
 
         // Now add the user as a member
-        var userMember = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+        var userMember = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         Context.LeagueMembers.Add(userMember);
         await Context.SaveChangesAsync();
@@ -156,21 +156,18 @@ public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
-        var userMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow.AddDays(-1)
-        };
+        var userMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(DateTime.UtcNow.AddDays(-1))
+            .Build();
 
-        var member2Membership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = member2Id,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+        var member2Membership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(member2Id)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         Context.LeagueMembers.AddRange(userMembership, member2Membership);
         await Context.SaveChangesAsync();
@@ -222,13 +219,11 @@ public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
-        var userMember = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+        var userMember = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         Context.LeagueMembers.Add(userMember);
         await Context.SaveChangesAsync();
@@ -270,13 +265,11 @@ public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
-        var userMember = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = DateTime.UtcNow
-        };
+        var userMember = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         Context.LeagueMembers.Add(userMember);
         await Context.SaveChangesAsync();

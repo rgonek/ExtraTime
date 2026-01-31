@@ -22,21 +22,14 @@ public sealed class RetryJobCommandHandler(
             return Result.Failure(AdminErrors.JobNotFound);
         }
 
-        if (job.Status != JobStatus.Failed)
+        try
+        {
+            job.Retry();
+        }
+        catch (InvalidOperationException)
         {
             return Result.Failure(AdminErrors.JobCannotBeRetried);
         }
-
-        if (job.RetryCount >= job.MaxRetries)
-        {
-            return Result.Failure(AdminErrors.MaxRetriesExceeded);
-        }
-
-        job.Status = JobStatus.Pending;
-        job.Error = null;
-        job.RetryCount++;
-        job.StartedAt = null;
-        job.CompletedAt = null;
 
         await context.SaveChangesAsync(cancellationToken);
 

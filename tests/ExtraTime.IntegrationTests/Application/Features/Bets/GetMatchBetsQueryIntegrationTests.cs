@@ -325,14 +325,12 @@ public sealed class GetMatchBetsQueryIntegrationTests : IntegrationTestBase
 
         // Calculate and add result
         var result1 = bet1.CalculatePoints(match, 5, 2);
-        var betResult1 = new BetResult
-        {
-            BetId = bet1.Id,
-            PointsEarned = result1.PointsEarned,
-            IsExactMatch = result1.IsExactMatch,
-            IsCorrectResult = result1.IsCorrectResult,
-            CalculatedAt = DateTime.UtcNow
-        };
+        var betResult1 = new BetResultBuilder()
+            .WithBetId(bet1.Id)
+            .WithPointsEarned(result1.PointsEarned)
+            .WithIsExactMatch(result1.IsExactMatch)
+            .WithIsCorrectResult(result1.IsCorrectResult)
+            .Build();
         Context.BetResults.Add(betResult1);
         await Context.SaveChangesAsync();
 

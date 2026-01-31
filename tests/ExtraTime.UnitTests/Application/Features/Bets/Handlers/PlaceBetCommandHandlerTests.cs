@@ -45,10 +45,9 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
         var command = new PlaceBetCommand(league.Id, match.Id, 2, 1);
 
         var mockLeagues = CreateMockDbSet(new List<League> { league }.AsQueryable());
-        Context.Leagues.Returns(mockLeagues);
         
         var mockMembers = CreateMockDbSet(new List<LeagueMember> { 
-            new LeagueMember { LeagueId = league.Id, UserId = userId } 
+            new LeagueMemberBuilder().WithLeagueId(league.Id).WithUserId(userId).Build() 
         }.AsQueryable());
         Context.LeagueMembers.Returns(mockMembers);
         
@@ -91,7 +90,7 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
         Context.Leagues.Returns(mockLeagues);
         
         var mockMembers = CreateMockDbSet(new List<LeagueMember> { 
-            new LeagueMember { LeagueId = league.Id, UserId = userId } 
+            new LeagueMemberBuilder().WithLeagueId(league.Id).WithUserId(userId).Build() 
         }.AsQueryable());
         Context.LeagueMembers.Returns(mockMembers);
         

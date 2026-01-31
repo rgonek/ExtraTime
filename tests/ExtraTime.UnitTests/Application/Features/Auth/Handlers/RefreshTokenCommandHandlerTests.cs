@@ -40,15 +40,11 @@ public sealed class RefreshTokenCommandHandlerTests : HandlerTestBase
     {
         // Arrange
         var user = new UserBuilder().WithEmail("test@example.com").Build();
-        var existingToken = new RefreshToken
-        {
-            Id = Guid.NewGuid(),
-            Token = "valid-refresh-token",
-            ExpiresAt = _now.AddDays(7),
-            CreatedAt = _now.AddDays(-1),
-            UserId = user.Id,
-            User = user
-        };
+        var existingToken = new RefreshTokenBuilder()
+            .WithToken("valid-refresh-token")
+            .WithExpiresAt(_now.AddDays(7))
+            .WithUser(user)
+            .Build();
 
         var command = new RefreshTokenCommand("valid-refresh-token");
 
@@ -90,15 +86,11 @@ public sealed class RefreshTokenCommandHandlerTests : HandlerTestBase
     {
         // Arrange
         var user = new UserBuilder().WithEmail("test@example.com").Build();
-        var expiredToken = new RefreshToken
-        {
-            Id = Guid.NewGuid(),
-            Token = "expired-token",
-            ExpiresAt = _now.AddDays(-1), // Expired
-            CreatedAt = _now.AddDays(-8),
-            UserId = user.Id,
-            User = user
-        };
+        var expiredToken = new RefreshTokenBuilder()
+            .WithToken("expired-token")
+            .WithExpiresAt(_now.AddDays(-1)) // Expired
+            .WithUser(user)
+            .Build();
 
         var command = new RefreshTokenCommand("expired-token");
 
@@ -118,16 +110,12 @@ public sealed class RefreshTokenCommandHandlerTests : HandlerTestBase
     {
         // Arrange
         var user = new UserBuilder().WithEmail("test@example.com").Build();
-        var revokedToken = new RefreshToken
-        {
-            Id = Guid.NewGuid(),
-            Token = "revoked-token",
-            ExpiresAt = _now.AddDays(7),
-            CreatedAt = _now.AddDays(-1),
-            RevokedAt = _now.AddHours(-1), // Already revoked
-            UserId = user.Id,
-            User = user
-        };
+        var revokedToken = new RefreshTokenBuilder()
+            .WithToken("revoked-token")
+            .WithExpiresAt(_now.AddDays(7))
+            .WithUser(user)
+            .Build();
+        revokedToken.Revoke();
 
         var command = new RefreshTokenCommand("revoked-token");
 

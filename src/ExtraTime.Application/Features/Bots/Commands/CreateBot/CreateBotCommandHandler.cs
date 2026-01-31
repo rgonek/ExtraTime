@@ -26,17 +26,12 @@ public sealed class CreateBotCommandHandler(
         var user = User.Register(email, request.Name, passwordHash, UserRole.User);
         user.MarkAsBot();
 
-        var bot = new Bot
-        {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            Name = request.Name,
-            AvatarUrl = request.AvatarUrl,
-            Strategy = request.Strategy,
-            Configuration = request.Configuration,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
+        var bot = Bot.Create(
+            user.Id,
+            request.Name,
+            request.Strategy,
+            request.AvatarUrl,
+            request.Configuration);
 
         context.Users.Add(user);
         context.Bots.Add(bot);

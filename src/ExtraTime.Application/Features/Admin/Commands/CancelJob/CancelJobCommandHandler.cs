@@ -22,13 +22,14 @@ public sealed class CancelJobCommandHandler(
             return Result.Failure(AdminErrors.JobNotFound);
         }
 
-        if (job.Status is not (JobStatus.Pending or JobStatus.Processing))
+        try
+        {
+            job.Cancel();
+        }
+        catch (InvalidOperationException)
         {
             return Result.Failure(AdminErrors.JobCannotBeCancelled);
         }
-
-        job.Status = JobStatus.Cancelled;
-        job.CompletedAt = Clock.UtcNow;
 
         await context.SaveChangesAsync(cancellationToken);
 

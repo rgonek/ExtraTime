@@ -43,14 +43,11 @@ public sealed class KickMemberCommandHandlerTests : HandlerTestBase
             .WithOwnerId(ownerId)
             .Build();
 
-        var member = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = memberId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var member = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(memberId)
+            .WithRole(MemberRole.Member)
+            .Build();
 
         SetCurrentUser(ownerId);
 
@@ -159,14 +156,11 @@ public sealed class KickMemberCommandHandlerTests : HandlerTestBase
             .WithOwnerId(ownerId)
             .Build();
 
-        var ownerMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = ownerId,
-            Role = MemberRole.Owner,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var ownerMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(ownerId)
+            .WithRole(MemberRole.Owner)
+            .Build();
 
         SetCurrentUser(ownerId);
 

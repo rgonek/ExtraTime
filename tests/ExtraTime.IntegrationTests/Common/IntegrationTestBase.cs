@@ -10,7 +10,8 @@ namespace ExtraTime.IntegrationTests.Common;
 public abstract class IntegrationTestBase : IAsyncDisposable
 {
     private static DatabaseFixture? _fixture;
-    private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
+    private DatabasePoolItem? _poolItem;
+    private bool _initialized;
     
     private static DatabaseFixture Fixture
     {
@@ -22,8 +23,6 @@ public abstract class IntegrationTestBase : IAsyncDisposable
         }
     }
 
-    private bool _lockTaken;
-
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
     protected IMediator Mediator { get; private set; } = null!;
@@ -31,12 +30,10 @@ public abstract class IntegrationTestBase : IAsyncDisposable
     [Before(Test)]
     public async Task InitializeAsync()
     {
-        await DatabaseLock.WaitAsync();
-        _lockTaken = true;
-        
         try 
         {
-            await Fixture.EnsureInitializedAsync();
+            // Acquire a database from the pool
+            _poolItem = await Fixture.AcquireDatabaseAsync();
 
             DbContextOptions<ApplicationDbContext> options;
 
@@ -48,9 +45,8 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             }
             else
             {
-                await Fixture.ResetDatabaseAsync();
                 options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseSqlServer(Fixture.ConnectionString)
+                    .UseSqlServer(_poolItem.ConnectionString)
                     .Options;
             }
 
@@ -62,13 +58,15 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             {
                 await Context.Database.EnsureCreatedAsync();
             }
+            
+            _initialized = true;
         }
         catch (Exception)
         {
-            if (_lockTaken)
+            if (_poolItem != null)
             {
-                DatabaseLock.Release();
-                _lockTaken = false;
+                _poolItem.Release();
+                _poolItem = null;
             }
             throw;
         }
@@ -82,11 +80,13 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             await Context.DisposeAsync();
         }
         
-        if (_lockTaken)
+        if (_poolItem != null)
         {
-            DatabaseLock.Release();
-            _lockTaken = false;
+            _poolItem.Release();
+            _poolItem = null;
         }
+        
+        _initialized = false;
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

@@ -2,6 +2,7 @@ using ExtraTime.Application.Features.Auth.Commands.Login;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Infrastructure.Configuration;
 using ExtraTime.Infrastructure.Services;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Auth;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class LoginCommandIntegrationTests : IntegrationTestBase
 {
     private readonly PasswordHasher _passwordHasher = new();

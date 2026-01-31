@@ -61,14 +61,12 @@ public sealed class GetUserStatsQueryHandlerTests : HandlerTestBase
         var targetUserId = Guid.NewGuid();
         var leagueId = Guid.NewGuid();
 
-        var leagueMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
         SetCurrentUser(userId);
 
@@ -93,23 +91,19 @@ public sealed class GetUserStatsQueryHandlerTests : HandlerTestBase
         var targetUserId = Guid.NewGuid();
         var leagueId = Guid.NewGuid();
 
-        var leagueMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
-        var targetMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = targetUserId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var targetMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(targetUserId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
         SetCurrentUser(userId);
 
@@ -142,23 +136,19 @@ public sealed class GetUserStatsQueryHandlerTests : HandlerTestBase
             .WithUsername("targetuser")
             .Build();
 
-        var leagueMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
-        var targetMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = targetUserId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var targetMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(targetUserId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
         SetCurrentUser(userId);
 

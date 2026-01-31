@@ -52,15 +52,7 @@ public sealed class User : BaseAuditableEntity
         // Remove expired and old revoked tokens
         _refreshTokens.RemoveAll(t => t.IsExpired || (t.IsRevoked && t.RevokedAt?.AddDays(7) < Clock.UtcNow));
 
-        var refreshToken = new RefreshToken
-        {
-            Token = token,
-            ExpiresAt = expiresAt,
-            CreatedByIp = createdByIp,
-            UserId = Id,
-            CreatedAt = Clock.UtcNow
-        };
-
+        var refreshToken = RefreshToken.Create(token, expiresAt, Id, createdByIp);
         _refreshTokens.Add(refreshToken);
     }
 
@@ -69,9 +61,7 @@ public sealed class User : BaseAuditableEntity
         var refreshToken = _refreshTokens.FirstOrDefault(t => t.Token == token);
         if (refreshToken != null && refreshToken.IsActive)
         {
-            refreshToken.RevokedAt = Clock.UtcNow;
-            refreshToken.RevokedByIp = revokedByIp;
-            refreshToken.ReasonRevoked = reason;
+            refreshToken.Revoke(revokedByIp, reason);
         }
     }
 

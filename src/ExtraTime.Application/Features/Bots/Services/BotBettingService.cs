@@ -114,7 +114,7 @@ public sealed class BotBettingService(
                     bot.Name, bot.Strategy, homeScore, awayScore, match.Id, league.Id);
             }
 
-            bot.LastBetPlacedAt = now;
+            bot.RecordBetPlaced();
         }
 
         if (betsPlaced > 0)

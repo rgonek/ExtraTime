@@ -24,43 +24,35 @@ public sealed class RefreshTokenCommandHandler(
             return Result<AuthResponse>.Failure(AuthErrors.InvalidRefreshToken);
         }
 
-        // Check if token was already used (token reuse detection)
-        if (existingToken.RevokedAt is not null)
+        // Check if token is valid for use
+        if (!existingToken.IsValidForUse())
         {
-            // Revoke all tokens for this user (potential token theft)
-            var userTokens = await context.RefreshTokens
-                .Where(rt => rt.UserId == existingToken.UserId && rt.RevokedAt == null)
-                .ToListAsync(cancellationToken);
-
-            foreach (var token in userTokens)
+            // Check if token was already used (token reuse detection)
+            if (existingToken.IsRevoked)
             {
-                token.RevokedAt = Clock.UtcNow;
+                // Revoke all active tokens for this user (potential token theft)
+                var userTokens = await context.RefreshTokens
+                    .Where(rt => rt.UserId == existingToken.UserId && rt.IsActive)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var token in userTokens)
+                {
+                    token.Revoke(reason: "Token reuse detected - potential theft");
+                }
+
+                await context.SaveChangesAsync(cancellationToken);
+                return Result<AuthResponse>.Failure(AuthErrors.TokenReused);
             }
 
-            await context.SaveChangesAsync(cancellationToken);
-            return Result<AuthResponse>.Failure(AuthErrors.TokenReused);
-        }
-
-        // Check if token is expired
-        if (existingToken.ExpiresAt < Clock.UtcNow)
-        {
             return Result<AuthResponse>.Failure(AuthErrors.InvalidRefreshToken);
         }
 
         var user = existingToken.User;
 
-        // Create new refresh token
-        var newRefreshToken = new Domain.Entities.RefreshToken
-        {
-            Token = tokenService.GenerateRefreshToken(),
-            ExpiresAt = tokenService.GetRefreshTokenExpiration(),
-            CreatedAt = Clock.UtcNow,
-            UserId = user.Id
-        };
-
-        // Revoke old token and link to new one
-        existingToken.RevokedAt = Clock.UtcNow;
-        existingToken.ReplacedByToken = newRefreshToken.Token;
+        // Replace old token with new one using domain method
+        var newRefreshToken = existingToken.ReplaceWith(
+            tokenService.GenerateRefreshToken(),
+            tokenService.GetRefreshTokenExpiration());
 
         context.RefreshTokens.Add(newRefreshToken);
         await context.SaveChangesAsync(cancellationToken);

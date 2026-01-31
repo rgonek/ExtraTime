@@ -3,12 +3,14 @@ using ExtraTime.Application.Features.Bets.Queries.GetMyBets;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class GetMyBetsQueryIntegrationTests : IntegrationTestBase
 {
     [Test]
@@ -262,13 +264,11 @@ public sealed class GetMyBetsQueryIntegrationTests : IntegrationTestBase
         await Context.SaveChangesAsync();
 
         // Add bet result
-        var betResult = new BetResult
-        {
-            BetId = bet.Id,
-            PointsEarned = 3,
-            IsExactMatch = true,
-            IsCorrectResult = true
-        };
+        var betResult = BetResult.Create(
+            bet.Id,
+            3,
+            true,
+            true);
         Context.BetResults.Add(betResult);
         await Context.SaveChangesAsync();
 
@@ -311,13 +311,11 @@ public sealed class GetMyBetsQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         // Add other user as member
-        var otherMember = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = otherUserId,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
+        var otherMember = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(otherUserId)
+            .WithRole(MemberRole.Member)
+            .Build();
         Context.LeagueMembers.Add(otherMember);
 
         var competition = new CompetitionBuilder().Build();

@@ -1,29 +1,16 @@
+using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Auth.Commands.RefreshToken;
+using ExtraTime.Application.Features.Auth.DTOs;
 using ExtraTime.Domain.Entities;
-using ExtraTime.Infrastructure.Configuration;
-using ExtraTime.Infrastructure.Services;
 using ExtraTime.IntegrationTests.Common;
+using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Auth;
 
-public sealed class RefreshTokenCommandIntegrationTests : IntegrationTestBase
+public class RefreshTokenCommandIntegrationTests : IntegrationTestBase
 {
-    private readonly TokenService _tokenService;
-
-    public RefreshTokenCommandIntegrationTests()
-    {
-        var jwtSettings = new JwtSettings
-        {
-            Secret = "your-256-bit-secret-key-for-testing-purposes-only-12345678901234567890",
-            Issuer = "ExtraTime.Test",
-            Audience = "ExtraTime.Test",
-            AccessTokenExpirationMinutes = 60,
-            RefreshTokenExpirationDays = 7
-        };
-        _tokenService = new TokenService(Options.Create(jwtSettings));
-    }
+    private readonly FakeTokenService _tokenService = new();
 
     [Test]
     public async Task RefreshToken_ValidToken_ReturnsNewTokens()
@@ -33,13 +20,11 @@ public sealed class RefreshTokenCommandIntegrationTests : IntegrationTestBase
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var refreshToken = new RefreshToken
-        {
-            Token = "valid-refresh-token-123",
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
-            UserId = user.Id
-        };
+        var refreshToken = new RefreshTokenBuilder()
+            .WithToken("valid-refresh-token-123")
+            .WithExpiresAt(DateTime.UtcNow.AddDays(7))
+            .WithUserId(user.Id)
+            .Build();
         Context.RefreshTokens.Add(refreshToken);
         await Context.SaveChangesAsync();
 
@@ -88,13 +73,11 @@ public sealed class RefreshTokenCommandIntegrationTests : IntegrationTestBase
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        var refreshToken = new RefreshToken
-        {
-            Token = "expired-refresh-token",
-            ExpiresAt = DateTime.UtcNow.AddDays(-1), // Expired
-            CreatedAt = DateTime.UtcNow.AddDays(-8),
-            UserId = user.Id
-        };
+        var refreshToken = new RefreshTokenBuilder()
+            .WithToken("expired-refresh-token")
+            .WithExpiresAt(DateTime.UtcNow.AddDays(-1)) // Expired
+            .WithUserId(user.Id)
+            .Build();
         Context.RefreshTokens.Add(refreshToken);
         await Context.SaveChangesAsync();
 
@@ -109,42 +92,34 @@ public sealed class RefreshTokenCommandIntegrationTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task RefreshToken_ReusedToken_RevokesAllUserTokens()
+    public async Task RefreshToken_RevokedToken_ReturnsFailureAndRevokesAllUserTokens()
     {
         // Arrange
         var user = User.Register("test@example.com", "testuser", "hashedpassword123");
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        // Create multiple active tokens
-        var token1 = new RefreshToken
-        {
-            Token = "valid-token-1",
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
-            UserId = user.Id
-        };
-        var token2 = new RefreshToken
-        {
-            Token = "valid-token-2",
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
-            UserId = user.Id
-        };
-        var reusedToken = new RefreshToken
-        {
-            Token = "reused-token",
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
-            UserId = user.Id,
-            RevokedAt = DateTime.UtcNow // Already revoked
-        };
+        // Create a revoked token
+        var revokedToken = new RefreshTokenBuilder()
+            .WithToken("revoked-token")
+            .WithExpiresAt(DateTime.UtcNow.AddDays(7))
+            .WithUserId(user.Id)
+            .Build();
+        revokedToken.Revoke(reason: "Test revocation");
+        Context.RefreshTokens.Add(revokedToken);
 
-        Context.RefreshTokens.AddRange(token1, token2, reusedToken);
+        // Create an active token for the same user
+        var activeToken = new RefreshTokenBuilder()
+            .WithToken("active-token")
+            .WithExpiresAt(DateTime.UtcNow.AddDays(7))
+            .WithUserId(user.Id)
+            .Build();
+        Context.RefreshTokens.Add(activeToken);
+
         await Context.SaveChangesAsync();
 
         var handler = new RefreshTokenCommandHandler(Context, _tokenService);
-        var command = new RefreshTokenCommand(reusedToken.Token);
+        var command = new RefreshTokenCommand(revokedToken.Token);
 
         // Act
         var result = await handler.Handle(command, default);
@@ -152,11 +127,22 @@ public sealed class RefreshTokenCommandIntegrationTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsFailure).IsTrue();
 
-        // Verify all tokens are revoked
+        // Verify all user tokens are now revoked (token reuse detection)
         var allTokens = await Context.RefreshTokens.Where(rt => rt.UserId == user.Id).ToListAsync();
         foreach (var token in allTokens)
         {
-            await Assert.That(token.RevokedAt).IsNotNull();
+            await Assert.That(token.IsRevoked || token.IsExpired).IsTrue();
         }
     }
+}
+
+public class FakeTokenService : ITokenService
+{
+    private int _tokenCounter = 0;
+
+    public string GenerateAccessToken(User user) => $"access-token-{user.Id}-{_tokenCounter++}";
+
+    public string GenerateRefreshToken() => $"refresh-token-{_tokenCounter++}-{Guid.NewGuid()}";
+
+    public DateTime GetRefreshTokenExpiration() => DateTime.UtcNow.AddDays(7);
 }

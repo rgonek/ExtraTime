@@ -88,12 +88,8 @@ public sealed class GetCompetitionsQueryHandlerTests : HandlerTestBase
             .WithName("Test League")
             .WithCode("TL")
             .Build();
-        competition.Country = "Test Country";
-        competition.LogoUrl = "https://logo.url";
-        competition.CurrentMatchday = 5;
-        competition.CurrentSeasonStart = now.AddMonths(-3);
-        competition.CurrentSeasonEnd = now.AddMonths(6);
-        competition.LastSyncedAt = now;
+        competition.UpdateDetails("Test League", "TL", "Test Country", "https://logo.url");
+        competition.UpdateCurrentSeason(5, now.AddMonths(-3), now.AddMonths(6));
 
         var competitions = new List<Domain.Entities.Competition> { competition }.AsQueryable();
         var mockCompetitions = CreateMockDbSet(competitions);

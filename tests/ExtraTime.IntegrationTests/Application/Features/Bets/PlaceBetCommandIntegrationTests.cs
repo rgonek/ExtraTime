@@ -2,6 +2,7 @@ using ExtraTime.Application.Features.Bets.Commands.PlaceBet;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
 {
     private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);

@@ -61,14 +61,12 @@ public sealed class GetMatchBetsQueryHandlerTests : HandlerTestBase
         var leagueId = Guid.NewGuid();
         var matchId = Guid.NewGuid();
 
-        var leagueMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
         SetCurrentUser(userId);
 
@@ -97,14 +95,12 @@ public sealed class GetMatchBetsQueryHandlerTests : HandlerTestBase
         var matchId = Guid.NewGuid();
         var league = new LeagueBuilder().WithId(leagueId).Build();
 
-        var leagueMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
         SetCurrentUser(userId);
 

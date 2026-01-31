@@ -47,7 +47,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
             .WithMatchId(match1.Id)
             .Build();
         bet1.Match = match1;
-        bet1.Result = new BetResult { PointsEarned = 3, IsExactMatch = true, IsCorrectResult = true };
+        bet1.Result = BetResult.Create(bet1.Id, 3, true, true);
 
         var bet2 = new BetBuilder()
             .WithLeagueId(leagueId)
@@ -55,7 +55,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
             .WithMatchId(match2.Id)
             .Build();
         bet2.Match = match2;
-        bet2.Result = new BetResult { PointsEarned = 1, IsExactMatch = false, IsCorrectResult = true };
+        bet2.Result = BetResult.Create(bet2.Id, 1, false, true);
 
         var bets = new List<Bet> { bet1, bet2 }.AsQueryable();
         var mockBets = CreateMockDbSet(bets);
@@ -97,7 +97,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
                 .WithMatchId(match.Id)
                 .Build();
             bet.Match = match;
-            bet.Result = new BetResult { IsCorrectResult = results[i], PointsEarned = results[i] ? 1 : 0 };
+            bet.Result = BetResult.Create(bet.Id, results[i] ? 1 : 0, false, results[i]);
             bets.Add(bet);
         }
 
@@ -126,7 +126,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
         var match = new MatchBuilder().WithScore(1, 1).Build();
         var bet = new BetBuilder().WithLeagueId(leagueId).WithUserId(userId).WithMatchId(match.Id).Build();
         bet.Match = match;
-        bet.Result = new BetResult { PointsEarned = 3, IsExactMatch = true, IsCorrectResult = true };
+        bet.Result = BetResult.Create(bet.Id, 3, true, true);
 
         var existingStanding = LeagueStanding.Create(leagueId, userId);
         existingStanding.TotalPoints = 0;

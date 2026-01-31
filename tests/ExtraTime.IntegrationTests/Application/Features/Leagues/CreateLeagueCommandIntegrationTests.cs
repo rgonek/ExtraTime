@@ -1,12 +1,14 @@
 using ExtraTime.Application.Features.Leagues.Commands.CreateLeague;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Infrastructure.Services;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class CreateLeagueCommandIntegrationTests : IntegrationTestBase
 {
     [Test]

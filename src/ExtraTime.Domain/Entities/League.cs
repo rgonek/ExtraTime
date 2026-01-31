@@ -91,13 +91,7 @@ public sealed class League : BaseAuditableEntity
         if (_members.Any(m => m.UserId == userId))
             throw new InvalidOperationException("User is already a member of this league");
 
-        var member = new LeagueMember
-        {
-            LeagueId = Id,
-            UserId = userId,
-            Role = role,
-            JoinedAt = Clock.UtcNow
-        };
+        var member = LeagueMember.Create(Id, userId, role);
 
         _members.Add(member);
         AddDomainEvent(new LeagueMemberAdded(Id, userId));

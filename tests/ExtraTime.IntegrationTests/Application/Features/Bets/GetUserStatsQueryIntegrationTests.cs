@@ -35,20 +35,16 @@ public sealed class GetUserStatsQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         // Add both users as members
-        var userMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Owner,
-            JoinedAt = Clock.UtcNow
-        };
-        var targetMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = targetUserId,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
+        var userMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Owner)
+            .Build();
+        var targetMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(targetUserId)
+            .WithRole(MemberRole.Member)
+            .Build();
         Context.LeagueMembers.AddRange(userMembership, targetMembership);
 
         // Create standing for target user
@@ -101,20 +97,16 @@ public sealed class GetUserStatsQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         // Only owner and target user are members, user is not
-        var ownerMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = ownerId,
-            Role = MemberRole.Owner,
-            JoinedAt = Clock.UtcNow
-        };
-        var targetMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = targetUserId,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
+        var ownerMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(ownerId)
+            .WithRole(MemberRole.Owner)
+            .Build();
+        var targetMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(targetUserId)
+            .WithRole(MemberRole.Member)
+            .Build();
         Context.LeagueMembers.AddRange(ownerMembership, targetMembership);
         await Context.SaveChangesAsync();
 
@@ -149,13 +141,11 @@ public sealed class GetUserStatsQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         // Only user is a member
-        var userMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Owner,
-            JoinedAt = Clock.UtcNow
-        };
+        var userMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Owner)
+            .Build();
         Context.LeagueMembers.Add(userMembership);
         await Context.SaveChangesAsync();
 
@@ -202,27 +192,21 @@ public sealed class GetUserStatsQueryIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         // Add all users as members
-        var userMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = userId,
-            Role = MemberRole.Owner,
-            JoinedAt = Clock.UtcNow
-        };
-        var targetMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = targetUserId,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
-        var otherMembership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = otherUserId,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
+        var userMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Owner)
+            .Build();
+        var targetMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(targetUserId)
+            .WithRole(MemberRole.Member)
+            .Build();
+        var otherMembership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(otherUserId)
+            .WithRole(MemberRole.Member)
+            .Build();
         Context.LeagueMembers.AddRange(userMembership, targetMembership, otherMembership);
 
         // Create standings - target user has 10 points, other user has 5 points

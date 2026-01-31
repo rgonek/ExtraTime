@@ -1,6 +1,7 @@
 using ExtraTime.Application.Features.Auth;
 using ExtraTime.Application.Features.Auth.Queries.GetCurrentUser;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using NSubstitute;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Auth;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class GetCurrentUserQueryIntegrationTests : IntegrationTestBase
 {
     [Test]

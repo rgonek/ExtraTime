@@ -3,6 +3,7 @@ using ExtraTime.Application.Features.Bets.Commands.CalculateBetResults;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Infrastructure.Services;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using NSubstitute;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class CalculateBetResultsIntegrationTests : IntegrationTestBase
 {
     [Test]

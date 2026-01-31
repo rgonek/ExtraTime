@@ -13,13 +13,9 @@ public sealed class InMemoryJobDispatcher(
 {
     public async Task<Guid> EnqueueAsync<T>(string jobType, T payload, CancellationToken cancellationToken = default)
     {
-        var job = new BackgroundJob
-        {
-            JobType = jobType,
-            Payload = JsonSerializer.Serialize(payload),
-            Status = JobStatus.Pending,
-            CreatedAt = Clock.UtcNow
-        };
+        var job = BackgroundJob.Create(
+            jobType: jobType,
+            payload: JsonSerializer.Serialize(payload));
 
         context.BackgroundJobs.Add(job);
         await context.SaveChangesAsync(cancellationToken);

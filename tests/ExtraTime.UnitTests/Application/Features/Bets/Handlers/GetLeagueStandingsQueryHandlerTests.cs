@@ -51,23 +51,19 @@ public sealed class GetLeagueStandingsQueryHandlerTests : HandlerTestBase
             .WithEmail("other@example.com")
             .Build();
 
-        var leagueMember1 = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember1 = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
-        var leagueMember2 = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = otherUserId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember2 = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(otherUserId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
         var standing1 = Domain.Entities.LeagueStanding.Create(leagueId, userId);
         standing1.TotalPoints = 15;
@@ -143,14 +139,12 @@ public sealed class GetLeagueStandingsQueryHandlerTests : HandlerTestBase
         var userId = Guid.NewGuid();
         var leagueId = Guid.NewGuid();
 
-        var leagueMember = new Domain.Entities.LeagueMember
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            UserId = userId,
-            Role = MemberRole.Member,
-            JoinedAt = _now.AddDays(-7)
-        };
+        var leagueMember = new LeagueMemberBuilder()
+            .WithLeagueId(leagueId)
+            .WithUserId(userId)
+            .WithRole(MemberRole.Member)
+            .WithJoinedAt(_now.AddDays(-7))
+            .Build();
 
         SetCurrentUser(userId);
 

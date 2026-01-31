@@ -3,11 +3,13 @@ using ExtraTime.Application.Features.Bets.Queries.GetLeagueStandings;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class GetLeagueStandingsQueryIntegrationTests : IntegrationTestBase
 {
     [Test]
@@ -36,13 +38,11 @@ public sealed class GetLeagueStandingsQueryIntegrationTests : IntegrationTestBas
         Context.Leagues.Add(league);
 
         // Add member2 to league
-        var member2Membership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = member2Id,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
+        var member2Membership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(member2Id)
+            .WithRole(MemberRole.Member)
+            .Build();
         Context.LeagueMembers.Add(member2Membership);
 
         // Create standings for both members
@@ -214,13 +214,11 @@ public sealed class GetLeagueStandingsQueryIntegrationTests : IntegrationTestBas
         Context.Leagues.Add(league);
 
         // Add user2 as member
-        var user2Membership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = user2Id,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
+        var user2Membership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(user2Id)
+            .WithRole(MemberRole.Member)
+            .Build();
         Context.LeagueMembers.Add(user2Membership);
 
         // Same total points, different exact matches
@@ -278,13 +276,11 @@ public sealed class GetLeagueStandingsQueryIntegrationTests : IntegrationTestBas
         Context.Leagues.Add(league);
 
         // Add user2 as member
-        var user2Membership = new LeagueMember
-        {
-            LeagueId = league.Id,
-            UserId = user2Id,
-            Role = MemberRole.Member,
-            JoinedAt = Clock.UtcNow
-        };
+        var user2Membership = new LeagueMemberBuilder()
+            .WithLeagueId(league.Id)
+            .WithUserId(user2Id)
+            .WithRole(MemberRole.Member)
+            .Build();
         Context.LeagueMembers.Add(user2Membership);
 
         // Same total points, same exact matches, different bets placed

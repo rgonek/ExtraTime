@@ -219,14 +219,13 @@ public sealed class CalculateBetResultsJobIntegrationTests : IntegrationTestBase
         Context.Bets.Add(bet);
         await Context.SaveChangesAsync();
 
-        var existingResult = new BetResult
-        {
-            BetId = bet.Id,
-            PointsEarned = 0,
-            IsExactMatch = false,
-            IsCorrectResult = false,
-            CalculatedAt = DateTime.UtcNow.AddHours(-1)
-        };
+        var existingResult = new BetResultBuilder()
+            .WithBetId(bet.Id)
+            .WithPointsEarned(0)
+            .WithIsExactMatch(false)
+            .WithIsCorrectResult(false)
+            .WithCalculatedAt(DateTime.UtcNow.AddHours(-1))
+            .Build();
         Context.BetResults.Add(existingResult);
         await Context.SaveChangesAsync();
 

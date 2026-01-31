@@ -43,17 +43,12 @@ public sealed class BotSeeder(IApplicationDbContext context, IPasswordHasher pas
         var user = User.Register(email, name, passwordHasher.Hash(Guid.NewGuid().ToString()));
         user.MarkAsBot();
 
-        var bot = new Bot
-        {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            Name = name,
-            AvatarUrl = null,
-            Strategy = strategy,
-            Configuration = configuration,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
+        var bot = Bot.Create(
+            user.Id,
+            name,
+            strategy,
+            avatarEmoji,
+            configuration);
 
         return (user, bot);
     }

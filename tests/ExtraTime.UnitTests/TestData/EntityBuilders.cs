@@ -201,15 +201,9 @@ public sealed class CompetitionBuilder
 
     public Competition Build()
     {
-        return new Competition
-        {
-            Id = _id,
-            ExternalId = _externalId,
-            Name = _name,
-            Code = _code,
-            Country = _country,
-            LastSyncedAt = Clock.UtcNow
-        };
+        var competition = Competition.Create(_externalId, _name, _code, _country);
+        competition.GetType().GetProperty("Id")?.SetValue(competition, _id);
+        return competition;
     }
 }
 
@@ -246,14 +240,9 @@ public sealed class TeamBuilder
 
     public Team Build()
     {
-        return new Team
-        {
-            Id = _id,
-            ExternalId = _externalId,
-            Name = _name,
-            ShortName = _shortName,
-            LastSyncedAt = Clock.UtcNow
-        };
+        var team = Team.Create(_externalId, _name, _shortName);
+        team.GetType().GetProperty("Id")?.SetValue(team, _id);
+        return team;
     }
 }
 
@@ -464,18 +453,11 @@ public sealed class BotBuilder
 
     public Bot Build()
     {
-        return new Bot
-        {
-            Id = _id,
-            UserId = _userId,
-            Name = _name,
-            AvatarUrl = _avatarUrl,
-            Strategy = _strategy,
-            Configuration = _configuration,
-            IsActive = _isActive,
-            CreatedAt = _createdAt,
-            LastBetPlacedAt = _lastBetPlacedAt
-        };
+        var bot = Bot.Create(_userId, _name, _strategy, _avatarUrl, _configuration);
+        bot.GetType().GetProperty("Id")?.SetValue(bot, _id);
+        if (!_isActive)
+            bot.Deactivate();
+        return bot;
     }
 }
 
@@ -625,22 +607,173 @@ public sealed class BackgroundJobBuilder
 
     public BackgroundJob Build()
     {
-        return new BackgroundJob
+        var job = BackgroundJob.Create(_jobType, _payload, _scheduledAt, _createdByUserId, _correlationId, _maxRetries);
+        job.GetType().GetProperty("Id")?.SetValue(job, _id);
+        return job;
+    }
+}
+
+public sealed class LeagueMemberBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private Guid _leagueId = Guid.NewGuid();
+    private Guid _userId = Guid.NewGuid();
+    private MemberRole _role = MemberRole.Member;
+    private DateTime? _joinedAt = null;
+
+    public LeagueMemberBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public LeagueMemberBuilder WithLeagueId(Guid leagueId)
+    {
+        _leagueId = leagueId;
+        return this;
+    }
+
+    public LeagueMemberBuilder WithUserId(Guid userId)
+    {
+        _userId = userId;
+        return this;
+    }
+
+    public LeagueMemberBuilder WithRole(MemberRole role)
+    {
+        _role = role;
+        return this;
+    }
+
+    public LeagueMemberBuilder WithJoinedAt(DateTime joinedAt)
+    {
+        _joinedAt = joinedAt;
+        return this;
+    }
+
+    public LeagueMember Build()
+    {
+        var member = LeagueMember.Create(_leagueId, _userId, _role);
+        member.GetType().GetProperty("Id")?.SetValue(member, _id);
+        if (_joinedAt.HasValue)
         {
-            Id = _id,
-            JobType = _jobType,
-            Status = _status,
-            Payload = _payload,
-            Result = _result,
-            Error = _error,
-            RetryCount = _retryCount,
-            MaxRetries = _maxRetries,
-            CreatedAt = _createdAt,
-            StartedAt = _startedAt,
-            CompletedAt = _completedAt,
-            ScheduledAt = _scheduledAt,
-            CreatedByUserId = _createdByUserId,
-            CorrelationId = _correlationId
-        };
+            member.GetType().GetProperty("JoinedAt")?.SetValue(member, _joinedAt.Value);
+        }
+        return member;
+    }
+}
+
+public sealed class BetResultBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private Guid _betId = Guid.NewGuid();
+    private int _pointsEarned = 0;
+    private bool _isExactMatch = false;
+    private bool _isCorrectResult = false;
+    private DateTime? _calculatedAt = null;
+
+    public BetResultBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public BetResultBuilder WithBetId(Guid betId)
+    {
+        _betId = betId;
+        return this;
+    }
+
+    public BetResultBuilder WithPointsEarned(int pointsEarned)
+    {
+        _pointsEarned = pointsEarned;
+        return this;
+    }
+
+    public BetResultBuilder WithIsExactMatch(bool isExactMatch)
+    {
+        _isExactMatch = isExactMatch;
+        return this;
+    }
+
+    public BetResultBuilder WithIsCorrectResult(bool isCorrectResult)
+    {
+        _isCorrectResult = isCorrectResult;
+        return this;
+    }
+
+    public BetResultBuilder WithCalculatedAt(DateTime calculatedAt)
+    {
+        _calculatedAt = calculatedAt;
+        return this;
+    }
+
+    public BetResult Build()
+    {
+        var result = BetResult.Create(_betId, _pointsEarned, _isExactMatch, _isCorrectResult);
+        result.GetType().GetProperty("Id")?.SetValue(result, _id);
+        if (_calculatedAt.HasValue)
+        {
+            result.GetType().GetProperty("CalculatedAt")?.SetValue(result, _calculatedAt.Value);
+        }
+        return result;
+    }
+}
+
+public sealed class RefreshTokenBuilder
+{
+    private Guid _id = Guid.NewGuid();
+    private string _token = Guid.NewGuid().ToString();
+    private DateTime _expiresAt = Clock.UtcNow.AddDays(7);
+    private Guid _userId = Guid.NewGuid();
+    private string? _createdByIp = null;
+    private User? _user = null;
+
+    public RefreshTokenBuilder WithId(Guid id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public RefreshTokenBuilder WithToken(string token)
+    {
+        _token = token;
+        return this;
+    }
+
+    public RefreshTokenBuilder WithExpiresAt(DateTime expiresAt)
+    {
+        _expiresAt = expiresAt;
+        return this;
+    }
+
+    public RefreshTokenBuilder WithUserId(Guid userId)
+    {
+        _userId = userId;
+        return this;
+    }
+
+    public RefreshTokenBuilder WithUser(User user)
+    {
+        _user = user;
+        _userId = user.Id;
+        return this;
+    }
+
+    public RefreshTokenBuilder WithCreatedByIp(string? createdByIp)
+    {
+        _createdByIp = createdByIp;
+        return this;
+    }
+
+    public RefreshToken Build()
+    {
+        var token = RefreshToken.Create(_token, _expiresAt, _userId, _createdByIp);
+        token.GetType().GetProperty("Id")?.SetValue(token, _id);
+        if (_user != null)
+        {
+            token.GetType().GetProperty("User")?.SetValue(token, _user);
+        }
+        return token;
     }
 }

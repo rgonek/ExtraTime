@@ -61,24 +61,18 @@ public sealed class CalculateBetResultsCommandHandler(
 
             if (bet.Result == null)
             {
-                // Create new result
-                var betResult = new BetResult
-                {
-                    BetId = bet.Id,
-                    PointsEarned = result.PointsEarned,
-                    IsExactMatch = result.IsExactMatch,
-                    IsCorrectResult = result.IsCorrectResult,
-                    CalculatedAt = Clock.UtcNow
-                };
+                // Create new result using factory method
+                var betResult = BetResult.Create(
+                    bet.Id,
+                    result.PointsEarned,
+                    result.IsExactMatch,
+                    result.IsCorrectResult);
                 context.BetResults.Add(betResult);
             }
             else
             {
                 // Update existing result (recalculation scenario)
-                bet.Result.PointsEarned = result.PointsEarned;
-                bet.Result.IsExactMatch = result.IsExactMatch;
-                bet.Result.IsCorrectResult = result.IsCorrectResult;
-                bet.Result.CalculatedAt = Clock.UtcNow;
+                bet.Result.Update(result.PointsEarned, result.IsExactMatch, result.IsCorrectResult);
             }
         }
 

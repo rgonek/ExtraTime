@@ -1,6 +1,5 @@
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
-using ExtraTime.Domain.Enums;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,8 +37,8 @@ public sealed class KickMemberCommandHandler(
             return Result.Failure(LeagueErrors.MemberNotFound);
         }
 
-        // Cannot kick the owner
-        if (targetMember.Role == MemberRole.Owner)
+        // Cannot kick the owner - using rich domain method
+        if (targetMember.IsOwner())
         {
             return Result.Failure(LeagueErrors.CannotKickOwner);
         }

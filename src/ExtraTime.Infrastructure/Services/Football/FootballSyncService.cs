@@ -37,31 +37,30 @@ public sealed class FootballSyncService(
 
             if (competition is null)
             {
-                competition = new Competition
-                {
-                    ExternalId = apiCompetition.Id,
-                    Name = apiCompetition.Name,
-                    Code = apiCompetition.Code,
-                    Country = apiCompetition.Area.Name,
-                    LogoUrl = apiCompetition.Emblem,
-                    CurrentMatchday = apiCompetition.CurrentSeason?.CurrentMatchday,
-                    CurrentSeasonStart = apiCompetition.CurrentSeason?.StartDate,
-                    CurrentSeasonEnd = apiCompetition.CurrentSeason?.EndDate,
-                    LastSyncedAt = Clock.UtcNow
-                };
+                competition = Competition.Create(
+                    apiCompetition.Id,
+                    apiCompetition.Name,
+                    apiCompetition.Code,
+                    apiCompetition.Area.Name,
+                    apiCompetition.Emblem);
+                competition.UpdateCurrentSeason(
+                    apiCompetition.CurrentSeason?.CurrentMatchday,
+                    apiCompetition.CurrentSeason?.StartDate,
+                    apiCompetition.CurrentSeason?.EndDate);
                 context.Competitions.Add(competition);
                 logger.LogInformation("Added new competition: {Name}", competition.Name);
             }
             else
             {
-                competition.Name = apiCompetition.Name;
-                competition.Code = apiCompetition.Code;
-                competition.Country = apiCompetition.Area.Name;
-                competition.LogoUrl = apiCompetition.Emblem;
-                competition.CurrentMatchday = apiCompetition.CurrentSeason?.CurrentMatchday;
-                competition.CurrentSeasonStart = apiCompetition.CurrentSeason?.StartDate;
-                competition.CurrentSeasonEnd = apiCompetition.CurrentSeason?.EndDate;
-                competition.LastSyncedAt = Clock.UtcNow;
+                competition.UpdateDetails(
+                    apiCompetition.Name,
+                    apiCompetition.Code,
+                    apiCompetition.Area.Name,
+                    apiCompetition.Emblem);
+                competition.UpdateCurrentSeason(
+                    apiCompetition.CurrentSeason?.CurrentMatchday,
+                    apiCompetition.CurrentSeason?.StartDate,
+                    apiCompetition.CurrentSeason?.EndDate);
                 logger.LogInformation("Updated competition: {Name}", competition.Name);
             }
         }
@@ -95,29 +94,27 @@ public sealed class FootballSyncService(
 
             if (team is null)
             {
-                team = new Team
-                {
-                    ExternalId = apiTeam.Id,
-                    Name = apiTeam.Name,
-                    ShortName = apiTeam.ShortName,
-                    Tla = apiTeam.Tla,
-                    LogoUrl = apiTeam.Crest,
-                    ClubColors = apiTeam.ClubColors,
-                    Venue = apiTeam.Venue,
-                    LastSyncedAt = Clock.UtcNow
-                };
+                team = Team.Create(
+                    apiTeam.Id,
+                    apiTeam.Name,
+                    apiTeam.ShortName,
+                    apiTeam.Tla,
+                    apiTeam.Crest,
+                    apiTeam.ClubColors,
+                    apiTeam.Venue);
                 context.Teams.Add(team);
                 logger.LogInformation("Added new team: {Name}", team.Name);
             }
             else
             {
-                team.Name = apiTeam.Name;
-                team.ShortName = apiTeam.ShortName;
-                team.Tla = apiTeam.Tla;
-                team.LogoUrl = apiTeam.Crest;
-                team.ClubColors = apiTeam.ClubColors;
-                team.Venue = apiTeam.Venue;
-                team.LastSyncedAt = Clock.UtcNow;
+                team.UpdateDetails(
+                    apiTeam.Name,
+                    apiTeam.ShortName,
+                    apiTeam.Tla,
+                    apiTeam.Crest,
+                    apiTeam.ClubColors,
+                    apiTeam.Venue);
+                team.RecordSync();
             }
 
             await context.SaveChangesAsync(ct);

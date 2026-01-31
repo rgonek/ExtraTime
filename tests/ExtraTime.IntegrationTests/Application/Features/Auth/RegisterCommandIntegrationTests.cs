@@ -2,12 +2,14 @@ using ExtraTime.Application.Features.Auth.Commands.Register;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Infrastructure.Configuration;
 using ExtraTime.Infrastructure.Services;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Auth;
 
+[TestCategory(TestCategories.Significant)]
 public sealed class RegisterCommandIntegrationTests : IntegrationTestBase
 {
     private readonly PasswordHasher _passwordHasher = new();
