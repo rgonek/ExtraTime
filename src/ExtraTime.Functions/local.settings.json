@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
+  },
+  "ConnectionStrings": {
+    "extratime": "Server=localhost,1433;Database=extratime;User Id=sa;Password=ExtraTime_Dev123!;TrustServerCertificate=True"
+  }
+}

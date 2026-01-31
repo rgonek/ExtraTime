@@ -17,6 +17,11 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WaitForCompletion(migrations)
     .WithExternalHttpEndpoints();
 
+// Azure Functions project for background jobs
+var functions = builder.AddProject<Projects.ExtraTime_Functions>("functions")
+    .WithReference(database)
+    .WaitForCompletion(migrations);
+
 // Next.js frontend (using Bun)
 var web = builder.AddExecutable("web", "bun", "../../web", "run", "dev")
     .WithReference(api)

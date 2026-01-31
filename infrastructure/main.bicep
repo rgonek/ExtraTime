@@ -118,6 +118,29 @@ module appService 'modules/app-service.bicep' = {
   }
 }
 
+// Azure Functions (Consumption Plan - Free Tier)
+// COST CONTROLS:
+// - Consumption plan (Y1) with pay-per-execution
+// - Daily memory quota limited to prevent runaway costs
+// - Function scale limit set to 1 to prevent unexpected scaling
+module functions 'modules/functions.bicep' = {
+  name: 'functions-deployment'
+  scope: rg
+  params: {
+    name: 'extratime-func-${uniqueSuffix}'
+    storageAccountName: 'etfn${uniqueSuffix}'
+    location: location
+    tags: tags
+    appInsightsConnectionString: appInsights.outputs.connectionString
+    sqlConnectionString: sqlServer.outputs.connectionString
+    keyVaultName: keyVault.outputs.name
+    footballDataApiKey: footballDataApiKey
+    jwtSecret: jwtSecret
+    // COST CONTROL: Daily quota of 10000 GB-seconds (free tier allows ~13333/day)
+    dailyMemoryTimeQuota: 10000
+  }
+}
+
 // Static Web App (Free Tier)
 module staticWebApp 'modules/static-web-app.bicep' = {
   name: 'staticWebApp-deployment'
@@ -142,6 +165,9 @@ output keyVaultUri string = keyVault.outputs.uri
 output appServiceName string = appService.outputs.webAppName
 output appServiceDefaultHostName string = appService.outputs.defaultHostName
 output appServicePrincipalId string = appService.outputs.principalId
+output functionsName string = functions.outputs.functionAppName
+output functionsHostName string = functions.outputs.functionAppHostName
+output functionsPrincipalId string = functions.outputs.principalId
 output staticWebAppName string = staticWebApp.outputs.name
 output staticWebAppDefaultHostName string = staticWebApp.outputs.defaultHostName
 output appInsightsName string = appInsights.outputs.name
