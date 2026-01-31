@@ -1,74 +1,121 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame } from 'lucide-react';
+import { Flame, Trophy } from 'lucide-react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
 
-interface StreakCounterProps {
+const streakCounterVariants = cva(
+  'inline-flex items-center gap-3 rounded-2xl transition-all duration-200',
+  {
+    variants: {
+      variant: {
+        default: 'bg-accent-light border-2 border-accent',
+        compact: 'bg-accent/10 border border-accent/30',
+        ghost: '',
+      },
+      size: {
+        sm: 'px-3 py-2',
+        default: 'px-4 py-3',
+        lg: 'px-5 py-4',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+);
+
+interface StreakCounterProps extends VariantProps<typeof streakCounterVariants> {
   currentStreak: number;
-  bestStreak: number;
+  bestStreak?: number;
+  showBest?: boolean;
+  className?: string;
 }
 
 /**
  * Animated streak display with fire icon
  *
- * Demonstrates:
- * - AnimatePresence for mount/unmount animations
- * - Conditional intensity based on streak value
- * - Number animation
+ * Features:
+ * - Fire animation that intensifies with streak
+ * - Accent color theme matching design system
+ * - Multiple size and variant options
+ * - Best streak comparison
  */
-export function StreakCounter({ currentStreak, bestStreak }: StreakCounterProps) {
-  // Intensity increases with streak
-  const flameColor =
-    currentStreak >= 5
-      ? 'text-orange-500'
-      : currentStreak >= 3
-        ? 'text-amber-500'
-        : 'text-gray-400';
+export function StreakCounter({
+  currentStreak,
+  bestStreak,
+  showBest = true,
+  variant,
+  size,
+  className,
+}: StreakCounterProps) {
+  // Fire intensity and animation based on streak value
+  const isOnFire = currentStreak >= 3;
+  const isHotStreak = currentStreak >= 5;
+
+  const flameColorClass = isHotStreak
+    ? 'text-orange-500'
+    : isOnFire
+      ? 'text-accent'
+      : 'text-muted-foreground';
+
+  const iconSizeClass = size === 'lg' ? 'w-8 h-8' : size === 'sm' ? 'w-5 h-5' : 'w-7 h-7';
+  const numberSizeClass = size === 'lg' ? 'text-4xl' : size === 'sm' ? 'text-xl' : 'text-3xl';
+  const labelSizeClass = size === 'lg' ? 'text-sm' : 'text-xs';
 
   return (
-    <div className="flex items-center gap-4">
-      {/* Current streak */}
-      <div className="flex items-center gap-2">
-        <motion.div
-          animate={{
-            scale: currentStreak > 0 ? [1, 1.1, 1] : 1,
-          }}
-          transition={{
-            repeat: currentStreak >= 3 ? Infinity : 0,
-            duration: 1.5,
-          }}
-        >
-          <Flame
-            className={`w-8 h-8 ${flameColor} ${
-              currentStreak >= 3
-                ? 'drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]'
-                : ''
-            }`}
-          />
-        </motion.div>
-        <div>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStreak}
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              className="text-2xl font-bold"
-            >
-              {currentStreak}
-            </motion.div>
-          </AnimatePresence>
-          <div className="text-xs text-muted-foreground">Current</div>
-        </div>
+    <div className={cn(streakCounterVariants({ variant, size }), className)}>
+      {/* Flame icon with animation */}
+      <div className={cn('relative', isOnFire && 'animate-fire')}>
+        <Flame
+          className={cn(
+            iconSizeClass,
+            flameColorClass,
+            isOnFire && 'drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]',
+            isHotStreak && 'drop-shadow-[0_0_14px_rgba(249,115,22,0.6)]'
+          )}
+        />
       </div>
 
-      {/* Best streak */}
-      <div className="text-center border-l pl-4">
-        <div className="text-lg font-semibold text-muted-foreground">
-          {bestStreak}
-        </div>
-        <div className="text-xs text-muted-foreground">Best</div>
+      {/* Current streak */}
+      <div className="flex flex-col items-start">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStreak}
+            initial={{ y: -12, opacity: 0, scale: 0.8 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 12, opacity: 0, scale: 0.8 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className={cn(numberSizeClass, 'font-bold text-accent leading-none')}
+          >
+            {currentStreak}
+          </motion.div>
+        </AnimatePresence>
+        <span className={cn(labelSizeClass, 'text-accent font-medium')}>
+          day streak
+        </span>
       </div>
+
+      {/* Best streak (optional) */}
+      {showBest && bestStreak !== undefined && (
+        <div className="flex items-center gap-1.5 border-l border-accent/30 pl-3 ml-1">
+          <Trophy className={cn(
+            size === 'lg' ? 'w-4 h-4' : 'w-3.5 h-3.5',
+            'text-accent/60'
+          )} />
+          <div className="flex flex-col items-start">
+            <span className={cn(
+              size === 'lg' ? 'text-lg' : 'text-base',
+              'font-semibold text-accent/80 leading-none'
+            )}>
+              {bestStreak}
+            </span>
+            <span className={cn(labelSizeClass, 'text-accent/60')}>best</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
