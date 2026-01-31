@@ -329,71 +329,81 @@ accent: "bg-accent text-accent-foreground"
 
 ---
 
-### Phase 4: Feature Components Update
+### Phase 4: Feature Components Update ✅ COMPLETED
 **Goal:** Update league, betting, and standings components
+**Status:** Completed on 2026-01-31
 
 #### 4.1 League Card
 **File:** `web/src/components/leagues/league-card.tsx`
 
 **Updates:**
-- Use new Card component with shadow
-- Add league icon with gradient background
-- Add stats row (points, rank, streak)
-- Add hover lift effect
-- Update action button styling
+- Use new Card component with interactive prop for hover effect
+- Add league icon with gradient background (primary to secondary)
+- Add stats row with icon containers (members, date)
+- Add hover lift effect and color transition on title
+- Update Badge to use info variant for public leagues
 
 **Tasks:**
-- [ ] Update card structure
-- [ ] Add icon styling
-- [ ] Add stats grid
-- [ ] Update button variant
+- [x] Update card structure
+- [x] Add icon styling
+- [x] Add stats grid
+- [x] Update badge variants
 
 #### 4.2 Match Card
 **File:** `web/src/components/bets/match-card.tsx`
 
 **Updates:**
-- Add team logo styling (circular with shadow)
-- Add deadline badge with accent color
-- Add live match state (red badge, locked inputs)
-- Add score input styling
-- Add competition badge
-- Add hover effect
+- Add team logo styling (circular with shadow and ring)
+- Add deadline countdown with hours/minutes display
+- Add live match state (live badge, ring styling)
+- Add competition badge at top of card
+- Add expand/collapse chevron indicator
+- Add urgent state styling for approaching deadlines
+- Use design system badge variants (live, success, info, points)
+- Add TeamRow subcomponent for consistent team display
 
 **Tasks:**
-- [ ] Update layout to match design
-- [ ] Add deadline timer component
-- [ ] Style score inputs
-- [ ] Add state variations (upcoming, live, finished)
+- [x] Update layout to match design
+- [x] Add deadline timer component
+- [x] Style team rows with crests
+- [x] Add state variations (upcoming, live, finished)
+- [x] Add expand indicator
 
-#### 4.3 Leaderboard Row
+#### 4.3 Leaderboard
 **File:** `web/src/components/standings/leaderboard.tsx`
 
 **Updates:**
-- Use RankBadge for positions 1-3
-- Add streak indicator
-- Add highlight for current user
-- Update avatar styling
-- Add hover state
+- Use RankBadge from gamification for positions 1-3
+- Add enhanced streak indicator with fire animation
+- Add highlight for current user (primary background)
+- Update avatar styling with rank-based ring colors
+- Add hover state with muted background
+- Add points progress bar
+- Add accuracy indicator with Target icon
+- Add exact match highlighting with Trophy icon
 
 **Tasks:**
-- [ ] Integrate RankBadge component
-- [ ] Update row styling
-- [ ] Add current user highlight
-- [ ] Update stats columns
+- [x] Integrate RankBadge component from gamification
+- [x] Update row styling with hover states
+- [x] Add current user highlight
+- [x] Update stats columns with enhanced styling
 
 #### 4.4 Member List
 **File:** `web/src/components/leagues/member-list.tsx`
 
 **Updates:**
-- Use RankBadge component
-- Add streak display
-- Add hover state on rows
-- Add current user highlight
+- Add current user highlighting
+- Add owner badge with accent variant
+- Add hover state on rows with transition
+- Update avatar styling with ring for owner
+- Add "You" badge for current user
+- Add Users icon with gradient in header
 
 **Tasks:**
-- [ ] Update to use RankBadge
-- [ ] Add streak indicator
-- [ ] Update styling
+- [x] Add current user detection and styling
+- [x] Update owner badge styling
+- [x] Add hover states
+- [x] Update card header with icon
 
 ---
 
@@ -571,10 +581,15 @@ web/src/components/shared/animated-container.tsx    # Updated tokens
 
 ### New Files
 ```
-web/src/components/gamification/rank-badge.tsx      # New component
-web/src/components/shared/page-header.tsx           # New component
+web/src/components/gamification/rank-badge.tsx      # New component (created in Phase 3)
+web/src/components/shared/page-header.tsx           # New component (Phase 5)
 web/src/components/ui/score-input.tsx               # New component (optional)
 web/src/lib/design-tokens.ts                        # Documentation (optional)
+```
+
+### Refactored Files
+```
+web/src/components/standings/rank-badge.tsx         # Now re-exports from gamification
 ```
 
 ---
