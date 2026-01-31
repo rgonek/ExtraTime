@@ -1,132 +1,118 @@
-name: Production Deployment
+name: Build and Deploy
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Deployment environment'
+      deploy_backend:
+        description: 'Deploy Backend'
         required: true
-        default: 'production'
-        type: choice
-        options:
-          - staging
-          - production
+        default: 'false'
+        type: boolean
+      deploy_frontend:
+        description: 'Deploy Frontend'
+        required: true
+        default: 'false'
+        type: boolean
 
 env:
-  AZURE_WEBAPP_NAME: 'extratime-app'
   DOTNET_VERSION: '10.0.x'
-  TEST_DATABASE_TYPE: SqlServer
+  NODE_VERSION: '20'
+  AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
 
 jobs:
-  # Job 1: Run full test suite with SQL Server
-  full-test-suite:
-    name: Full Test Suite (SQL Server)
+  # ============================================
+  # BUILD JOBS (Run on every push)
+  # ============================================
+
+  build-backend:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: extratime
-          POSTGRES_PASSWORD: extratime_dev
-          POSTGRES_DB: extratime
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-      - run: dotnet restore
-      - run: dotnet build --no-restore --configuration Release
-      
-      # Run ALL integration tests with SQL Server
-      - name: Run Full Integration Tests
-        run: |
-          dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj \
-            --no-build --configuration Release \
-            -- --coverage --coverage-output-format cobertura --coverage-output coverage.integration.cobertura.xml
-        env:
-          TEST_DATABASE_TYPE: SqlServer
-          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
-          
-      # Run ALL API tests with SQL Server
-      - name: Run Full API Tests
-        run: |
-          dotnet test tests/ExtraTime.API.Tests/ExtraTime.API.Tests.csproj \
-            --no-build --configuration Release \
-            -- --coverage --coverage-output-format cobertura --coverage-output coverage.api.cobertura.xml
-        env:
-          TEST_DATABASE_TYPE: SqlServer
-      
-      # Run unit and domain tests
-      - name: Run Unit Tests
-        run: |
-          dotnet test tests/ExtraTime.UnitTests/ExtraTime.UnitTests.csproj \
-            --no-build --configuration Release \
-            -- --coverage --coverage-output-format cobertura --coverage-output coverage.unit.cobertura.xml
-          
-      - name: Run Domain Tests
-        run: |
-          dotnet test tests/ExtraTime.Domain.Tests/ExtraTime.Domain.Tests.csproj \
-            --no-build --configuration Release \
-            -- --coverage --coverage-output-format cobertura --coverage-output coverage.domain.cobertura.xml
-      
-      - name: Upload Coverage Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: full-coverage-reports
-          path: "tests/**/coverage/*.cobertura.xml"
 
-  # Job 2: Manual approval gate for production
-  approve-production:
-    name: Approve Production Deployment
-    needs: full-test-suite
-    if: github.event.inputs.environment == 'production'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Approval Check
-        run: |
-          echo "✅ Full test suite passed on SQL Server"
-          echo "🚀 Ready for production deployment"
-          echo "⏳ Awaiting manual approval..."
-
-  # Job 3: Build and Deploy
-  build-and-deploy:
-    name: Build and Deploy to ${{ github.event.inputs.environment }}
-    needs: 
-      - full-test-suite
-      - approve-production
-    if: always() && needs.full-test-suite.result == 'success' && (needs.approve-production.result == 'success' || needs.approve-production.result == 'skipped')
-    runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
-    steps:
-      - uses: actions/checkout@v4
-      
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore src/ExtraTime.sln
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build src/ExtraTime.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test src/ExtraTime.sln --configuration Release --no-build --verbosity normal
 
       - name: Publish
-        run: dotnet publish src/ExtraTime.API/ExtraTime.API.csproj -c Release -o ./publish
+        run: dotnet publish src/ExtraTime.API/ExtraTime.API.csproj -c Release -o ./publish/backend
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-artifact
+          path: ./publish/backend
+          retention-days: 7
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Lint
+        working-directory: web
+        run: npm run lint
+
+      - name: Type check
+        working-directory: web
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: web
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+          NEXT_PUBLIC_APP_URL: https://extratime.gonek.net
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-artifact
+          path: web/dist
+          retention-days: 7
+
+  # ============================================
+  # DEPLOY JOBS (Manual trigger only)
+  # ============================================
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: build-backend
+    if: github.event.inputs.deploy_backend == 'true'
+    environment:
+      name: production-backend
+      url: ${{ secrets.API_URL }}
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-artifact
+          path: ./publish
 
       - name: Install EF Core Tools
         run: dotnet tool install --global dotnet-ef
@@ -146,7 +132,27 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish
-      
-      - name: Deployment Notification
-        run: |
-          echo "🎉 Deployment to ${{ github.event.inputs.environment }} complete!"
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: build-frontend
+    if: github.event.inputs.deploy_frontend == 'true'
+    environment:
+      name: production-frontend
+      url: https://extratime.gonek.net
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-artifact
+          path: ./dist
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: './dist'
+          skip_app_build: true

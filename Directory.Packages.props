@@ -19,6 +19,12 @@
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+    <!-- Azure & Deployment -->
+    <PackageVersion Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.14.2" />
+    <!-- Hangfire -->
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.18" />
+    <PackageVersion Include="Hangfire.SqlServer" Version="1.8.18" />
     <!-- .NET Aspire -->
     <PackageVersion Include="Aspire.Hosting" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
