@@ -37,7 +37,7 @@ public static class DependencyInjection
             }
             else
             {
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                var connectionString = configuration.GetConnectionString("extratime");
                 services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseSqlServer(connectionString));
             }
@@ -95,8 +95,8 @@ public static class DependencyInjection
         services.AddScoped<ITeamFormCalculator, TeamFormCalculator>();
         services.AddScoped<BotStrategyFactory>();
         services.AddScoped<IBotBettingService, BotBettingService>();
-        services.AddHostedService<BotBettingBackgroundService>();
-        services.AddHostedService<FormCacheBackgroundService>();
+        // Background services removed - Hangfire handles recurring jobs in production
+        // For development, use Hangfire dashboard or API endpoints to trigger jobs manually
 
         // Football Data Services
         services.Configure<FootballDataSettings>(configuration.GetSection(FootballDataSettings.SectionName));

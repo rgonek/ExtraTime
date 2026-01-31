@@ -126,6 +126,14 @@ jobs:
             --startup-project src/ExtraTime.API \
             --connection "$CONNECTION_STRING"
 
+      - name: Run API Tests
+        env:
+          CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+        run: |
+          dotnet test tests/ExtraTime.API.Tests/ExtraTime.API.Tests.csproj \
+            --configuration Release \
+            --verbosity normal
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:

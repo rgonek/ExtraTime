@@ -18,7 +18,7 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString("extratime");
         optionsBuilder.UseSqlServer(connectionString);
 
         // Create dummy services for design-time only

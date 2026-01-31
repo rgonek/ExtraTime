@@ -22,9 +22,10 @@
     <!-- Azure & Deployment -->
     <PackageVersion Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
     <PackageVersion Include="Azure.Identity" Version="1.14.2" />
-    <!-- Hangfire -->
-    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.18" />
-    <PackageVersion Include="Hangfire.SqlServer" Version="1.8.18" />
+    <!-- Azure Functions (replaces Hangfire) -->
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.4.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.0" />
     <!-- .NET Aspire -->
     <PackageVersion Include="Aspire.Hosting" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
