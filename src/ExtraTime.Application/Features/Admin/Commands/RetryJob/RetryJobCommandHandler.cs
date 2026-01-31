@@ -1,5 +1,6 @@
 using ExtraTime.Application.Common;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Application.Features.Admin;
 using ExtraTime.Domain.Enums;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,11 @@ public sealed class RetryJobCommandHandler(
         if (job is null)
         {
             return Result.Failure(AdminErrors.JobNotFound);
+        }
+
+        if (job.RetryCount >= job.MaxRetries)
+        {
+            return Result.Failure(AdminErrors.MaxRetriesExceeded);
         }
 
         try

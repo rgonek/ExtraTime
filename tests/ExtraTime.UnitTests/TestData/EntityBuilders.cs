@@ -457,6 +457,10 @@ public sealed class BotBuilder
         bot.GetType().GetProperty("Id")?.SetValue(bot, _id);
         if (!_isActive)
             bot.Deactivate();
+        if (_lastBetPlacedAt.HasValue)
+        {
+            bot.GetType().GetProperty("LastBetPlacedAt")?.SetValue(bot, _lastBetPlacedAt.Value);
+        }
         return bot;
     }
 }
@@ -609,6 +613,13 @@ public sealed class BackgroundJobBuilder
     {
         var job = BackgroundJob.Create(_jobType, _payload, _scheduledAt, _createdByUserId, _correlationId, _maxRetries);
         job.GetType().GetProperty("Id")?.SetValue(job, _id);
+        job.GetType().GetProperty("Status")?.SetValue(job, _status);
+        job.GetType().GetProperty("Result")?.SetValue(job, _result);
+        job.GetType().GetProperty("Error")?.SetValue(job, _error);
+        job.GetType().GetProperty("RetryCount")?.SetValue(job, _retryCount);
+        job.GetType().GetProperty("StartedAt")?.SetValue(job, _startedAt);
+        job.GetType().GetProperty("CompletedAt")?.SetValue(job, _completedAt);
+        job.GetType().GetProperty("CreatedAt")?.SetValue(job, _createdAt);
         return job;
     }
 }
@@ -768,7 +779,16 @@ public sealed class RefreshTokenBuilder
 
     public RefreshToken Build()
     {
-        var token = RefreshToken.Create(_token, _expiresAt, _userId, _createdByIp);
+        // Create with valid future date to bypass validation
+        var validExpiresAt = _expiresAt > Clock.UtcNow ? _expiresAt : Clock.UtcNow.AddMinutes(10);
+        var token = RefreshToken.Create(_token, validExpiresAt, _userId, _createdByIp);
+        
+        // Set the actual expiration date (which might be in the past)
+        if (validExpiresAt != _expiresAt)
+        {
+            token.GetType().GetProperty("ExpiresAt")?.SetValue(token, _expiresAt);
+        }
+        
         token.GetType().GetProperty("Id")?.SetValue(token, _id);
         if (_user != null)
         {

@@ -119,7 +119,7 @@ public sealed class BackgroundJob : BaseEntity
         Status = JobStatus.Pending;
         Error = null;
         CompletedAt = null;
-        RetryCount = 0;
+        RetryCount++;
 
         AddDomainEvent(new JobStatusChanged(Id, oldStatus, Status));
     }
