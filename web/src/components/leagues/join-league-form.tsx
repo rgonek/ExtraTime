@@ -9,10 +9,7 @@ import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { useJoinLeagueByCode } from '@/hooks/use-leagues';
 
@@ -47,15 +44,8 @@ export function JoinLeagueForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>Join a League</CardTitle>
-          <CardDescription>
-            Enter the invite code you received to join a league
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
+      <Card>
+        <CardContent className="pt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="code">Invite Code</Label>
             <Input

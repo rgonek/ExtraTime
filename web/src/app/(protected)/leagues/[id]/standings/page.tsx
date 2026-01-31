@@ -1,21 +1,29 @@
+'use client';
+
+import { use } from 'react';
+import { Trophy } from 'lucide-react';
 import { Leaderboard } from '@/components/standings/leaderboard';
 import { UserStatsCard } from '@/components/standings/user-stats-card';
+import { PageHeader } from '@/components/shared/page-header';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function StandingsPage({ params }: PageProps) {
-  const { id } = await params;
+export default function StandingsPage({ params }: PageProps) {
+  const { id } = use(params);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">League Standings</h1>
+      <PageHeader
+        title="League Standings"
+        subtitle="See how you rank against other members"
+        icon={Trophy}
+        backHref={`/leagues/${id}`}
+      />
 
-      {/* User's own stats card */}
       <UserStatsCard leagueId={id} />
 
-      {/* Full leaderboard */}
       <Leaderboard leagueId={id} />
     </div>
   );

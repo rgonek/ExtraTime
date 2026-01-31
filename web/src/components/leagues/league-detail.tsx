@@ -36,6 +36,7 @@ import { MemberList } from './member-list';
 import { InviteShare } from './invite-share';
 import { CardSkeleton } from '@/components/shared/loading-skeleton';
 import { ErrorMessage } from '@/components/shared/error-message';
+import { PageHeader, PageHeaderSkeleton } from '@/components/shared/page-header';
 
 interface LeagueDetailProps {
   leagueId: string;
@@ -115,9 +116,14 @@ export function LeagueDetail({ leagueId }: LeagueDetailProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <CardSkeleton />
-        <CardSkeleton />
+      <div className="space-y-6">
+        <PageHeaderSkeleton showIcon showSubtitle />
+        <div className="grid gap-4 md:grid-cols-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
       </div>
     );
   }
@@ -134,63 +140,63 @@ export function LeagueDetail({ leagueId }: LeagueDetailProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{league.name}</h1>
-          {league.description && (
-            <p className="text-muted-foreground mt-1">{league.description}</p>
-          )}
+      <PageHeader
+        title={league.name}
+        subtitle={league.description ?? undefined}
+        icon={Trophy}
+        backHref="/leagues"
+      >
+        <div className="flex items-center gap-2 mt-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setShowInviteShare(true)}>
+                <Copy className="h-4 w-4 mr-2" />
+                Share Invite
+              </DropdownMenuItem>
+
+              {isOwner && (
+                <>
+                  <DropdownMenuItem onClick={() => router.push(`/leagues/${leagueId}/edit`)}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Edit Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleRegenerateCode}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Regenerate Invite Code
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              <DropdownMenuSeparator />
+
+              {!isOwner && isMember && (
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={handleLeaveLeague}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Leave League
+                </DropdownMenuItem>
+              )}
+
+              {isOwner && (
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={handleDeleteLeague}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete League
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setShowInviteShare(true)}>
-              <Copy className="h-4 w-4 mr-2" />
-              Share Invite
-            </DropdownMenuItem>
-
-            {isOwner && (
-              <>
-                <DropdownMenuItem onClick={() => router.push(`/leagues/${leagueId}/edit`)}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Edit Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleRegenerateCode}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Regenerate Invite Code
-                </DropdownMenuItem>
-              </>
-            )}
-
-            <DropdownMenuSeparator />
-
-            {!isOwner && isMember && (
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={handleLeaveLeague}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Leave League
-              </DropdownMenuItem>
-            )}
-
-            {isOwner && (
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={handleDeleteLeague}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete League
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      </PageHeader>
 
       <div className="grid gap-4 md:grid-cols-4">
         <StatsCard

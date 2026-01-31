@@ -407,32 +407,47 @@ accent: "bg-accent text-accent-foreground"
 
 ---
 
-### Phase 5: Layout & Navigation Update
+### Phase 5: Layout & Navigation Update ✅ COMPLETED
 **Goal:** Update app shell and navigation
+**Status:** Completed on 2026-01-31
 
 #### 5.1 App Shell Header
 **File:** `web/src/components/layout/app-shell.tsx`
 
 **Updates:**
-- Update logo styling (gradient icon)
-- Update navigation button styling
-- Add user menu improvements
-- Update mobile menu styling
+- Updated logo with gradient icon background (primary to secondary)
+- Updated logo text with "Extra" gradient and "Time" foreground
+- Added pill-shaped navigation with active state styling
+- Updated user menu with avatar and icon-based logout button
+- Added animated mobile menu with Framer Motion
+- Improved mobile navigation with icon containers for nav items
+- Added user section in mobile menu with avatar, username, and email
 
 **Tasks:**
-- [ ] Update logo component
-- [ ] Style nav buttons with new variants
-- [ ] Update user menu dropdown
+- [x] Update logo component with gradient background
+- [x] Style nav buttons with pill-shaped container and active states
+- [x] Update user menu with avatar and improved layout
+- [x] Add animated mobile menu toggle
 
 #### 5.2 Page Headers
-**Create consistent page header pattern:**
-- Title with gradient text option
+**File:** `web/src/components/shared/page-header.tsx`
+
+**Created PageHeader component with:**
+- Title with optional gradient text
 - Subtitle styling
-- Action button placement
+- Optional icon with gradient background
+- Back button with configurable href/callback
+- Action buttons array with variants
+- PageHeaderSkeleton for loading states
 
 **Tasks:**
-- [ ] Create PageHeader component
-- [ ] Apply to existing pages
+- [x] Create PageHeader component
+- [x] Create PageHeaderSkeleton component
+- [x] Apply to dashboard page
+- [x] Apply to league-list component
+- [x] Apply to league-detail component
+- [x] Apply to create/join/edit league pages
+- [x] Apply to standings/matches/bets pages
 
 ---
 
@@ -582,7 +597,7 @@ web/src/components/shared/animated-container.tsx    # Updated tokens
 ### New Files
 ```
 web/src/components/gamification/rank-badge.tsx      # New component (created in Phase 3)
-web/src/components/shared/page-header.tsx           # New component (Phase 5)
+web/src/components/shared/page-header.tsx           # New component (created in Phase 5)
 web/src/components/ui/score-input.tsx               # New component (optional)
 web/src/lib/design-tokens.ts                        # Documentation (optional)
 ```

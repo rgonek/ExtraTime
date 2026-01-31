@@ -9,10 +9,7 @@ import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { useCreateLeague, useUpdateLeague } from '@/hooks/use-leagues';
 import type { LeagueDto, CreateLeagueRequest, UpdateLeagueRequest } from '@/types';
@@ -102,16 +99,7 @@ export function LeagueForm({ league }: LeagueFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       <Card>
-        <CardHeader>
-          <CardTitle>{isEditing ? 'Edit League' : 'Create League'}</CardTitle>
-          <CardDescription>
-            {isEditing
-              ? 'Update your league settings'
-              : 'Set up a new league for you and your friends'}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
+        <CardContent className="pt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">League Name *</Label>
             <Input

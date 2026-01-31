@@ -1,13 +1,12 @@
 'use client';
 
-import { Trophy, Plus } from 'lucide-react';
+import { Trophy, Plus, UserPlus } from 'lucide-react';
 import { useLeagues } from '@/hooks/use-leagues';
 import { LeagueCard } from './league-card';
 import { CardGridSkeleton } from '@/components/shared/loading-skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorMessage } from '@/components/shared/error-message';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { PageHeader, PageHeaderSkeleton } from '@/components/shared/page-header';
 import { useRouter } from 'next/navigation';
 
 export function LeagueList() {
@@ -15,7 +14,12 @@ export function LeagueList() {
   const { data: leagues, isLoading, isError, error, refetch } = useLeagues();
 
   if (isLoading) {
-    return <CardGridSkeleton count={6} />;
+    return (
+      <div className="space-y-6">
+        <PageHeaderSkeleton showIcon />
+        <CardGridSkeleton count={6} />
+      </div>
+    );
   }
 
   if (isError) {
@@ -43,21 +47,25 @@ export function LeagueList() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Your Leagues</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/leagues/join">Join League</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/leagues/create">
-              <Plus className="h-4 w-4 mr-2" />
-              Create League
-            </Link>
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Your Leagues"
+        subtitle={`${leagues.length} league${leagues.length !== 1 ? 's' : ''}`}
+        icon={Trophy}
+        actions={[
+          {
+            label: 'Join League',
+            href: '/leagues/join',
+            icon: UserPlus,
+            variant: 'outline',
+          },
+          {
+            label: 'Create League',
+            href: '/leagues/create',
+            icon: Plus,
+          },
+        ]}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {leagues.map((league) => (

@@ -1,19 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/shared/page-header';
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, {user?.username}!</p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle={`Welcome back, ${user?.username}!`}
+        icon={LayoutDashboard}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
