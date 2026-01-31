@@ -6,7 +6,10 @@
 // - Consumption plan (Y1) with pay-per-execution (free tier eligible)
 // - Daily memory quota limit to prevent runaway costs
 // - Function timeout limited to 5 minutes max
-// - LRS storage for lowest cost
+// - LRS storage for lowest cost redundancy
+// - Cool access tier for infrequent storage access
+// - Soft delete disabled for blobs, containers, and file shares
+// - Scale limit set to 1 instance
 // ============================================================================
 
 @description('Function App name')
@@ -59,6 +62,33 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     isHnsEnabled: false
     isSftpEnabled: false
     isNfsV3Enabled: false
+    // COST CONTROL: Use cool access tier for infrequently accessed data
+    accessTier: 'Cool'
+  }
+}
+
+// COST CONTROL: Disable blob soft delete to avoid storing deleted blobs
+resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
+  parent: storageAccount
+  name: 'default'
+  properties: {
+    deleteRetentionPolicy: {
+      enabled: false // Don't retain deleted blobs
+    }
+    containerDeleteRetentionPolicy: {
+      enabled: false // Don't retain deleted containers
+    }
+  }
+}
+
+// COST CONTROL: Disable file share soft delete
+resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
+  parent: storageAccount
+  name: 'default'
+  properties: {
+    shareDeleteRetentionPolicy: {
+      enabled: false // Don't retain deleted file shares
+    }
   }
 }
 
