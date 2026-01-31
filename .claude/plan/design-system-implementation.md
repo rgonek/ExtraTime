@@ -451,12 +451,14 @@ accent: "bg-accent text-accent-foreground"
 
 ---
 
-### Phase 6: Animation System
+### Phase 6: Animation System ✅ COMPLETED
 **Goal:** Standardize animations across the app
+**Status:** Completed on 2026-01-31
 
 #### 6.1 Animation Tokens
 **File:** `web/src/app/globals.css`
 
+**Implemented tokens:**
 ```css
 /* Animation durations */
 --duration-fast: 150ms;
@@ -468,16 +470,46 @@ accent: "bg-accent text-accent-foreground"
 --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 ```
 
+**Implemented keyframes:**
+- `fadeIn` - fade with subtle translateY
+- `slideUp` / `slideDown` - vertical slide transitions
+- `bounce` - light bounce effect
+- `pulse-glow` - pulsing box-shadow
+- `fire-flicker` - fire icon animation
+- `points-pop` - points badge pop-in
+- `float-up` - floating disappear effect
+- `shimmer` - loading shimmer effect
+
+**Implemented utility classes:**
+- `.animate-fade-in`, `.animate-slide-up`, `.animate-slide-down`
+- `.animate-bounce-light`, `.animate-pulse-glow`, `.animate-fire`
+- `.animate-points-pop`, `.animate-float-up`, `.animate-shimmer`
+- `.hover-lift` - hover lift effect with shadow
+
 **Tasks:**
-- [ ] Add animation CSS variables
-- [ ] Add keyframe animations (bounce, pulse, fadeIn, slideUp)
+- [x] Add animation CSS variables
+- [x] Add keyframe animations (bounce, pulse, fadeIn, slideUp)
 
 #### 6.2 Update Animated Containers
 **File:** `web/src/components/shared/animated-container.tsx`
 
+**Enhanced components:**
+- `FadeIn` - with delay prop, uses design tokens
+- `SlideUp` / `SlideDown` - with delay prop
+- `ScaleIn` - scale with bounce easing
+- `PopIn` - spring animation for badges/notifications
+- `StaggeredList` / `StaggeredItem` - configurable stagger delay
+- `HoverScale` - customizable scale and tap scale
+- `HoverLift` - translate Y hover effect
+- `Pulse` - continuous pulse for live indicators
+- `Bounce` - controllable bounce animation
+- `Shake` - error state animation
+- `LayoutGroup` - layout animation wrapper
+- `animationConfig` - exported constants for custom animations
+
 **Tasks:**
-- [ ] Update animation durations to use tokens
-- [ ] Add new animation variants if needed
+- [x] Update animation durations to use tokens
+- [x] Add new animation variants if needed
 
 ---
 
