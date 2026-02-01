@@ -27,12 +27,11 @@ jobs:
       - run: dotnet restore
       - run: dotnet build --no-restore --configuration Release
 
-      # Run Integration tests with InMemory (excluding tests that fail with InMemory)
+      # Run Integration tests with InMemory (tests with RequiresDatabase category are automatically skipped at runtime)
       - name: Run Integration Tests
         run: |
           dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj \
             --no-build --configuration Release \
-            --filter "Category!=RequiresDatabase" \
             -- --coverage --coverage-output-format cobertura
         env:
           TEST_DATABASE_TYPE: InMemory

@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Auth;
 
-[TestCategory(TestCategories.Significant)]
 [TestCategory(TestCategories.RequiresDatabase)]
 public sealed class LoginCommandIntegrationTests : IntegrationTestBase
 {

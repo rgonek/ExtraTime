@@ -3,6 +3,7 @@ using ExtraTime.Application.Features.Bets;
 using ExtraTime.Application.Features.Bets.Commands.CalculateBetResults;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Common;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
@@ -182,6 +183,7 @@ public sealed class CalculateBetResultsJobIntegrationTests : IntegrationTestBase
     }
 
     [Test]
+    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task CalculateBetResults_ExistingResults_UpdatesResults()
     {
         // Arrange

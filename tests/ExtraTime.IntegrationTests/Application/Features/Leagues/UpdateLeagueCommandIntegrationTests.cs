@@ -96,6 +96,7 @@ public sealed class UpdateLeagueCommandIntegrationTests : IntegrationTestBase
     }
 
     [Test]
+    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task UpdateLeague_WithCompetitionFilter_UpdatesAllowedCompetitions()
     {
         // Arrange

@@ -1,9 +1,11 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Infrastructure.Data;
+using ExtraTime.IntegrationTests.Attributes;
 using ExtraTime.IntegrationTests.Fixtures;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using TUnit.Core;
 
 namespace ExtraTime.IntegrationTests.Common;
 
@@ -22,6 +24,12 @@ public abstract class IntegrationTestBase : IAsyncDisposable
     [Before(Test)]
     public async Task SetupAsync()
     {
+        // Skip tests that require a real database when running in InMemory mode
+        if (GlobalHooks.Fixture.UseInMemory && RequiresDatabaseCheck())
+        {
+            Skip.Test("Test requires a real database and is running in InMemory mode");
+        }
+
         try
         {
             // Acquire a database from the pool (fixture already initialized by GlobalHooks)
@@ -89,5 +97,24 @@ public abstract class IntegrationTestBase : IAsyncDisposable
     {
         CurrentUserService.UserId.Returns(userId);
         CurrentUserService.IsAuthenticated.Returns(true);
+    }
+
+    /// <summary>
+    /// Checks if the current test requires a real database by examining
+    /// custom properties set via TestCategoryAttribute.
+    /// </summary>
+    private static bool RequiresDatabaseCheck()
+    {
+        var customProperties = TestContext.Current?.Metadata?.TestDetails.CustomProperties;
+        if (customProperties == null)
+            return false;
+
+        // Check custom properties for the "Category" key with "RequiresDatabase" value
+        if (customProperties.TryGetValue("Category", out var categories))
+        {
+            return categories.Contains(TestCategories.RequiresDatabase);
+        }
+
+        return false;
     }
 }

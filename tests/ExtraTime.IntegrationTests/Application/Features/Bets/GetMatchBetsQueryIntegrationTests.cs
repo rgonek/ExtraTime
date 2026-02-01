@@ -186,14 +186,14 @@ public sealed class GetMatchBetsQueryIntegrationTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task GetMatchBets_LeagueNotFound_ReturnsFailure()
+    public async Task GetMatchBets_LeagueNotFound_ReturnsNotAMember()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
         Context.Users.Add(user);
 
-        // Create a league and add user as member so the membership check passes
+        // Create a league and add user as member
         var league = new LeagueBuilder()
             .WithOwnerId(userId)
             .Build();
@@ -203,15 +203,17 @@ public sealed class GetMatchBetsQueryIntegrationTests : IntegrationTestBase
         SetCurrentUser(userId);
 
         var handler = new GetMatchBetsQueryHandler(Context, CurrentUserService);
-        // Query with non-existent league ID but user IS a member of an existing league
+        // Query with non-existent league ID - user is NOT a member of THIS league
         var query = new GetMatchBetsQuery(Guid.NewGuid(), Guid.NewGuid());
 
         // Act
         var result = await handler.Handle(query, default);
 
-        // Assert - Handler checks membership first (passes), then league existence (fails)
+        // Assert - Handler checks membership first. Since user is not a member of the
+        // requested league (non-existent), it returns NotALeagueMember.
+        // This is the correct security behavior - don't leak info about league existence.
         await Assert.That(result.IsSuccess).IsFalse();
-        await Assert.That(result.Error).IsEqualTo(BetErrors.LeagueNotFound);
+        await Assert.That(result.Error).IsEqualTo(BetErrors.NotALeagueMember);
     }
 
     [Test]

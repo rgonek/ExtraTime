@@ -139,6 +139,7 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
     }
 
     [Test]
+    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task DeleteBet_DeadlinePassed_ReturnsFailure()
     {
         // Arrange

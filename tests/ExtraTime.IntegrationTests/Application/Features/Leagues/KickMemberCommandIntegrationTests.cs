@@ -9,7 +9,6 @@ using ExtraTime.IntegrationTests.Attributes;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 
-[TestCategory(TestCategories.Significant)]
 [TestCategory(TestCategories.RequiresDatabase)]
 public sealed class KickMemberCommandIntegrationTests : IntegrationTestBase
 {
