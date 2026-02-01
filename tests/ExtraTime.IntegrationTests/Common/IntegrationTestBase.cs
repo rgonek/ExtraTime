@@ -22,6 +22,22 @@ public abstract class IntegrationTestBase : IAsyncDisposable
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
     protected IMediator Mediator { get; private set; } = null!;
 
+    /// <summary>
+    /// Creates a fresh DbContext instance.
+    /// </summary>
+    protected ApplicationDbContext CreateDbContext()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseSqlServer(_lease!.ConnectionString!, sqlOptions =>
+            {
+                sqlOptions.CommandTimeout(30);
+                sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
+            })
+            .Options;
+
+        return new ApplicationDbContext(options, CurrentUserService, Mediator);
+    }
+
     [Before(Test)]
     public async Task SetupAsync()
     {
@@ -31,41 +47,27 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             Skip.Test("Test requires a real database and is running in InMemory mode");
         }
 
-        // Acquire a database lease (with timeout protection)
+        // Acquire a database lease (with timeout protection and synchronization)
         _lease = await GlobalHooks.Fixture.AcquireDatabaseAsync();
         _leaseAcquired = true;
 
         try
         {
-            DbContextOptions<ApplicationDbContext> options;
+            CurrentUserService = Substitute.For<ICurrentUserService>();
+            Mediator = Substitute.For<IMediator>();
+            
+            Context = CreateDbContext();
 
             if (_lease.IsInMemory)
             {
                 // Each test gets a unique in-memory database
-                options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                     .UseInMemoryDatabase($"Test_{Guid.NewGuid()}")
                     .ConfigureWarnings(w => w.Ignore(
                         Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
                     .Options;
-            }
-            else
-            {
-                // SQL Server mode - use the leased connection string
-                options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseSqlServer(_lease.ConnectionString, sqlOptions =>
-                    {
-                        sqlOptions.CommandTimeout(30);
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
-                    })
-                    .Options;
-            }
-
-            CurrentUserService = Substitute.For<ICurrentUserService>();
-            Mediator = Substitute.For<IMediator>();
-            Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
-
-            if (_lease.IsInMemory)
-            {
+                
+                Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
                 await Context.Database.EnsureCreatedAsync();
             }
         }

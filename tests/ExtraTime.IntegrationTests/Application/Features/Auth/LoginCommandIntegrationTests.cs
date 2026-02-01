@@ -45,17 +45,18 @@ public sealed class LoginCommandIntegrationTests : IntegrationTestBase
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        // Detach user to avoid concurrency issues in InMemory database
-        Context.Entry(user).State = EntityState.Detached;
-
-        var handler = new LoginCommandHandler(Context, _passwordHasher, _tokenService);
+        // Use a fresh context instance for the handler to simulate a new request
+        // and avoid tracking issues from the Arrange phase
+        using var handlerContext = CreateDbContext();
+        var handler = new LoginCommandHandler(handlerContext, _passwordHasher, _tokenService);
         var command = new LoginCommand(email, password);
 
         // Act
         var result = await handler.Handle(command, default);
 
         // Assert
-        await Assert.That(result.IsFailure).IsTrue();
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value.User.Email).IsEqualTo(email);
     }
 
     [Test]
@@ -75,8 +76,8 @@ public sealed class LoginCommandIntegrationTests : IntegrationTestBase
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        // Detach user to avoid concurrency issues in InMemory database
-        Context.Entry(user).State = EntityState.Detached;
+        // Clear tracker to ensure handler loads fresh entity
+        Context.ChangeTracker.Clear();
 
         var handler = new LoginCommandHandler(Context, _passwordHasher, _tokenService);
         var command = new LoginCommand(email, wrongPassword);
@@ -105,8 +106,8 @@ public sealed class LoginCommandIntegrationTests : IntegrationTestBase
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        // Detach user to avoid concurrency issues in InMemory database
-        Context.Entry(user).State = EntityState.Detached;
+        // Clear tracker to ensure handler loads fresh entity
+        Context.ChangeTracker.Clear();
 
         var handler = new LoginCommandHandler(Context, _passwordHasher, _tokenService);
         var command = new LoginCommand(email, password); // Use mixed case email

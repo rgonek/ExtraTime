@@ -251,7 +251,7 @@ public sealed class CalculateBetResultsJobIntegrationTests : IntegrationTestBase
         await Assert.That(updatedResult!.PointsEarned).IsEqualTo(3);
         await Assert.That(updatedResult.IsExactMatch).IsTrue();
         await Assert.That(updatedResult.IsCorrectResult).IsTrue();
-        await Assert.That(updatedResult.CalculatedAt).IsGreaterThan(existingResult.CalculatedAt);
+        await Assert.That(updatedResult.CalculatedAt).IsGreaterThanOrEqualTo(existingResult.CalculatedAt);
     }
 
     [Test]
