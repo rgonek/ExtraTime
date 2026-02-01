@@ -1,5 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+// External API Keys/Secrets
+var footballDataKey = builder.AddParameter("FootballDataApiKey", secret: true);
+
 // SQL Server database
 var sqlServer = builder.AddSqlServer("sql")
     .WithLifetime(ContainerLifetime.Persistent);
@@ -14,12 +17,14 @@ var migrations = builder.AddProject<Projects.ExtraTime_MigrationService>("migrat
 // API project with reference to the database - waits for migrations to complete
 var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WithReference(database)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WaitForCompletion(migrations)
     .WithExternalHttpEndpoints();
 
 // Azure Functions project for background jobs
 var functions = builder.AddProject<Projects.ExtraTime_Functions>("functions")
     .WithReference(database)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WaitForCompletion(migrations);
 
 // Next.js frontend (using Bun)
