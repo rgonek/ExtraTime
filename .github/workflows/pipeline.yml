@@ -1,0 +1,152 @@
+name: ExtraTime Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  NODE_VERSION: '20'
+
+jobs:
+  # ============================================
+  # STAGE 1: Build & Fast Tests (CI)
+  # Runs automatically on every push
+  # ============================================
+  build-and-fast-test:
+    name: Build and Fast Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Bun (Frontend)
+        uses: oven-sh/setup-bun@v2
+
+      - name: Restore & Build Backend
+        run: |
+          dotnet restore src/ExtraTime.sln
+          dotnet build src/ExtraTime.sln --configuration Release --no-restore
+
+      - name: Run Fast Tests (InMemory)
+        run: |
+          # Unit & Domain Tests
+          dotnet test tests/ExtraTime.UnitTests/ExtraTime.UnitTests.csproj --configuration Release --no-build
+          dotnet test tests/ExtraTime.Domain.Tests/ExtraTime.Domain.Tests.csproj --configuration Release --no-build
+          
+          # Integration Tests with InMemory
+          dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj --configuration Release --no-build
+        env:
+          TEST_DATABASE_TYPE: InMemory
+
+      - name: Build Frontend
+        working-directory: web
+        run: |
+          bun install --frozen-lockfile
+          bun run lint
+          bun run build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.extratime.gonek.net/api # Placeholder for build
+
+      - name: Publish Backend Artifact
+        run: dotnet publish src/ExtraTime.API/ExtraTime.API.csproj -c Release -o ./publish/backend
+
+      - name: Upload Backend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-artifact
+          path: ./publish/backend
+
+      - name: Upload Frontend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-artifact
+          path: web/dist
+
+  # ============================================
+  # STAGE 2: Verification (API & SQL Integration)
+  # Requires manual approval via "verification" environment
+  # ============================================
+  verification-tests:
+    name: API & SQL Verification
+    needs: build-and-fast-test
+    if: github.event_name != 'pull_request' # Optional: only run on pushes to main/develop
+    environment: verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Run SQL Integration Tests (Testcontainers)
+        run: |
+          dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj --configuration Release
+        env:
+          TEST_DATABASE_TYPE: SqlServer # Triggers MsSqlContainer in DatabaseFixture
+
+      - name: Run API Tests
+        run: |
+          dotnet test tests/ExtraTime.API.Tests/ExtraTime.API.Tests.csproj --configuration Release
+
+  # ============================================
+  # STAGE 3: Deployment
+  # Requires manual approval via "production" environment
+  # ============================================
+  deploy:
+    name: Deploy to Production
+    needs: verification-tests
+    if: github.ref == 'refs/heads/main'
+    environment: 
+      name: production
+      url: https://extratime.gonek.net
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Backend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-artifact
+          path: ./publish/backend
+
+      - name: Download Frontend Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-artifact
+          path: ./dist-frontend
+
+      - name: Run Database Migrations
+        env:
+          CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+        run: |
+          dotnet tool install --global dotnet-ef
+          dotnet ef database update \
+            --project src/ExtraTime.Infrastructure \
+            --startup-project src/ExtraTime.API \
+            --connection "$CONNECTION_STRING"
+
+      - name: Deploy Backend to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish/backend
+
+      - name: Deploy Frontend to Azure
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: 'upload'
+          app_location: './dist-frontend'
+          skip_app_build: true
