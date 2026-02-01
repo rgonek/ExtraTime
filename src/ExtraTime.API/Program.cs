@@ -64,9 +64,12 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-// Add Aspire SQL Server DbContext integration (when running under Aspire)
-// Falls back to connection string from configuration when not running under Aspire
-builder.AddSqlServerDbContext<ApplicationDbContext>("extratime");
+// Clean Architecture services
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Restore Aspire telemetry and health checks for the manually registered DbContext
+builder.EnrichSqlServerDbContext<ApplicationDbContext>();
 
 // Configure JSON serialization - enums as strings
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -85,10 +88,6 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-
-// Clean Architecture services
-builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Background jobs handled by Azure Functions project (ExtraTime.Functions)
 // Database migrations are handled by the MigrationService project in Aspire

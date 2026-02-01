@@ -12,15 +12,15 @@ var builder = FunctionsApplication.CreateBuilder(args);
 // Add Aspire service defaults (OpenTelemetry, health checks, service discovery)
 builder.AddServiceDefaults();
 
-// Add Aspire SQL Server DbContext integration
-builder.AddSqlServerDbContext<ApplicationDbContext>("extratime");
-
 // Register application and infrastructure services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Override ICurrentUserService for background context (no HTTP request)
 builder.Services.AddSingleton<ICurrentUserService, BackgroundUserService>();
+
+// Restore Aspire telemetry and health checks for the manually registered DbContext
+builder.EnrichSqlServerDbContext<ApplicationDbContext>();
 
 // Build and run
 var host = builder.Build();
