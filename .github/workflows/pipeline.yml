@@ -32,8 +32,8 @@ jobs:
 
       - name: Restore & Build Backend
         run: |
-          dotnet restore src/ExtraTime.sln
-          dotnet build src/ExtraTime.sln --configuration Release --no-restore
+          dotnet restore
+          dotnet build --configuration Release --no-restore
 
       - name: Run Fast Tests (InMemory)
         run: |
