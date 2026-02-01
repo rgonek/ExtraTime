@@ -67,6 +67,10 @@ A social betting app where friends create leagues, predict football match outcom
 git clone https://github.com/yourusername/ExtraTime.git
 cd ExtraTime
 
+# Set required secrets for Football-Data.org API
+# Get your free API key at https://www.football-data.org/
+dotnet user-secrets set "Parameters:FootballDataApiKey" "your_api_key_here" --project src/ExtraTime.AppHost
+
 # Start with Aspire
 dotnet run --project src/ExtraTime.AppHost
 ```
