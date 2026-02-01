@@ -3,9 +3,9 @@
 ## Project Plans
 
 ### Plan Location
-- All plans are stored in `.claude/plan/` directory
-- MVP plan: `.claude/plan/mvp-plan.md`
-- Phase-specific detailed plans: `.claude/plan/phase-1-detailed.md`, `.claude/plan/phase-2-detailed.md`, etc.
+- All plans are stored in `agents/plans/` directory
+- MVP plan: `agents/plans/mvp-plan.md`
+- Phase-specific detailed plans: `agents/plans/phase-1-detailed.md`, `agents/plans/phase-2-detailed.md`, etc.
 - **When creating a plan in plan mode, always save it to a `.md` file in this directory**
 
 ## C# Coding Standards

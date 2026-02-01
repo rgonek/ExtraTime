@@ -26,16 +26,16 @@ Phase 6 transforms the existing backend APIs into a polished, gamified frontend 
 
 ## Detailed Sub-Phase Plans
 
-All detailed plans are saved in `.claude/plan/` directory:
+All detailed plans are saved in `agents/plans/` directory:
 
 | Sub-Phase | Focus | Status | Plan File Location |
 |-----------|-------|--------|-----------|
-| **6.1** | Foundation & Types | ✅ Complete | `.claude/plan/phase-6.1-foundation.md` |
-| **6.2** | League System UI | ✅ Complete | `.claude/plan/phase-6.2-leagues.md` |
-| **6.3** | Betting Core | ✅ Complete | `.claude/plan/phase-6.3-betting.md` |
-| **6.4** | Leaderboard & Stats | ✅ Complete | `.claude/plan/phase-6.4-leaderboard.md` |
-| **6.5** | Gamification | ✅ Complete | `.claude/plan/phase-6.5-gamification.md` |
-| **6.6** | UX Polish | ✅ Complete | `.claude/plan/phase-6.6-polish.md` |
+| **6.1** | Foundation & Types | ✅ Complete | `agents/plans/phase-6.1-foundation.md` |
+| **6.2** | League System UI | ✅ Complete | `agents/plans/phase-6.2-leagues.md` |
+| **6.3** | Betting Core | ✅ Complete | `agents/plans/phase-6.3-betting.md` |
+| **6.4** | Leaderboard & Stats | ✅ Complete | `agents/plans/phase-6.4-leaderboard.md` |
+| **6.5** | Gamification | ✅ Complete | `agents/plans/phase-6.5-gamification.md` |
+| **6.6** | UX Polish | ✅ Complete | `agents/plans/phase-6.6-polish.md` |
 
 ### What Was Built
 

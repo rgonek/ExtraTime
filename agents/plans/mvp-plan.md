@@ -1,10 +1,10 @@
 # ExtraTime - Betting App MVP Plan
 
 > **Detailed Plans:** Phase-specific detailed implementation plans are in separate files:
-> - `.claude/plan/phase-1-detailed.md` - Project Foundation (Backend + Frontend setup)
-> - `.claude/plan/phase-7-detailed.md` - Bot System (Basic AI bots for league activity)
-> - `.claude/plan/phase-7.5-detailed.md` - Intelligent Stats-Based Bots (Configurable analytics bots)
-> - `.claude/plan/phase-9.5-detailed.md` - External Data Sources (xG, Odds, Injuries)
+> - `agents/plans/phase-1-detailed.md` - Project Foundation (Backend + Frontend setup)
+> - `agents/plans/phase-7-detailed.md` - Bot System (Basic AI bots for league activity)
+> - `agents/plans/phase-7.5-detailed.md` - Intelligent Stats-Based Bots (Configurable analytics bots)
+> - `agents/plans/phase-9.5-detailed.md` - External Data Sources (xG, Odds, Injuries)
 > - Future phases will be planned iteratively before implementation
 
 ## Implementation Progress
@@ -332,7 +332,7 @@ When adding Azure Functions/Service Bus:
 
 ## Phase 7: Bot System (Basic Bots) ✅
 **Goal**: Add AI bots to make leagues feel active
-**Detailed Plan**: `.claude/plan/phase-7-detailed.md`
+**Detailed Plan**: `agents/plans/phase-7-detailed.md`
 **Status**: Complete
 
 ### Backend
@@ -357,7 +357,7 @@ When adding Azure Functions/Service Bus:
 
 ## Phase 7.5: Intelligent Stats-Based Bots ✅
 **Goal**: Add configurable bots that use statistical analysis
-**Detailed Plan**: `.claude/plan/phase-7.5-detailed.md`
+**Detailed Plan**: `agents/plans/phase-7.5-detailed.md`
 **Status**: Complete
 
 ### Backend
@@ -472,7 +472,7 @@ When this phase is complete, intelligent bots gain new analysis capabilities:
 ## Phase 9.5: External Data Sources Integration
 
 **Goal**: Integrate free external data sources for enhanced bot predictions.
-**Detailed Plan**: `.claude/plan/phase-9.5-detailed.md`
+**Detailed Plan**: `agents/plans/phase-9.5-detailed.md`
 **Prerequisite**: Phase 9 complete
 
 ### Data Sources
