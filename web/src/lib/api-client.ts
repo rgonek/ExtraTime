@@ -1,7 +1,11 @@
 import { useAuthStore } from '@/stores/auth-store';
 import type { AuthResponse, ApiError } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5200/api';
+const rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5200/api';
+const normalizedBaseUrl = rawBaseUrl.replace(/\/$/, '');
+const API_BASE_URL = normalizedBaseUrl.endsWith('/api') 
+  ? normalizedBaseUrl 
+  : `${normalizedBaseUrl}/api`;
 
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
@@ -63,7 +67,8 @@ class ApiClient {
       (headers as Record<string, string>)['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    let response = await fetch(`${this.baseUrl}${endpoint}`, { ...config, headers });
+    const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    let response = await fetch(url, { ...config, headers });
 
     // Handle 401 - attempt token refresh
     if (response.status === 401 && accessToken) {
