@@ -35,24 +35,19 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             if (_initialized)
                 return;
 
-            try
+            // Check for environment variable configuration
+            var dbType = Environment.GetEnvironmentVariable("TEST_DATABASE_TYPE");
+            if (string.Equals(dbType, "InMemory", StringComparison.OrdinalIgnoreCase))
             {
-                // Check for environment variable configuration
-                var dbType = Environment.GetEnvironmentVariable("TEST_DATABASE_TYPE");
-                if (string.Equals(dbType, "InMemory", StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new Exception("Forced InMemory");
-                }
-
+                _useInMemory = true;
+                Environment.SetEnvironmentVariable("UseInMemoryDatabase", "true");
+            }
+            else
+            {
                 Container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
                     .Build();
 
                 await Container.StartAsync();
-            }
-            catch
-            {
-                _useInMemory = true;
-                Environment.SetEnvironmentVariable("UseInMemoryDatabase", "true");
             }
             _initialized = true;
         }

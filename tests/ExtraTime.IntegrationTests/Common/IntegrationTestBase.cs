@@ -15,7 +15,8 @@ namespace ExtraTime.IntegrationTests.Common;
 /// </summary>
 public abstract class IntegrationTestBase : IAsyncDisposable
 {
-    private DatabasePoolItem? _poolItem;
+    private DatabaseLease? _lease;
+    private bool _leaseAcquired;
 
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
@@ -30,24 +31,32 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             Skip.Test("Test requires a real database and is running in InMemory mode");
         }
 
+        // Acquire a database lease (with timeout protection)
+        _lease = await GlobalHooks.Fixture.AcquireDatabaseAsync();
+        _leaseAcquired = true;
+
         try
         {
-            // Acquire a database from the pool (fixture already initialized by GlobalHooks)
-            _poolItem = await GlobalHooks.Fixture.AcquireDatabaseAsync();
-
             DbContextOptions<ApplicationDbContext> options;
 
-            if (GlobalHooks.Fixture.UseInMemory)
+            if (_lease.IsInMemory)
             {
                 // Each test gets a unique in-memory database
                 options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                    .UseInMemoryDatabase($"Test_{Guid.NewGuid()}")
+                    .ConfigureWarnings(w => w.Ignore(
+                        Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
                     .Options;
             }
             else
             {
+                // SQL Server mode - use the leased connection string
                 options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseSqlServer(_poolItem.ConnectionString)
+                    .UseSqlServer(_lease.ConnectionString, sqlOptions =>
+                    {
+                        sqlOptions.CommandTimeout(30);
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
+                    })
                     .Options;
             }
 
@@ -55,16 +64,15 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             Mediator = Substitute.For<IMediator>();
             Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
 
-            if (GlobalHooks.Fixture.UseInMemory)
+            if (_lease.IsInMemory)
             {
                 await Context.Database.EnsureCreatedAsync();
             }
         }
         catch
         {
-            // Release the pool item if setup fails
-            _poolItem?.Release();
-            _poolItem = null;
+            // Ensure lease is released on any setup failure
+            ReleaseLease();
             throw;
         }
     }
@@ -72,16 +80,38 @@ public abstract class IntegrationTestBase : IAsyncDisposable
     [After(Test)]
     public async ValueTask TeardownAsync()
     {
-        if (Context != null)
+        // Dispose DbContext first
+        if (Context != null!)
         {
-            await Context.DisposeAsync();
+            try
+            {
+                await Context.DisposeAsync();
+            }
+            catch
+            {
+                // Swallow disposal errors - we don't want teardown to fail
+            }
             Context = null!;
         }
 
-        if (_poolItem != null)
+        // Always release the lease
+        ReleaseLease();
+    }
+
+    private void ReleaseLease()
+    {
+        if (_leaseAcquired && _lease != null)
         {
-            _poolItem.Release();
-            _poolItem = null;
+            try
+            {
+                _lease.Dispose();
+            }
+            catch
+            {
+                // Swallow - we must not fail during cleanup
+            }
+            _lease = null;
+            _leaseAcquired = false;
         }
     }
 
@@ -109,7 +139,6 @@ public abstract class IntegrationTestBase : IAsyncDisposable
         if (customProperties == null)
             return false;
 
-        // Check custom properties for the "Category" key with "RequiresDatabase" value
         if (customProperties.TryGetValue("Category", out var categories))
         {
             return categories.Contains(TestCategories.RequiresDatabase);
