@@ -63,8 +63,11 @@ public sealed class BotBettingService(
         var matches = await context.Matches
             .Where(m => m.Status == MatchStatus.Scheduled || m.Status == MatchStatus.Timed)
             .Where(m => m.MatchDateUtc > now && m.MatchDateUtc <= cutoffTime)
-            .Where(m => league.CanAcceptBet(m.CompetitionId))
             .ToListAsync(cancellationToken);
+
+        matches = matches
+            .Where(m => league.CanAcceptBet(m.CompetitionId))
+            .ToList();
 
         int betsPlaced = 0;
 

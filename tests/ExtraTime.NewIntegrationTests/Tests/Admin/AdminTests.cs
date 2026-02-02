@@ -323,6 +323,157 @@ public sealed class AdminTests : NewIntegrationTestBase
         await jobDispatcher.DidNotReceive().DispatchAsync(Arg.Any<Domain.Entities.BackgroundJob>(), Arg.Any<CancellationToken>());
     }
 
+    [Test]
+    public async Task RetryJob_NotFailed_Pending_ReturnsFailure()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Pending)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var jobDispatcher = Substitute.For<IJobDispatcher>();
+        var handler = new RetryJobCommandHandler(Context, jobDispatcher);
+        var command = new RetryJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(AdminErrors.JobCannotBeRetried);
+
+        await jobDispatcher.DidNotReceive().DispatchAsync(Arg.Any<Domain.Entities.BackgroundJob>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task RetryJob_NotFailed_Processing_ReturnsFailure()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Processing)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var jobDispatcher = Substitute.For<IJobDispatcher>();
+        var handler = new RetryJobCommandHandler(Context, jobDispatcher);
+        var command = new RetryJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(AdminErrors.JobCannotBeRetried);
+
+        await jobDispatcher.DidNotReceive().DispatchAsync(Arg.Any<Domain.Entities.BackgroundJob>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task RetryJob_NotFailed_Completed_ReturnsFailure()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Completed)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var jobDispatcher = Substitute.For<IJobDispatcher>();
+        var handler = new RetryJobCommandHandler(Context, jobDispatcher);
+        var command = new RetryJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(AdminErrors.JobCannotBeRetried);
+
+        await jobDispatcher.DidNotReceive().DispatchAsync(Arg.Any<Domain.Entities.BackgroundJob>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task RetryJob_NotFailed_Cancelled_RetriesSuccessfully()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Cancelled)
+            .WithRetryCount(0)
+            .WithMaxRetries(3)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var jobDispatcher = Substitute.For<IJobDispatcher>();
+        var handler = new RetryJobCommandHandler(Context, jobDispatcher);
+        var command = new RetryJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert - Cancelled jobs CAN be retried (per domain logic in BackgroundJob.Retry())
+        await Assert.That(result.IsSuccess).IsTrue();
+
+        var retriedJob = await Context.BackgroundJobs
+            .FirstOrDefaultAsync(j => j.Id == jobId);
+
+        await Assert.That(retriedJob).IsNotNull();
+        await Assert.That(retriedJob!.Status).IsEqualTo(JobStatus.Pending);
+
+        await jobDispatcher.Received(1).DispatchAsync(Arg.Any<Domain.Entities.BackgroundJob>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task RetryJob_IncrementsRetryCount()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Failed)
+            .WithRetryCount(0)
+            .WithMaxRetries(3)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var jobDispatcher = Substitute.For<IJobDispatcher>();
+        var handler = new RetryJobCommandHandler(Context, jobDispatcher);
+        var command = new RetryJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+
+        var retriedJob = await Context.BackgroundJobs
+            .FirstOrDefaultAsync(j => j.Id == jobId);
+
+        await Assert.That(retriedJob!.RetryCount).IsEqualTo(1);
+    }
+
     //
     // Cancel Job Tests
     //
@@ -399,5 +550,177 @@ public sealed class AdminTests : NewIntegrationTestBase
         // Assert
         await Assert.That(result.IsFailure).IsTrue();
         await Assert.That(result.Error).IsEqualTo(AdminErrors.JobNotFound);
+    }
+
+    [Test]
+    public async Task CancelJob_ProcessingJob_CancelsSuccessfully()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Processing)
+            .WithStartedAt(DateTime.UtcNow)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var handler = new CancelJobCommandHandler(Context);
+        var command = new CancelJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+
+        var cancelledJob = await Context.BackgroundJobs
+            .FirstOrDefaultAsync(j => j.Id == jobId);
+
+        await Assert.That(cancelledJob).IsNotNull();
+        await Assert.That(cancelledJob!.Status).IsEqualTo(JobStatus.Cancelled);
+        await Assert.That(cancelledJob.CompletedAt).IsNotNull();
+    }
+
+    [Test]
+    public async Task CancelJob_FailedJob_ReturnsFailure()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Failed)
+            .WithError("Some error")
+            .WithCompletedAt(DateTime.UtcNow)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var handler = new CancelJobCommandHandler(Context);
+        var command = new CancelJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+        await Assert.That(result.Error).IsEqualTo(AdminErrors.JobCannotBeCancelled);
+
+        var unchangedJob = await Context.BackgroundJobs
+            .FirstOrDefaultAsync(j => j.Id == jobId);
+
+        await Assert.That(unchangedJob!.Status).IsEqualTo(JobStatus.Failed);
+    }
+
+    [Test]
+    public async Task CancelJob_AlreadyCancelled_ReturnsFailure()
+    {
+        // Arrange
+        var jobId = Guid.NewGuid();
+        var job = new BackgroundJobBuilder()
+            .WithId(jobId)
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Cancelled)
+            .WithCompletedAt(DateTime.UtcNow)
+            .Build();
+
+        Context.BackgroundJobs.Add(job);
+        await Context.SaveChangesAsync();
+
+        var handler = new CancelJobCommandHandler(Context);
+        var command = new CancelJobCommand(jobId);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+        await Assert.That(result.Error).IsEqualTo(AdminErrors.JobCannotBeCancelled);
+
+        var unchangedJob = await Context.BackgroundJobs
+            .FirstOrDefaultAsync(j => j.Id == jobId);
+
+        await Assert.That(unchangedJob!.Status).IsEqualTo(JobStatus.Cancelled);
+    }
+
+    //
+    // Get Jobs Tests - Additional Filter Tests
+    //
+
+    [Test]
+    public async Task GetJobs_ByStatus_ReturnsFilteredResults()
+    {
+        // Arrange
+        var pendingJob = new BackgroundJobBuilder()
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Pending)
+            .Build();
+
+        var processingJob = new BackgroundJobBuilder()
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Processing)
+            .Build();
+
+        var completedJob = new BackgroundJobBuilder()
+            .WithJobType("TestJob")
+            .WithStatus(JobStatus.Completed)
+            .Build();
+
+        Context.BackgroundJobs.AddRange(pendingJob, processingJob, completedJob);
+        await Context.SaveChangesAsync();
+
+        var handler = new GetJobsQueryHandler(Context);
+        var query = new GetJobsQuery(Status: JobStatus.Pending);
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsNotNull();
+        await Assert.That(result.Value!.Items.Count).IsEqualTo(1);
+        await Assert.That(result.Value.TotalCount).IsEqualTo(1);
+        await Assert.That(result.Value.Items[0].Status).IsEqualTo(JobStatus.Pending);
+    }
+
+    [Test]
+    public async Task GetJobs_ByJobType_ReturnsFilteredResults()
+    {
+        // Arrange
+        var syncJob1 = new BackgroundJobBuilder()
+            .WithJobType("SyncCompetitions")
+            .WithStatus(JobStatus.Completed)
+            .Build();
+
+        var syncJob2 = new BackgroundJobBuilder()
+            .WithJobType("SyncCompetitions")
+            .WithStatus(JobStatus.Pending)
+            .Build();
+
+        var calcJob = new BackgroundJobBuilder()
+            .WithJobType("CalculateResults")
+            .WithStatus(JobStatus.Completed)
+            .Build();
+
+        Context.BackgroundJobs.AddRange(syncJob1, syncJob2, calcJob);
+        await Context.SaveChangesAsync();
+
+        var handler = new GetJobsQueryHandler(Context);
+        var query = new GetJobsQuery(JobType: "SyncCompetitions");
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsNotNull();
+        await Assert.That(result.Value!.Items.Count).IsEqualTo(2);
+        await Assert.That(result.Value.TotalCount).IsEqualTo(2);
+        await Assert.That(result.Value.Items[0].JobType).IsEqualTo("SyncCompetitions");
+        await Assert.That(result.Value.Items[1].JobType).IsEqualTo("SyncCompetitions");
     }
 }

@@ -52,14 +52,14 @@ The following integration tests from `ExtraTime.IntegrationTests` have been full
 - [x] `Application\Features\Admin\GetJobsQueryIntegrationTests.cs` - Migrated to `AdminTests.cs`
 
 ## Infrastructure
-- [ ] `Infrastructure\Data\ApplicationDbContextTests.cs` - PENDING
+- [x] `Infrastructure\Data\ApplicationDbContextTests.cs` - Migrated to `ApplicationDbContextTests.cs`
 
 ---
 
 **Migration Complete!** All integration tests have been successfully migrated from `ExtraTime.IntegrationTests` to `ExtraTime.NewIntegrationTests` using TUnit.
 
 **Summary:**
-- Total test files migrated: 34
+- Total test files migrated: 35
 - Total test cases added: 100+ new test cases covering edge cases and failure modes
-- All 136 tests pass in both InMemory and SQL modes
+- All tests pass in both InMemory and SQL modes
 - Tests follow TUnit patterns with `await Assert.That()` syntax

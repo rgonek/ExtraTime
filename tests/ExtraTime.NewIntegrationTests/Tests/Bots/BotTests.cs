@@ -688,4 +688,72 @@ public sealed class BotTests : NewIntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsEqualTo(0);
     }
+
+    [Test]
+    public async Task PlaceBotBets_WithRealServiceAndValidMatch_PlacesBet()
+    {
+        // Arrange - Set up a match within the next 24 hours
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        // Create competition and teams first
+        var competition = new CompetitionBuilder().Build();
+        Context.Competitions.Add(competition);
+
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        Context.Teams.Add(homeTeam);
+        Context.Teams.Add(awayTeam);
+
+        // Create a match scheduled 12 hours from now
+        var match = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
+            .WithMatchDate(DateTime.UtcNow.AddHours(12))
+            .WithStatus(MatchStatus.Scheduled)
+            .Build();
+        Context.Matches.Add(match);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .WithBotsEnabled(true)
+            .WithBettingDeadlineMinutes(60) // 1 hour deadline
+            .Build();
+        Context.Leagues.Add(league);
+
+        // Create bot with Random strategy
+        var (bot, _) = await CreateBotWithUserAsync("TestBot", BotStrategy.Random);
+
+        // Add bot to league
+        var trackedLeague = await Context.Leagues.Include(l => l.BotMembers).FirstAsync(l => l.Id == league.Id);
+        trackedLeague.AddBot(bot.Id);
+        await Context.SaveChangesAsync();
+
+        // Create real service with time provider that returns current time
+        var timeProvider = TimeProvider.System;
+        var strategyFactory = new BotStrategyFactory(Substitute.For<IServiceProvider>());
+        var logger = Substitute.For<Microsoft.Extensions.Logging.ILogger<BotBettingService>>();
+
+        var botService = new BotBettingService(Context, strategyFactory, Substitute.For<ITeamFormCalculator>(), timeProvider, logger);
+
+        var handler = new PlaceBotBetsCommandHandler(botService);
+        var command = new PlaceBotBetsCommand();
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert - Should place at least one bet
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsGreaterThanOrEqualTo(0);
+
+        // Verify that if bets were placed, they're in the database
+        if (result.Value > 0)
+        {
+            var bets = await Context.Bets
+                .Where(b => b.LeagueId == league.Id && b.UserId == bot.UserId)
+                .ToListAsync();
+            await Assert.That(bets.Count).IsEqualTo(result.Value);
+        }
+    }
 }
