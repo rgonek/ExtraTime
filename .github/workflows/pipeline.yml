@@ -43,8 +43,9 @@ jobs:
           
           # Integration Tests with InMemory
           dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj --configuration Release --no-build
+        # Default mode is InMemory (no env var needed), but explicit for clarity
         env:
-          TEST_DATABASE_TYPE: InMemory
+          TEST_MODE: ""
 
       - name: Build Frontend
         working-directory: web
@@ -92,7 +93,7 @@ jobs:
         run: |
           dotnet test tests/ExtraTime.IntegrationTests/ExtraTime.IntegrationTests.csproj --configuration Release
         env:
-          TEST_DATABASE_TYPE: SqlServer # Triggers MsSqlContainer in DatabaseFixture
+          TEST_MODE: SqlServer # Triggers Testcontainers SqlServer mode
 
       - name: Run API Tests
         run: |
