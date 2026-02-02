@@ -2,7 +2,9 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "FootballData__ApiKey": "YOUR_API_KEY_HERE",
+    "FootballData__BaseUrl": "https://api.football-data.org/v4"
   },
   "ConnectionStrings": {
     "extratime": "Server=localhost,1433;Database=extratime;User Id=sa;Password=ExtraTime_Dev123!;TrustServerCertificate=True"
