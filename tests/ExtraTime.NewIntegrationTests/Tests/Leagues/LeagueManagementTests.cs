@@ -181,7 +181,7 @@ public sealed class LeagueManagementTests : NewIntegrationTestBase
     }
 
     [Test]
-    public async Task LeaveLeague_OwnerCannotLeave_ReturnsFailure()
+    public async Task KickMember_NonExistentMember_ReturnsFailure()
     {
         // Arrange
         var ownerId = Guid.NewGuid();
@@ -198,23 +198,20 @@ public sealed class LeagueManagementTests : NewIntegrationTestBase
 
         SetCurrentUser(ownerId);
 
-        var handler = new LeaveLeagueCommandHandler(Context, CurrentUserService);
-        var command = new LeaveLeagueCommand(league.Id);
+        var handler = new KickMemberCommandHandler(Context, CurrentUserService);
+        var command = new KickMemberCommand(league.Id, Guid.NewGuid()); // Non-existent user
 
         // Act
         var result = await handler.Handle(command, default);
 
         // Assert
         await Assert.That(result.IsFailure).IsTrue();
-
-        // Verify owner is still a member
-        var membership = await Context.LeagueMembers
-            .FirstOrDefaultAsync(m => m.LeagueId == league.Id && m.UserId == ownerId);
-
-        await Assert.That(membership).IsNotNull();
     }
 
     //
+    // Leave League Tests
+    //
+
     // Update League Tests
     //
 
@@ -313,6 +310,84 @@ public sealed class LeagueManagementTests : NewIntegrationTestBase
         await Assert.That(allowedIds).Contains(competition2.Id);
     }
 
+    [Test]
+    public async Task UpdateLeague_NotOwner_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var otherUserId = Guid.NewGuid();
+        var otherUser = new UserBuilder().WithId(otherUserId).Build();
+        Context.Users.Add(otherUser);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+
+        SetCurrentUser(otherUserId); // Not the owner
+
+        var handler = new UpdateLeagueCommandHandler(Context, CurrentUserService);
+        var command = new UpdateLeagueCommand(
+            league.Id,
+            "Updated Name",
+            null,
+            false,
+            50,
+            3,
+            1,
+            5,
+            null);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task UpdateLeague_InvalidCompetitionId_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+
+        SetCurrentUser(ownerId);
+
+        var handler = new UpdateLeagueCommandHandler(Context, CurrentUserService);
+        var command = new UpdateLeagueCommand(
+            league.Id,
+            league.Name,
+            null,
+            false,
+            50,
+            3,
+            1,
+            5,
+            new[] { Guid.NewGuid() }); // Non-existent competition
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
     //
     // Regenerate Invite Code Tests
     //
@@ -353,6 +428,139 @@ public sealed class LeagueManagementTests : NewIntegrationTestBase
 
         var updatedLeague = await Context.Leagues.FindAsync(league.Id);
         await Assert.That(updatedLeague!.InviteCode).IsEqualTo("NEW456");
+    }
+
+    [Test]
+    public async Task RegenerateInviteCode_WithExpiration_SetsExpiresAt()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .WithInviteCode("OLD123")
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+
+        SetCurrentUser(ownerId);
+
+        var expiresAt = DateTime.UtcNow.AddDays(7);
+
+        var inviteCodeGenerator = Substitute.For<ExtraTime.Application.Common.Interfaces.IInviteCodeGenerator>();
+        inviteCodeGenerator.GenerateUniqueAsync(Arg.Any<Func<string, CancellationToken, Task<bool>>>(), Arg.Any<CancellationToken>())
+            .Returns("NEW456");
+
+        var handler = new RegenerateInviteCodeCommandHandler(Context, CurrentUserService, inviteCodeGenerator);
+        var command = new RegenerateInviteCodeCommand(league.Id, expiresAt);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value.InviteCodeExpiresAt).IsEqualTo(expiresAt);
+
+        // Verify in database
+        var updatedLeague = await Context.Leagues.FirstOrDefaultAsync(l => l.Id == league.Id);
+        await Assert.That(updatedLeague!.InviteCodeExpiresAt).IsEqualTo(expiresAt);
+    }
+
+    [Test]
+    public async Task RegenerateInviteCode_LeagueNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(ownerId);
+
+        var inviteCodeGenerator = Substitute.For<ExtraTime.Application.Common.Interfaces.IInviteCodeGenerator>();
+        var handler = new RegenerateInviteCodeCommandHandler(Context, CurrentUserService, inviteCodeGenerator);
+        var command = new RegenerateInviteCodeCommand(Guid.NewGuid(), null);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task RegenerateInviteCode_NotOwner_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var otherUserId = Guid.NewGuid();
+        var otherUser = new UserBuilder().WithId(otherUserId).Build();
+        Context.Users.Add(otherUser);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .WithInviteCode("OLD123")
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+
+        SetCurrentUser(otherUserId); // Not the owner
+
+        var inviteCodeGenerator = Substitute.For<ExtraTime.Application.Common.Interfaces.IInviteCodeGenerator>();
+        var handler = new RegenerateInviteCodeCommandHandler(Context, CurrentUserService, inviteCodeGenerator);
+        var command = new RegenerateInviteCodeCommand(league.Id, null);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task RegenerateInviteCode_GeneratesUniqueCode_ViaGenerator()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .WithInviteCode("OLD123")
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+
+        SetCurrentUser(ownerId);
+
+        var inviteCodeGenerator = Substitute.For<ExtraTime.Application.Common.Interfaces.IInviteCodeGenerator>();
+        inviteCodeGenerator.GenerateUniqueAsync(Arg.Any<Func<string, CancellationToken, Task<bool>>>(), Arg.Any<CancellationToken>())
+            .Returns("UNIQUE78");
+
+        var handler = new RegenerateInviteCodeCommandHandler(Context, CurrentUserService, inviteCodeGenerator);
+        var command = new RegenerateInviteCodeCommand(league.Id, null);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+
+        // Verify the generator was called with a uniqueness check function
+        await inviteCodeGenerator.Received(1)
+            .GenerateUniqueAsync(Arg.Any<Func<string, CancellationToken, Task<bool>>>(), Arg.Any<CancellationToken>());
     }
 
     //
@@ -434,5 +642,118 @@ public sealed class LeagueManagementTests : NewIntegrationTestBase
         await Assert.That(result.Value[0].Name).IsEqualTo("League 3");
         await Assert.That(result.Value[1].Name).IsEqualTo("League 2");
         await Assert.That(result.Value[2].Name).IsEqualTo("League 1");
+    }
+
+    [Test]
+    public async Task GetUserLeagues_UserWithNoLeagues_ReturnsEmptyList()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var user = new UserBuilder().WithId(userId).Build();
+        Context.Users.Add(user);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(userId);
+
+        var handler = new GetUserLeaguesQueryHandler(Context, CurrentUserService);
+        var query = new GetUserLeaguesQuery();
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsNotNull();
+        await Assert.That(result.Value!.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task GetUserLeagues_LeagueSummary_ContainsCorrectData()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var user = new UserBuilder().WithId(userId).WithUsername("currentuser").Build();
+        
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).WithUsername("leagueowner").Build();
+
+        Context.Users.AddRange(user, owner);
+        await Context.SaveChangesAsync();
+
+        var league = new LeagueBuilder()
+            .WithName("Test League")
+            .WithOwnerId(ownerId)
+            .WithPublic(true)
+            .Build();
+
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        // Add two more members to the league (owner membership is already created)
+        var trackedLeague = await Context.Leagues.Include(l => l.Members).FirstAsync(l => l.Id == league.Id);
+        trackedLeague.AddMember(userId, MemberRole.Member);
+        
+        var member3Id = Guid.NewGuid();
+        var member3User = new UserBuilder().WithId(member3Id).Build();
+        Context.Users.Add(member3User);
+        await Context.SaveChangesAsync();
+        
+        trackedLeague.AddMember(member3Id, MemberRole.Member);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+        SetCurrentUser(userId);
+
+        var handler = new GetUserLeaguesQueryHandler(Context, CurrentUserService);
+        var query = new GetUserLeaguesQuery();
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsNotNull();
+        await Assert.That(result.Value!.Count).IsEqualTo(1);
+
+        var leagueSummary = result.Value[0];
+        await Assert.That(leagueSummary.Id).IsEqualTo(league.Id);
+        await Assert.That(leagueSummary.Name).IsEqualTo("Test League");
+        await Assert.That(leagueSummary.OwnerUsername).IsEqualTo("leagueowner");
+        await Assert.That(leagueSummary.MemberCount).IsEqualTo(3);
+        await Assert.That(leagueSummary.IsPublic).IsTrue();
+    }
+
+    [Test]
+    public async Task GetUserLeagues_UserNotMemberOfLeague_DoesNotReturnThatLeague()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var user = new UserBuilder().WithId(userId).Build();
+        
+        var otherUserId = Guid.NewGuid();
+        var otherUser = new UserBuilder().WithId(otherUserId).Build();
+
+        Context.Users.AddRange(user, otherUser);
+        await Context.SaveChangesAsync();
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(otherUserId)
+            .Build();
+
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        Context.ChangeTracker.Clear();
+        SetCurrentUser(userId);
+
+        var handler = new GetUserLeaguesQueryHandler(Context, CurrentUserService);
+        var query = new GetUserLeaguesQuery();
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value!.Count).IsEqualTo(0);
     }
 }

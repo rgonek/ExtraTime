@@ -1,3 +1,4 @@
+using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Bots.Commands.RemoveBotFromLeague;
 using ExtraTime.Application.Features.Bots.Commands.AddBotToLeague;
 using ExtraTime.Application.Features.Bots.Commands.CreateBot;
@@ -5,6 +6,7 @@ using ExtraTime.Application.Features.Bots.Commands.PlaceBotBets;
 using ExtraTime.Application.Features.Bots.Queries.GetBots;
 using ExtraTime.Application.Features.Bots.Queries.GetLeagueBots;
 using ExtraTime.Application.Features.Bots.Services;
+using ExtraTime.Application.Features.Bots.Strategies;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Infrastructure.Services;
@@ -20,10 +22,11 @@ public sealed class BotTests : NewIntegrationTestBase
     private async Task<(Bot bot, User user)> CreateBotWithUserAsync(string name = "TestBot", BotStrategy strategy = BotStrategy.Random)
     {
         var botUserId = Guid.NewGuid();
+        var shortGuid = Guid.NewGuid().ToString()[..8]; // Use only first 8 chars of GUID
         var botUser = new UserBuilder()
             .WithId(botUserId)
-            .WithEmail($"bot_{Guid.NewGuid()}@extratime.local")
-            .WithUsername($"{name}_{Guid.NewGuid()}")
+            .WithEmail($"bot_{shortGuid}@extratime.local")
+            .WithUsername($"{name}_{shortGuid}")
             .Build();
         
         var bot = new BotBuilder()
@@ -71,6 +74,72 @@ public sealed class BotTests : NewIntegrationTestBase
     }
 
     [Test]
+    public async Task CreateBot_DuplicateName_ReturnsFailure()
+    {
+        // Arrange
+        var passwordHasher = new PasswordHasher();
+        var handler = new CreateBotCommandHandler(Context, passwordHasher);
+
+        // Create first bot
+        var firstCommand = new CreateBotCommand(
+            "DuplicateBot",
+            null,
+            BotStrategy.HomeFavorer,
+            null);
+        
+        await handler.Handle(firstCommand, default);
+
+        // Act - Try to create second bot with same name
+        var secondCommand = new CreateBotCommand(
+            "DuplicateBot",
+            null,
+            BotStrategy.Random,
+            null);
+        
+        var result = await handler.Handle(secondCommand, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task CreateBot_DifferentStrategies_CreatesSuccessfully()
+    {
+        // Arrange
+        var passwordHasher = new PasswordHasher();
+        var handler = new CreateBotCommandHandler(Context, passwordHasher);
+
+        var strategies = new[]
+        {
+            BotStrategy.Random,
+            BotStrategy.HomeFavorer,
+            BotStrategy.DrawPredictor,
+            BotStrategy.HighScorer,
+            BotStrategy.UnderdogSupporter,
+            BotStrategy.StatsAnalyst
+        };
+
+        foreach (var strategy in strategies)
+        {
+            // Act
+            var command = new CreateBotCommand(
+                $"Bot_{strategy}",
+                null,
+                strategy,
+                strategy == BotStrategy.StatsAnalyst ? "{\"formWeight\":0.4}" : null);
+            
+            var result = await handler.Handle(command, default);
+
+            // Assert
+            await Assert.That(result.IsSuccess).IsTrue();
+        }
+
+        // Verify all bots created
+        var botCount = await Context.Bots.CountAsync();
+        await Assert.That(botCount).IsEqualTo(strategies.Length);
+    }
+
+    [Test]
     public async Task AddBotToLeague_ValidData_AddsBotToLeague()
     {
         // Arrange
@@ -101,6 +170,156 @@ public sealed class BotTests : NewIntegrationTestBase
         var botMember = await Context.LeagueBotMembers
             .FirstOrDefaultAsync(bm => bm.LeagueId == league.Id && bm.BotId == bot.Id);
         await Assert.That(botMember).IsNotNull();
+    }
+
+    [Test]
+    public async Task AddBotToLeague_LeagueNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+        await Context.SaveChangesAsync();
+
+        var (bot, _) = await CreateBotWithUserAsync();
+
+        SetCurrentUser(ownerId);
+
+        var handler = new AddBotToLeagueCommandHandler(Context, CurrentUserService);
+        var command = new AddBotToLeagueCommand(Guid.NewGuid(), bot.Id);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task AddBotToLeague_BotNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(ownerId);
+
+        var handler = new AddBotToLeagueCommandHandler(Context, CurrentUserService);
+        var command = new AddBotToLeagueCommand(league.Id, Guid.NewGuid());
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task AddBotToLeague_NotOwner_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var otherUserId = Guid.NewGuid();
+        var otherUser = new UserBuilder().WithId(otherUserId).Build();
+        Context.Users.Add(otherUser);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        var (bot, _) = await CreateBotWithUserAsync();
+
+        SetCurrentUser(otherUserId); // Not the owner
+
+        var handler = new AddBotToLeagueCommandHandler(Context, CurrentUserService);
+        var command = new AddBotToLeagueCommand(league.Id, bot.Id);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task AddBotToLeague_BotAlreadyInLeague_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        var (bot, _) = await CreateBotWithUserAsync();
+
+        var trackedLeague = await Context.Leagues.Include(l => l.BotMembers).FirstAsync(l => l.Id == league.Id);
+        trackedLeague.AddBot(bot.Id);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(ownerId);
+
+        var handler = new AddBotToLeagueCommandHandler(Context, CurrentUserService);
+        var command = new AddBotToLeagueCommand(league.Id, bot.Id);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task AddBotToLeague_MultipleBots_AddsSuccessfully()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .WithBotsEnabled(true)
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        var bots = new List<Bot>();
+        for (int i = 0; i < 3; i++)
+        {
+            var (bot, _) = await CreateBotWithUserAsync($"Bot_{i}");
+            bots.Add(bot);
+        }
+
+        SetCurrentUser(ownerId);
+        var handler = new AddBotToLeagueCommandHandler(Context, CurrentUserService);
+
+        foreach (var bot in bots)
+        {
+            var command = new AddBotToLeagueCommand(league.Id, bot.Id);
+            var result = await handler.Handle(command, default);
+            await Assert.That(result.IsSuccess).IsTrue();
+        }
+
+        // Verify all bots are in the league
+        var botCount = await Context.LeagueBotMembers.CountAsync(bm => bm.LeagueId == league.Id);
+        await Assert.That(botCount).IsEqualTo(3);
     }
 
     [Test]
@@ -136,6 +355,124 @@ public sealed class BotTests : NewIntegrationTestBase
     }
 
     [Test]
+    public async Task RemoveBotFromLeague_LeagueNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var (bot, _) = await CreateBotWithUserAsync();
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(ownerId);
+
+        var handler = new RemoveBotFromLeagueCommandHandler(Context, CurrentUserService);
+        var command = new RemoveBotFromLeagueCommand(Guid.NewGuid(), bot.Id);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task RemoveBotFromLeague_NotOwner_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var otherUserId = Guid.NewGuid();
+        var otherUser = new UserBuilder().WithId(otherUserId).Build();
+        Context.Users.Add(otherUser);
+
+        var league = new LeagueBuilder().WithOwnerId(ownerId).Build();
+        Context.Leagues.Add(league);
+
+        var (bot, _) = await CreateBotWithUserAsync();
+
+        var trackedLeague = await Context.Leagues.Include(l => l.BotMembers).FirstAsync(l => l.Id == league.Id);
+        trackedLeague.AddBot(bot.Id);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(otherUserId); // Not the owner
+
+        var handler = new RemoveBotFromLeagueCommandHandler(Context, CurrentUserService);
+        var command = new RemoveBotFromLeagueCommand(league.Id, bot.Id);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task RemoveBotFromLeague_BotNotInLeague_ReturnsFailure()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder().WithOwnerId(ownerId).Build();
+        Context.Leagues.Add(league);
+
+        var (bot, _) = await CreateBotWithUserAsync();
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(ownerId);
+
+        var handler = new RemoveBotFromLeagueCommandHandler(Context, CurrentUserService);
+        var command = new RemoveBotFromLeagueCommand(league.Id, bot.Id);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task RemoveBotFromLeague_MultipleBots_RemovesOnlyTarget()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder().WithOwnerId(ownerId).Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        var bots = new List<Bot>();
+        var trackedLeague = await Context.Leagues.Include(l => l.BotMembers).FirstAsync(l => l.Id == league.Id);
+        for (int i = 0; i < 3; i++)
+        {
+            var (bot, _) = await CreateBotWithUserAsync($"Bot_{i}");
+            bots.Add(bot);
+            trackedLeague.AddBot(bot.Id);
+        }
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(ownerId);
+
+        var handler = new RemoveBotFromLeagueCommandHandler(Context, CurrentUserService);
+        var command = new RemoveBotFromLeagueCommand(league.Id, bots[1].Id); // Remove second bot
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        var botCount = await Context.LeagueBotMembers.CountAsync(bm => bm.LeagueId == league.Id);
+        await Assert.That(botCount).IsEqualTo(2);
+    }
+
+    [Test]
     public async Task GetBots_WithBots_ReturnsAllBots()
     {
         // Arrange
@@ -151,6 +488,43 @@ public sealed class BotTests : NewIntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Count).IsEqualTo(2);
+    }
+
+    [Test]
+    public async Task GetBots_NoBots_ReturnsEmptyList()
+    {
+        // Arrange
+        var handler = new GetBotsQueryHandler(Context);
+        var query = new GetBotsQuery();
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value!.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task GetBots_MultipleBots_ReturnsCorrectData()
+    {
+        // Arrange
+        await CreateBotWithUserAsync("RandomBot", BotStrategy.Random);
+        await CreateBotWithUserAsync("HomeFavorerBot", BotStrategy.HomeFavorer);
+        await CreateBotWithUserAsync("DrawPredictorBot", BotStrategy.DrawPredictor);
+
+        var handler = new GetBotsQueryHandler(Context);
+        var query = new GetBotsQuery();
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value!.Count).IsEqualTo(3);
+        await Assert.That(result.Value.Any(b => b.Name == "RandomBot")).IsTrue();
+        await Assert.That(result.Value.Any(b => b.Name == "HomeFavorerBot")).IsTrue();
+        await Assert.That(result.Value.Any(b => b.Name == "DrawPredictorBot")).IsTrue();
     }
 
     [Test]
@@ -185,6 +559,79 @@ public sealed class BotTests : NewIntegrationTestBase
     }
 
     [Test]
+    public async Task GetLeagueBots_NoBotsInLeague_ReturnsEmptyList()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league = new LeagueBuilder().WithOwnerId(ownerId).Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        var handler = new GetLeagueBotsQueryHandler(Context);
+        var query = new GetLeagueBotsQuery(league.Id);
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value!.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task GetLeagueBots_LeagueNotFound_ReturnsEmptyList()
+    {
+        // Arrange
+        var handler = new GetLeagueBotsQueryHandler(Context);
+        var query = new GetLeagueBotsQuery(Guid.NewGuid());
+
+        // Act
+        var result = await handler.Handle(query, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value!.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task GetLeagueBots_MultipleLeagues_ReturnsOnlyLeagueBots()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var league1 = new LeagueBuilder().WithOwnerId(ownerId).Build();
+        var league2 = new LeagueBuilder().WithOwnerId(ownerId).Build();
+        Context.Leagues.AddRange(league1, league2);
+        await Context.SaveChangesAsync();
+
+        var (bot1, _) = await CreateBotWithUserAsync("Bot1");
+        var (bot2, _) = await CreateBotWithUserAsync("Bot2");
+
+        var trackedLeague1 = await Context.Leagues.Include(l => l.BotMembers).FirstAsync(l => l.Id == league1.Id);
+        trackedLeague1.AddBot(bot1.Id);
+        var trackedLeague2 = await Context.Leagues.Include(l => l.BotMembers).FirstAsync(l => l.Id == league2.Id);
+        trackedLeague2.AddBot(bot2.Id);
+        await Context.SaveChangesAsync();
+
+        var handler = new GetLeagueBotsQueryHandler(Context);
+
+        // Act
+        var result1 = await handler.Handle(new GetLeagueBotsQuery(league1.Id), default);
+        var result2 = await handler.Handle(new GetLeagueBotsQuery(league2.Id), default);
+
+        // Assert
+        await Assert.That(result1.Value!.Count).IsEqualTo(1);
+        await Assert.That(result1.Value[0].Id).IsEqualTo(bot1.Id);
+        await Assert.That(result2.Value!.Count).IsEqualTo(1);
+        await Assert.That(result2.Value[0].Id).IsEqualTo(bot2.Id);
+    }
+
+    [Test]
     public async Task PlaceBotBets_ReturnsSuccess()
     {
         // Arrange
@@ -200,5 +647,45 @@ public sealed class BotTests : NewIntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsEqualTo(5);
+    }
+
+    [Test]
+    public async Task PlaceBotBets_NoMatchesAvailable_ReturnsZero()
+    {
+        // Arrange
+        var botService = Substitute.For<IBotBettingService>();
+        botService.PlaceBetsForUpcomingMatchesAsync(Arg.Any<CancellationToken>()).Returns(0);
+
+        var handler = new PlaceBotBetsCommandHandler(botService);
+        var command = new PlaceBotBetsCommand();
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task PlaceBotBets_WithRealServiceAndNoData_ReturnsZero()
+    {
+        // Arrange
+        var botService = new BotBettingService(
+            Context, 
+            new BotStrategyFactory(Substitute.For<IServiceProvider>()), 
+            Substitute.For<ITeamFormCalculator>(), 
+            TimeProvider.System, 
+            Substitute.For<Microsoft.Extensions.Logging.ILogger<BotBettingService>>());
+
+        var handler = new PlaceBotBetsCommandHandler(botService);
+        var command = new PlaceBotBetsCommand();
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsEqualTo(0);
     }
 }
