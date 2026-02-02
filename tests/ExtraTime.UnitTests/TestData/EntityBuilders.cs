@@ -163,6 +163,13 @@ public sealed class LeagueBuilder
             league.EnableBots(true);
         }
 
+        // Fix up members' LeagueId because changing league.Id breaks the FK relationship
+        // for members created inside League.Create (like the owner)
+        foreach (var member in league.Members)
+        {
+            member.GetType().GetProperty("LeagueId")?.SetValue(member, _id);
+        }
+
         return league;
     }
 }

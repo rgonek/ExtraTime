@@ -25,7 +25,7 @@ public class InMemoryTestDatabase : ITestDatabase
             Substitute.For<IMediator>());
     }
 
-    public string ConnectionString => "InMemory";
+    public string ConnectionString => _dbName;
 
     public ApplicationDbContext CreateContext() => _context;
 

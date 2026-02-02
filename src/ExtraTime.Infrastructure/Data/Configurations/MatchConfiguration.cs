@@ -11,6 +11,7 @@ public sealed class MatchConfiguration : IEntityTypeConfiguration<Match>
         builder.ToTable("Matches");
 
         builder.HasKey(m => m.Id);
+        builder.Property(m => m.Id).ValueGeneratedNever();
 
         builder.Property(m => m.ExternalId)
             .IsRequired();

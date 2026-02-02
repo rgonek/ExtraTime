@@ -14,6 +14,7 @@ namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 [TestCategory(TestCategories.RequiresDatabase)]
 public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
 {
+    protected override bool UseSqlDatabase => true;
     private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);
 
     [Before(Test)]
@@ -97,6 +98,10 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
         var competition = new CompetitionBuilder().Build();
         Context.Competitions.Add(competition);
 
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        Context.Teams.AddRange(homeTeam, awayTeam);
+
         var league = new LeagueBuilder()
             .WithOwnerId(ownerId)
             .Build();
@@ -104,14 +109,12 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
 
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
             .WithMatchDate(_now.AddHours(2))
             .WithStatus(MatchStatus.Scheduled)
             .Build();
         Context.Matches.Add(match);
         await Context.SaveChangesAsync();
-
-        // Detach league to avoid concurrency issues in InMemory database
-        Context.Entry(league).State = EntityState.Detached;
 
         SetCurrentUser(nonMemberId);
 
@@ -136,6 +139,10 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
         var competition = new CompetitionBuilder().Build();
         Context.Competitions.Add(competition);
 
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        Context.Teams.AddRange(homeTeam, awayTeam);
+
         var league = new LeagueBuilder()
             .WithOwnerId(userId)
             .WithBettingDeadlineMinutes(60) // 60 minutes before match
@@ -143,12 +150,10 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
-        // Detach league to avoid concurrency issues in InMemory database
-        Context.Entry(league).State = EntityState.Detached;
-
         // Match starts in 30 minutes, deadline is 60 minutes before = 30 minutes ago
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
             .WithMatchDate(_now.AddMinutes(30))
             .WithStatus(MatchStatus.Scheduled)
             .Build();
@@ -178,14 +183,15 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
         var competition = new CompetitionBuilder().Build();
         Context.Competitions.Add(competition);
 
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        Context.Teams.AddRange(homeTeam, awayTeam);
+
         var league = new LeagueBuilder()
             .WithOwnerId(userId)
             .Build();
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
-
-        // Detach league to avoid concurrency issues in InMemory database
-        Context.Entry(league).State = EntityState.Detached;
 
         // Owner is automatically a member via League.Create, but reload to ensure Members collection is populated
         league = await Context.Leagues
@@ -194,6 +200,7 @@ public sealed class PlaceBetCommandIntegrationTests : IntegrationTestBase
 
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
             .WithMatchDate(_now.AddHours(2))
             .WithStatus(MatchStatus.Scheduled)
             .Build();

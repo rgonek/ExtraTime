@@ -11,6 +11,7 @@ namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 [TestCategory(TestCategories.RequiresDatabase)]
 public sealed class LeaveLeagueCommandIntegrationTests : IntegrationTestBase
 {
+    protected override bool UseSqlDatabase => true;
     [Test]
     public async Task LeaveLeague_AsMember_RemovesSelf()
     {

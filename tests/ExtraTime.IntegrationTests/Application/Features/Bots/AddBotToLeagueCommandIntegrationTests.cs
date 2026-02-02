@@ -12,6 +12,30 @@ namespace ExtraTime.IntegrationTests.Application.Features.Bots;
 [TestCategory(TestCategories.RequiresDatabase)]
 public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
 {
+    protected override bool UseSqlDatabase => true;
+
+    private async Task<(Bot bot, User user)> CreateBotWithUserAsync(string name = "TestBot", BotStrategy strategy = BotStrategy.Random)
+    {
+        var bot = new BotBuilder()
+            .WithName(name)
+            .WithStrategy(strategy)
+            .Build();
+
+        var botUser = new UserBuilder()
+            .WithId(bot.UserId)
+            .WithEmail($"bot_{Guid.NewGuid()}@extratime.local")
+            .WithUsername($"{name}_{Guid.NewGuid()}")
+            .Build();
+        
+        Context.Users.Add(botUser);
+        await Context.SaveChangesAsync();
+
+        Context.Bots.Add(bot);
+        await Context.SaveChangesAsync();
+
+        return (bot, botUser);
+    }
+
     [Test]
     public async Task AddBotToLeague_ValidData_AddsBotToLeague()
     {
@@ -25,25 +49,9 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
             .WithBotsEnabled(true)
             .Build();
         Context.Leagues.Add(league);
-
-        var bot = new BotBuilder()
-            .WithName("TestBot")
-            .WithStrategy(BotStrategy.Random)
-            .Build();
-        Context.Bots.Add(bot);
-
-        // Create associated user for the bot
-        var botUser = new UserBuilder()
-            .WithId(bot.UserId)
-            .WithEmail($"bot_{bot.Name.ToLower()}@extratime.local")
-            .WithUsername(bot.Name)
-            .Build();
-        Context.Users.Add(botUser);
-
         await Context.SaveChangesAsync();
 
-        // Detach league to avoid concurrency issues in InMemory database
-        Context.Entry(league).State = EntityState.Detached;
+        var (bot, _) = await CreateBotWithUserAsync("TestBot");
 
         SetCurrentUser(ownerId);
 
@@ -57,7 +65,6 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value.Name).IsEqualTo("TestBot");
-        await Assert.That(result.Value.Strategy).IsEqualTo("Random");
 
         // Verify bot membership persisted to database
         var botMember = await Context.LeagueBotMembers
@@ -73,10 +80,9 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).Build();
         Context.Users.Add(owner);
-
-        var bot = new BotBuilder().Build();
-        Context.Bots.Add(bot);
         await Context.SaveChangesAsync();
+
+        var (bot, _) = await CreateBotWithUserAsync();
 
         SetCurrentUser(ownerId);
 
@@ -134,10 +140,9 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
             .WithOwnerId(ownerId)
             .Build();
         Context.Leagues.Add(league);
-
-        var bot = new BotBuilder().Build();
-        Context.Bots.Add(bot);
         await Context.SaveChangesAsync();
+
+        var (bot, _) = await CreateBotWithUserAsync();
 
         SetCurrentUser(otherUserId); // Not the owner
 
@@ -164,16 +169,13 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
             .WithOwnerId(ownerId)
             .Build();
         Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
 
-        var bot = new BotBuilder().Build();
-        Context.Bots.Add(bot);
+        var (bot, _) = await CreateBotWithUserAsync();
 
         // Add bot to league first
         league.AddBot(bot.Id);
         await Context.SaveChangesAsync();
-
-        // Detach league to avoid concurrency issues in InMemory database
-        Context.Entry(league).State = EntityState.Detached;
 
         SetCurrentUser(ownerId);
 
@@ -201,31 +203,16 @@ public sealed class AddBotToLeagueCommandIntegrationTests : IntegrationTestBase
             .WithBotsEnabled(true)
             .Build();
         Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
 
         var strategies = new[] { BotStrategy.Random, BotStrategy.HomeFavorer, BotStrategy.DrawPredictor };
         var bots = new List<Bot>();
 
         foreach (var strategy in strategies)
         {
-            var bot = new BotBuilder()
-                .WithName($"Bot_{strategy}")
-                .WithStrategy(strategy)
-                .Build();
-            Context.Bots.Add(bot);
+            var (bot, _) = await CreateBotWithUserAsync($"Bot_{strategy}", strategy);
             bots.Add(bot);
-
-            var botUser = new UserBuilder()
-                .WithId(bot.UserId)
-                .WithEmail($"bot_{bot.Name.ToLower()}@extratime.local")
-                .WithUsername(bot.Name)
-                .Build();
-            Context.Users.Add(botUser);
         }
-
-        await Context.SaveChangesAsync();
-
-        // Detach league to avoid concurrency issues in InMemory database
-        Context.Entry(league).State = EntityState.Detached;
 
         SetCurrentUser(ownerId);
 

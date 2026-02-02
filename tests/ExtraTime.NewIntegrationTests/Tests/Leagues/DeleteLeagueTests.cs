@@ -1,47 +1,71 @@
+using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Application.Features.Leagues.Commands.CreateLeague;
 using ExtraTime.Application.Features.Leagues.Commands.DeleteLeague;
-using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
-using ExtraTime.IntegrationTests.Attributes;
-using ExtraTime.IntegrationTests.Common;
+using ExtraTime.NewIntegrationTests.Base;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 
-namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
+namespace ExtraTime.NewIntegrationTests.Tests.Leagues;
 
-[TestCategory(TestCategories.Significant)]
-public sealed class DeleteLeagueCommandIntegrationTests : IntegrationTestBase
+public sealed class DeleteLeagueTests : NewIntegrationTestBase
 {
-    protected override bool UseSqlDatabase => true;
+    private async Task<Guid> CreateLeagueAsync(Guid ownerId)
+    {
+        var generator = Substitute.For<IInviteCodeGenerator>();
+        generator.GenerateUniqueAsync(Arg.Any<Func<string, CancellationToken, Task<bool>>>(), Arg.Any<CancellationToken>())
+            .Returns("CODE1234");
+
+        SetCurrentUser(ownerId);
+        var handler = new CreateLeagueCommandHandler(Context, CurrentUserService, generator);
+        
+        var command = new CreateLeagueCommand(
+            "Test League", 
+            null, 
+            false, 
+            10, 
+            3, 
+            1, 
+            5, 
+            null, 
+            null);
+
+        var result = await handler.Handle(command, default);
+        
+        // Clear change tracker to ensure subsequent operations simulate a fresh request
+        Context.ChangeTracker.Clear();
+        
+        return result.Value.Id;
+    }
+
     [Test]
-    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task DeleteLeague_AsOwner_DeletesLeagueAndMembers()
     {
         // Arrange
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).Build();
         Context.Users.Add(owner);
+        await Context.SaveChangesAsync();
+
+        var leagueId = await CreateLeagueAsync(ownerId);
 
         var memberId = Guid.NewGuid();
         var member = new UserBuilder().WithId(memberId).Build();
         Context.Users.Add(member);
-
-        var league = new LeagueBuilder()
-            .WithOwnerId(ownerId)
-            .Build();
-        Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
         // Add a member
+        var league = await Context.Leagues
+            .Include(l => l.Members)
+            .FirstAsync(l => l.Id == leagueId);
         league.AddMember(memberId, MemberRole.Member);
         await Context.SaveChangesAsync();
-
-        // Reload league to avoid concurrency issues with InMemory database
-        Context.Entry(league).State = EntityState.Detached;
 
         SetCurrentUser(ownerId);
 
         var handler = new DeleteLeagueCommandHandler(Context, CurrentUserService);
-        var command = new DeleteLeagueCommand(league.Id);
+        var command = new DeleteLeagueCommand(leagueId);
 
         // Act
         var result = await handler.Handle(command, default);
@@ -49,13 +73,13 @@ public sealed class DeleteLeagueCommandIntegrationTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
 
-        var deletedLeague = await Context.Leagues.FindAsync(league.Id);
+        var deletedLeague = await Context.Leagues.FindAsync(leagueId);
         await Assert.That(deletedLeague).IsNull();
 
         var memberships = await Context.LeagueMembers
-            .Where(m => m.LeagueId == league.Id)
+            .Where(m => m.LeagueId == leagueId)
             .ToListAsync();
-        await Assert.That(memberships.Count).IsEqualTo(0);
+        await Assert.That(memberships).IsEmpty();
     }
 
     [Test]
@@ -65,21 +89,19 @@ public sealed class DeleteLeagueCommandIntegrationTests : IntegrationTestBase
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).Build();
         Context.Users.Add(owner);
+        await Context.SaveChangesAsync();
+
+        var leagueId = await CreateLeagueAsync(ownerId);
 
         var otherUserId = Guid.NewGuid();
         var otherUser = new UserBuilder().WithId(otherUserId).Build();
         Context.Users.Add(otherUser);
-
-        var league = new LeagueBuilder()
-            .WithOwnerId(ownerId)
-            .Build();
-        Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
         SetCurrentUser(otherUserId);
 
         var handler = new DeleteLeagueCommandHandler(Context, CurrentUserService);
-        var command = new DeleteLeagueCommand(league.Id);
+        var command = new DeleteLeagueCommand(leagueId);
 
         // Act
         var result = await handler.Handle(command, default);
@@ -88,7 +110,7 @@ public sealed class DeleteLeagueCommandIntegrationTests : IntegrationTestBase
         await Assert.That(result.IsFailure).IsTrue();
 
         // Verify league still exists
-        var existingLeague = await Context.Leagues.FindAsync(league.Id);
+        var existingLeague = await Context.Leagues.FindAsync(leagueId);
         await Assert.That(existingLeague).IsNotNull();
     }
 

@@ -10,9 +10,9 @@ using Microsoft.Extensions.Options;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Auth;
 
-[TestCategory(TestCategories.RequiresDatabase)]
 public sealed class LoginCommandIntegrationTests : IntegrationTestBase
 {
+    protected override bool UseSqlDatabase => false;
     private readonly PasswordHasher _passwordHasher = new();
     private readonly TokenService _tokenService;
 
@@ -45,10 +45,10 @@ public sealed class LoginCommandIntegrationTests : IntegrationTestBase
         Context.Users.Add(user);
         await Context.SaveChangesAsync();
 
-        // Use a fresh context instance for the handler to simulate a new request
-        // and avoid tracking issues from the Arrange phase
-        using var handlerContext = CreateDbContext();
-        var handler = new LoginCommandHandler(handlerContext, _passwordHasher, _tokenService);
+        // Clear tracker to ensure handler loads fresh entity
+        Context.ChangeTracker.Clear();
+
+        var handler = new LoginCommandHandler(Context, _passwordHasher, _tokenService);
         var command = new LoginCommand(email, password);
 
         // Act

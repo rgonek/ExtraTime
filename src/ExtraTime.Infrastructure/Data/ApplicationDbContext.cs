@@ -49,14 +49,7 @@ public sealed class ApplicationDbContext(
             }
         }
 
-        var result = await base.SaveChangesAsync(cancellationToken);
-
-        if (mediator is not null)
-        {
-            await DispatchDomainEventsAsync();
-        }
-
-        return result;
+        return await base.SaveChangesAsync(cancellationToken);
     }
 
     private async Task DispatchDomainEventsAsync()
@@ -67,7 +60,8 @@ public sealed class ApplicationDbContext(
         var entities = ChangeTracker
             .Entries<BaseEntity>()
             .Where(e => e.Entity.DomainEvents.Any())
-            .Select(e => e.Entity);
+            .Select(e => e.Entity)
+            .ToList();
 
         var domainEvents = entities
             .SelectMany(e => e.DomainEvents)
@@ -106,6 +100,12 @@ public sealed class ApplicationDbContext(
 
         return await strategy.ExecuteAsync(async ct =>
         {
+            // If already in a transaction, just execute the operation
+            if (Database.CurrentTransaction != null)
+            {
+                return await operation(ct);
+            }
+
             await using var transaction = await Database.BeginTransactionAsync(isolationLevel, ct);
             try
             {

@@ -11,6 +11,7 @@ public sealed class TeamConfiguration : IEntityTypeConfiguration<Team>
         builder.ToTable("Teams");
 
         builder.HasKey(t => t.Id);
+        builder.Property(t => t.Id).ValueGeneratedNever();
 
         builder.Property(t => t.ExternalId)
             .IsRequired();

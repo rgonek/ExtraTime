@@ -11,6 +11,7 @@ public sealed class CompetitionConfiguration : IEntityTypeConfiguration<Competit
         builder.ToTable("Competitions");
 
         builder.HasKey(c => c.Id);
+        builder.Property(c => c.Id).ValueGeneratedNever();
 
         builder.Property(c => c.ExternalId)
             .IsRequired();

@@ -1,36 +1,232 @@
 using ExtraTime.Application.Features.Bets;
 using ExtraTime.Application.Features.Bets.Commands.DeleteBet;
+using ExtraTime.Application.Features.Bets.Commands.PlaceBet;
 using ExtraTime.Domain.Common;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
-using ExtraTime.IntegrationTests.Attributes;
-using ExtraTime.IntegrationTests.Common;
+using ExtraTime.NewIntegrationTests.Base;
 using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
-namespace ExtraTime.IntegrationTests.Application.Features.Bets;
+namespace ExtraTime.NewIntegrationTests.Tests.Bets;
 
-[TestCategory(TestCategories.Significant)]
-public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
+public sealed class BetLifecycleTests : NewIntegrationTestBase
 {
-    protected override bool UseSqlDatabase => true;
+    private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);
     private FakeClock _fakeClock = null!;
 
     [Before(Test)]
-    public new async Task SetupAsync()
+    public void SetupClock()
     {
-        await base.SetupAsync();
-        _fakeClock = new FakeClock(DateTime.UtcNow);
+        _fakeClock = new FakeClock(_now);
         Clock.Current = _fakeClock;
     }
 
     [After(Test)]
-    public new async ValueTask TeardownAsync()
+    public void CleanupClock()
     {
         Clock.Current = null!;
-        await base.TeardownAsync();
     }
+
+    [Test]
+    public async Task PlaceBet_ValidData_CreatesBetInDatabase()
+    {
+        Clock.Current = new FakeClock(_now);
+        // Arrange
+        var userId = Guid.NewGuid();
+        var user = new UserBuilder().WithId(userId).Build();
+        
+        var competition = new CompetitionBuilder().Build();
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        
+        var league = new LeagueBuilder()
+            .WithOwnerId(userId)
+            .Build();
+
+        Context.Users.Add(user);
+        Context.Competitions.Add(competition);
+        Context.Teams.AddRange(homeTeam, awayTeam);
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        var match = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
+            .WithMatchDate(_now.AddHours(2))
+            .WithStatus(MatchStatus.Scheduled)
+            .Build();
+        Context.Matches.Add(match);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(userId);
+
+        var handler = new PlaceBetCommandHandler(Context, CurrentUserService);
+        var command = new PlaceBetCommand(league.Id, match.Id, 2, 1);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value.PredictedHomeScore).IsEqualTo(2);
+        await Assert.That(result.Value.PredictedAwayScore).IsEqualTo(1);
+
+        var bet = await Context.Bets
+            .FirstOrDefaultAsync(b => b.LeagueId == league.Id && b.UserId == userId && b.MatchId == match.Id);
+
+        await Assert.That(bet).IsNotNull();
+        await Assert.That(bet!.PredictedHomeScore).IsEqualTo(2);
+        await Assert.That(bet.PredictedAwayScore).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task PlaceBet_NotMember_ReturnsFailure()
+    {
+        Clock.Current = new FakeClock(_now);
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var nonMemberId = Guid.NewGuid();
+        var nonMember = new UserBuilder().WithId(nonMemberId).Build();
+        Context.Users.Add(nonMember);
+
+        var competition = new CompetitionBuilder().Build();
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
+        Context.Teams.AddRange(homeTeam, awayTeam);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .Build();
+        Context.Leagues.Add(league);
+
+        var match = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
+            .WithMatchDate(_now.AddHours(2))
+            .WithStatus(MatchStatus.Scheduled)
+            .Build();
+        Context.Matches.Add(match);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(nonMemberId);
+
+        var handler = new PlaceBetCommandHandler(Context, CurrentUserService);
+        var command = new PlaceBetCommand(league.Id, match.Id, 2, 1);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task PlaceBet_DeadlinePassed_ReturnsFailure()
+    {
+        Clock.Current = new FakeClock(_now);
+        // Arrange
+        var userId = Guid.NewGuid();
+        var user = new UserBuilder().WithId(userId).Build();
+        Context.Users.Add(user);
+
+        var competition = new CompetitionBuilder().Build();
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
+        Context.Teams.AddRange(homeTeam, awayTeam);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(userId)
+            .WithBettingDeadlineMinutes(60) // 60 minutes before match
+            .Build();
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        // Match starts in 30 minutes, deadline is 60 minutes before = 30 minutes ago
+        var match = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
+            .WithMatchDate(_now.AddMinutes(30))
+            .WithStatus(MatchStatus.Scheduled)
+            .Build();
+        Context.Matches.Add(match);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(userId);
+
+        var handler = new PlaceBetCommandHandler(Context, CurrentUserService);
+        var command = new PlaceBetCommand(league.Id, match.Id, 2, 1);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+    }
+
+    [Test]
+    public async Task PlaceBet_ExistingBet_UpdatesBet()
+    {
+        Clock.Current = new FakeClock(_now);
+        // Arrange
+        var userId = Guid.NewGuid();
+        var user = new UserBuilder().WithId(userId).Build();
+        
+        var competition = new CompetitionBuilder().Build();
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        
+        var league = new LeagueBuilder()
+            .WithOwnerId(userId)
+            .Build();
+
+        Context.Users.Add(user);
+        Context.Competitions.Add(competition);
+        Context.Teams.AddRange(homeTeam, awayTeam);
+        Context.Leagues.Add(league);
+        await Context.SaveChangesAsync();
+
+        var match = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
+            .WithMatchDate(_now.AddHours(2))
+            .WithStatus(MatchStatus.Scheduled)
+            .Build();
+        Context.Matches.Add(match);
+        await Context.SaveChangesAsync();
+
+        // Create initial bet
+        var existingBet = Bet.Place(league.Id, userId, match.Id, 1, 0);
+        Context.Bets.Add(existingBet);
+        await Context.SaveChangesAsync();
+
+        SetCurrentUser(userId);
+
+        var handler = new PlaceBetCommandHandler(Context, CurrentUserService);
+        var command = new PlaceBetCommand(league.Id, match.Id, 2, 1); // Different score
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value.PredictedHomeScore).IsEqualTo(2);
+        await Assert.That(result.Value.PredictedAwayScore).IsEqualTo(1);
+
+        var updatedBet = await Context.Bets.FindAsync(existingBet.Id);
+        await Assert.That(updatedBet!.PredictedHomeScore).IsEqualTo(2);
+        await Assert.That(updatedBet.PredictedAwayScore).IsEqualTo(1);
+    }
+
+    //
+    // Delete Bet Tests
+    //
 
     [Test]
     public async Task DeleteBet_ValidScheduledMatch_DeletesBet()
@@ -47,13 +243,12 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         var competition = new CompetitionBuilder().Build();
-        Context.Competitions.Add(competition);
-
         var homeTeam = new TeamBuilder().Build();
         var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
         Context.Teams.AddRange(homeTeam, awayTeam);
 
-        // Match is scheduled for tomorrow (plenty of time before deadline)
+        // Match is scheduled for tomorrow
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)
             .WithTeams(homeTeam.Id, awayTeam.Id)
@@ -102,10 +297,9 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         var competition = new CompetitionBuilder().Build();
-        Context.Competitions.Add(competition);
-
         var homeTeam = new TeamBuilder().Build();
         var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
         Context.Teams.AddRange(homeTeam, awayTeam);
 
         var match = new MatchBuilder()
@@ -140,7 +334,6 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
     }
 
     [Test]
-    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task DeleteBet_DeadlinePassed_ReturnsFailure()
     {
         // Arrange
@@ -155,14 +348,13 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         var competition = new CompetitionBuilder().Build();
-        Context.Competitions.Add(competition);
-
         var homeTeam = new TeamBuilder().Build();
         var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
         Context.Teams.AddRange(homeTeam, awayTeam);
 
-        // Match starts in 1 hour, deadline is 5 minutes before (55 minutes from now)
-        var matchStartTime = Clock.UtcNow.AddHours(1);
+        // Match starts in 1 hour
+        var matchStartTime = _now.AddHours(1);
         var match = new MatchBuilder()
             .WithCompetitionId(competition.Id)
             .WithTeams(homeTeam.Id, awayTeam.Id)
@@ -180,7 +372,7 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
 
         await Context.SaveChangesAsync();
 
-        // Advance time past the deadline (need to advance by 56+ minutes to pass the 55-minute deadline)
+        // Advance time past the deadline 
         _fakeClock.AdvanceBy(TimeSpan.FromMinutes(56));
 
         SetCurrentUser(userId);
@@ -242,10 +434,9 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         Context.Leagues.Add(league);
 
         var competition = new CompetitionBuilder().Build();
-        Context.Competitions.Add(competition);
-
         var homeTeam = new TeamBuilder().Build();
         var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
         Context.Teams.AddRange(homeTeam, awayTeam);
 
         var match = new MatchBuilder()
@@ -289,10 +480,9 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         Context.Users.Add(user);
 
         var competition = new CompetitionBuilder().Build();
-        Context.Competitions.Add(competition);
-
         var homeTeam = new TeamBuilder().Build();
         var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
         Context.Teams.AddRange(homeTeam, awayTeam);
 
         var match = new MatchBuilder()
@@ -327,7 +517,7 @@ public sealed class DeleteBetCommandIntegrationTests : IntegrationTestBase
         // Act
         var result = await handler.Handle(command, default);
 
-        // Assert - Handler filters by both leagueId and betId, so bet won't be found
+        // Assert 
         await Assert.That(result.IsSuccess).IsFalse();
         await Assert.That(result.Error).IsEqualTo(BetErrors.BetNotFound);
     }

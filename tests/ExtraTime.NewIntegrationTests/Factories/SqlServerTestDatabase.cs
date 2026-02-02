@@ -35,12 +35,14 @@ public class SqlServerTestDatabase : ITestDatabase
         {
             await conn.OpenAsync();
             using var cmd = conn.CreateCommand();
+            cmd.CommandTimeout = 60; // Increase timeout for heavy parallel load
             cmd.CommandText = $"CREATE DATABASE [{_dbName}]";
             await cmd.ExecuteNonQueryAsync();
         }
 
         // 2. Initialize Schema (EnsureCreated is faster than Migrate for tests usually)
         _context = CreateContext();
+        _context.Database.SetCommandTimeout(120); // Schema creation can be slow under load
         await _context.Database.EnsureCreatedAsync();
     }
 

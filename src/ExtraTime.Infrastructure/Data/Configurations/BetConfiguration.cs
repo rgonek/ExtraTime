@@ -11,6 +11,7 @@ public sealed class BetConfiguration : IEntityTypeConfiguration<Bet>
         builder.ToTable("Bets");
 
         builder.HasKey(b => b.Id);
+        builder.Property(b => b.Id).ValueGeneratedNever();
 
         builder.HasOne(b => b.League)
             .WithMany()

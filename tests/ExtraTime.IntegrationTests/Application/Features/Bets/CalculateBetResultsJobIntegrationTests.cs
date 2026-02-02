@@ -11,8 +11,11 @@ using NSubstitute;
 
 namespace ExtraTime.IntegrationTests.Application.Features.Bets;
 
+[TestCategory(TestCategories.RequiresDatabase)]
 public sealed class CalculateBetResultsJobIntegrationTests : IntegrationTestBase
 {
+    protected override bool UseSqlDatabase => true;
+
     [Test]
     public async Task CalculateBetResults_ExistingMatchWithScore_CalculatesAndCreatesResults()
     {
@@ -183,7 +186,6 @@ public sealed class CalculateBetResultsJobIntegrationTests : IntegrationTestBase
     }
 
     [Test]
-    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task CalculateBetResults_ExistingResults_UpdatesResults()
     {
         // Arrange

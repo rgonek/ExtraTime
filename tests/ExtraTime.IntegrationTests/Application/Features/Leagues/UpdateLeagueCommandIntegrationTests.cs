@@ -10,6 +10,7 @@ namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 [TestCategory(TestCategories.Significant)]
 public sealed class UpdateLeagueCommandIntegrationTests : IntegrationTestBase
 {
+    protected override bool UseSqlDatabase => true;
     [Test]
     public async Task UpdateLeague_ValidData_UpdatesLeagueSettings()
     {

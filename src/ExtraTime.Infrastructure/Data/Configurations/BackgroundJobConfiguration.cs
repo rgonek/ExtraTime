@@ -11,6 +11,7 @@ public sealed class BackgroundJobConfiguration : IEntityTypeConfiguration<Backgr
         builder.ToTable("BackgroundJobs");
 
         builder.HasKey(j => j.Id);
+        builder.Property(j => j.Id).ValueGeneratedNever();
 
         builder.Property(j => j.JobType)
             .IsRequired()

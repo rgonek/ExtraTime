@@ -12,6 +12,7 @@ namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
 [TestCategory(TestCategories.RequiresDatabase)]
 public sealed class KickMemberCommandIntegrationTests : IntegrationTestBase
 {
+    protected override bool UseSqlDatabase => true;
     [Test]
     public async Task KickMember_AsOwner_RemovesMember()
     {

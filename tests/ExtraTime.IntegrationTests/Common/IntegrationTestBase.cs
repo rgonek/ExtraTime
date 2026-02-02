@@ -17,38 +17,39 @@ public abstract class IntegrationTestBase : IAsyncDisposable
 {
     private DatabaseLease? _lease;
     private bool _leaseAcquired;
+    private DbContextOptions<ApplicationDbContext> _options = null!;
 
     protected ApplicationDbContext Context { get; private set; } = null!;
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
     protected IMediator Mediator { get; private set; } = null!;
 
     /// <summary>
-    /// Creates a fresh DbContext instance.
+    /// Creates a fresh DbContext instance using the same configuration as the current test.
     /// </summary>
     protected ApplicationDbContext CreateDbContext()
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlServer(_lease!.ConnectionString!, sqlOptions =>
-            {
-                sqlOptions.CommandTimeout(30);
-                sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
-            })
-            .Options;
-
-        return new ApplicationDbContext(options, CurrentUserService, Mediator);
+        return new ApplicationDbContext(_options, CurrentUserService, Mediator);
     }
+
+    /// <summary>
+    /// Override this to true in test classes that require a physical SQL Server database.
+    /// Defaults to false (In-Memory).
+    /// </summary>
+    protected virtual bool UseSqlDatabase => false;
 
     [Before(Test)]
     public async Task SetupAsync()
     {
+        var needsSql = UseSqlDatabase || RequiresDatabaseCheck();
+
         // Skip tests that require a real database when running in InMemory mode
-        if (GlobalHooks.Fixture.UseInMemory && RequiresDatabaseCheck())
+        if (GlobalHooks.Fixture.UseInMemory && needsSql)
         {
             Skip.Test("Test requires a real database and is running in InMemory mode");
         }
 
         // Acquire a database lease (with timeout protection and synchronization)
-        _lease = await GlobalHooks.Fixture.AcquireDatabaseAsync();
+        _lease = await GlobalHooks.Fixture.AcquireDatabaseAsync(needsSql);
         _leaseAcquired = true;
 
         try
@@ -56,19 +57,30 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             CurrentUserService = Substitute.For<ICurrentUserService>();
             Mediator = Substitute.For<IMediator>();
             
-            Context = CreateDbContext();
-
             if (_lease.IsInMemory)
             {
                 // Each test gets a unique in-memory database
-                var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                _options = new DbContextOptionsBuilder<ApplicationDbContext>()
                     .UseInMemoryDatabase($"Test_{Guid.NewGuid()}")
                     .ConfigureWarnings(w => w.Ignore(
                         Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
                     .Options;
-                
-                Context = new ApplicationDbContext(options, CurrentUserService, Mediator);
+
+                Context = CreateDbContext();
                 await Context.Database.EnsureCreatedAsync();
+            }
+            else
+            {
+                // SQL Server mode
+                _options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                    .UseSqlServer(_lease.ConnectionString!, sqlOptions =>
+                    {
+                        sqlOptions.CommandTimeout(30);
+                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
+                    })
+                    .Options;
+
+                Context = CreateDbContext();
             }
         }
         catch
@@ -78,6 +90,7 @@ public abstract class IntegrationTestBase : IAsyncDisposable
             throw;
         }
     }
+
 
     [After(Test)]
     public async ValueTask TeardownAsync()

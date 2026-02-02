@@ -1,19 +1,14 @@
 using ExtraTime.Application.Features.Leagues;
 using ExtraTime.Application.Features.Leagues.Queries.GetLeague;
-using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
-using ExtraTime.IntegrationTests.Attributes;
-using ExtraTime.IntegrationTests.Common;
+using ExtraTime.NewIntegrationTests.Base;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 
-namespace ExtraTime.IntegrationTests.Application.Features.Leagues;
+namespace ExtraTime.NewIntegrationTests.Tests.Leagues;
 
-[TestCategory(TestCategories.Significant)]
-public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
+public sealed class GetLeagueTests : NewIntegrationTestBase
 {
-    protected override bool UseSqlDatabase => true;
-
     [Test]
     public async Task Handle_LeagueDoesNotExist_ReturnsFailure()
     {
@@ -71,9 +66,7 @@ public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
     }
 
     [Test]
-    [TestCategory(TestCategories.RequiresDatabase)]
     public async Task Handle_ValidLeague_ReturnsLeagueDetail()
-
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -98,7 +91,7 @@ public sealed class GetLeagueQueryIntegrationTests : IntegrationTestBase
         await Context.SaveChangesAsync();
 
         // Reload the league to get the persisted state with owner membership
-        Context.Entry(league).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+        Context.Entry(league).State = EntityState.Detached;
         league = await Context.Leagues
             .Include(l => l.Members)
             .FirstAsync(l => l.Id == league.Id);

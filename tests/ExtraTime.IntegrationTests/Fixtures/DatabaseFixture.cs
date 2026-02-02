@@ -28,7 +28,6 @@ public sealed class DatabaseFixture : IAsyncDisposable
 
     private bool _isInitialized;
     private readonly SemaphoreSlim _initLock = new(1, 1);
-    private readonly SemaphoreSlim _leaseLock = new(1, 1);
     private bool _disposed;
 
     public bool UseInMemory { get; private set; }
@@ -103,14 +102,12 @@ public sealed class DatabaseFixture : IAsyncDisposable
             await cmd.ExecuteNonQueryAsync();
         }
 
-        // Build connection string
+        // Build connection string - pooling disabled for test stability
         var builder = new SqlConnectionStringBuilder(baseConnectionString)
         {
             InitialCatalog = DatabaseName,
-            Pooling = true,
-            MinPoolSize = 0,
-            MaxPoolSize = 100, // Increased for stability
-            ConnectTimeout = 60 // Increased for stability
+            Pooling = false,
+            ConnectTimeout = 60
         };
         _connectionString = builder.ConnectionString;
 
@@ -140,34 +137,19 @@ public sealed class DatabaseFixture : IAsyncDisposable
 
     /// <summary>
     /// Gets a database lease for a test.
-    /// Uses a semaphore to ensure only one test uses the database at a time.
+    /// Since tests run sequentially (maxParallelTests=1), no locking is needed.
     /// </summary>
-    public async Task<DatabaseLease> AcquireDatabaseAsync(CancellationToken cancellationToken = default)
+    public async Task<DatabaseLease> AcquireDatabaseAsync(bool forceSql = false, CancellationToken cancellationToken = default)
     {
-        // Use a generous timeout for the lease (tests shouldn't take this long)
-        var timeout = TimeSpan.FromMinutes(10);
-        var acquired = await _leaseLock.WaitAsync(timeout, cancellationToken);
-        
-        if (!acquired)
+        if (UseInMemory || !forceSql)
         {
-            throw new TimeoutException("[DatabaseFixture] Timed out waiting for database lease lock");
+            return new DatabaseLease(null, true, null);
         }
 
-        try
-        {
-            if (!UseInMemory)
-            {
-                // Reset the database before returning
-                await ResetDatabaseAsync(cancellationToken);
-            }
-            
-            return new DatabaseLease(_leaseLock, UseInMemory, UseInMemory ? null : _connectionString);
-        }
-        catch
-        {
-            _leaseLock.Release();
-            throw;
-        }
+        // Reset the physical database before returning the lease
+        await ResetDatabaseAsync(cancellationToken);
+        
+        return new DatabaseLease(null, false, _connectionString);
     }
 
     private async Task ResetDatabaseAsync(CancellationToken cancellationToken)
@@ -204,11 +186,11 @@ public sealed class DatabaseFixture : IAsyncDisposable
 /// </summary>
 public sealed class DatabaseLease : IDisposable
 {
-    private readonly SemaphoreSlim _leaseLock;
+    private readonly SemaphoreSlim? _leaseLock;
     public bool IsInMemory { get; }
     public string? ConnectionString { get; }
 
-    public DatabaseLease(SemaphoreSlim leaseLock, bool isInMemory, string? connectionString)
+    public DatabaseLease(SemaphoreSlim? leaseLock, bool isInMemory, string? connectionString)
     {
         _leaseLock = leaseLock;
         IsInMemory = isInMemory;
@@ -217,6 +199,6 @@ public sealed class DatabaseLease : IDisposable
 
     public void Dispose()
     {
-        _leaseLock.Release();
+        _leaseLock?.Release();
     }
 }
