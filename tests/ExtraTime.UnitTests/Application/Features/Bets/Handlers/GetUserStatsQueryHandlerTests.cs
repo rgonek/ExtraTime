@@ -6,9 +6,11 @@ using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using TUnit.Core;
 
 namespace ExtraTime.UnitTests.Application.Features.Bets.Handlers;
 
+[NotInParallel]
 public sealed class GetUserStatsQueryHandlerTests : HandlerTestBase
 {
     private readonly GetUserStatsQueryHandler _handler;

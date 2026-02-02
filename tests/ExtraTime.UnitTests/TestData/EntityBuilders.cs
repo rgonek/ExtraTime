@@ -789,17 +789,29 @@ public sealed class RefreshTokenBuilder
         // Create with valid future date to bypass validation
         var validExpiresAt = _expiresAt > Clock.UtcNow ? _expiresAt : Clock.UtcNow.AddMinutes(10);
         var token = RefreshToken.Create(_token, validExpiresAt, _userId, _createdByIp);
-        
-        // Set the actual expiration date (which might be in the past)
+
+        // Set the actual expiration date (which might be in the past) using reflection
         if (validExpiresAt != _expiresAt)
         {
-            token.GetType().GetProperty("ExpiresAt")?.SetValue(token, _expiresAt);
+            // Use reflection to set the backing field directly since the setter is private
+            var expiresAtField = token.GetType().GetField("<ExpiresAt>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (expiresAtField != null)
+            {
+                expiresAtField.SetValue(token, _expiresAt);
+            }
         }
-        
-        token.GetType().GetProperty("Id")?.SetValue(token, _id);
+
+        // Set Id using reflection on the backing field
+        var idField = token.GetType().GetField("<Id>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            ?? token.GetType().GetField("Id", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+        idField?.SetValue(token, _id);
+
         if (_user != null)
         {
-            token.GetType().GetProperty("User")?.SetValue(token, _user);
+            // Set User using reflection on the backing field
+            var userField = token.GetType().GetField("<User>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                ?? token.GetType().GetField("User", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            userField?.SetValue(token, _user);
         }
         return token;
     }

@@ -9,9 +9,11 @@ using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using TUnit.Core;
 
 namespace ExtraTime.UnitTests.Application.Features.Admin.Handlers;
 
+[NotInParallel]
 public sealed class CancelJobCommandHandlerTests : HandlerTestBase
 {
     private readonly CancelJobCommandHandler _handler;

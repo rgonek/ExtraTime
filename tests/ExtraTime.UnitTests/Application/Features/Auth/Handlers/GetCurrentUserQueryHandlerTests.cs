@@ -5,9 +5,11 @@ using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using TUnit.Core;
 
 namespace ExtraTime.UnitTests.Application.Features.Auth.Handlers;
 
+[NotInParallel]
 public sealed class GetCurrentUserQueryHandlerTests : HandlerTestBase
 {
     private readonly GetCurrentUserQueryHandler _handler;

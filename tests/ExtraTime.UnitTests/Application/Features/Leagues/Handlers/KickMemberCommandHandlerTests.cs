@@ -6,9 +6,11 @@ using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using TUnit.Core;
 
 namespace ExtraTime.UnitTests.Application.Features.Leagues.Handlers;
 
+[NotInParallel]
 public sealed class KickMemberCommandHandlerTests : HandlerTestBase
 {
     private readonly KickMemberCommandHandler _handler;

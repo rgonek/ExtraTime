@@ -7,15 +7,17 @@ using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using TUnit.Core;
 
 namespace ExtraTime.UnitTests.Application.Features.Auth.Handlers;
 
+[NotInParallel]
 public sealed class LoginCommandHandlerTests : HandlerTestBase
 {
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
     private readonly LoginCommandHandler _handler;
-    private readonly DateTime _now = new(2026, 1, 26, 12, 0, 0, DateTimeKind.Utc);
+    private readonly DateTime _now = new(2030, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 
     public LoginCommandHandlerTests()
     {
