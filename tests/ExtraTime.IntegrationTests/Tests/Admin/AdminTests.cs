@@ -38,8 +38,8 @@ public sealed class AdminTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.TotalJobs).IsEqualTo(5);
-        await Assert.That(result.Value.PendingJobs).IsEqualTo(1);
+        await Assert.That(result.Value!.TotalJobs).IsEqualTo(5);
+        await Assert.That(result.Value!.PendingJobs).IsEqualTo(1);
     }
 
     [Test]
@@ -54,12 +54,12 @@ public sealed class AdminTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.TotalJobs).IsEqualTo(0);
-        await Assert.That(result.Value.PendingJobs).IsEqualTo(0);
-        await Assert.That(result.Value.ProcessingJobs).IsEqualTo(0);
-        await Assert.That(result.Value.CompletedJobs).IsEqualTo(0);
-        await Assert.That(result.Value.FailedJobs).IsEqualTo(0);
-        await Assert.That(result.Value.CancelledJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.TotalJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.PendingJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.ProcessingJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.CompletedJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.FailedJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.CancelledJobs).IsEqualTo(0);
     }
 
     [Test]
@@ -96,12 +96,12 @@ public sealed class AdminTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.TotalJobs).IsEqualTo(6);
-        await Assert.That(result.Value.PendingJobs).IsEqualTo(3);
-        await Assert.That(result.Value.ProcessingJobs).IsEqualTo(0);
-        await Assert.That(result.Value.CompletedJobs).IsEqualTo(2);
-        await Assert.That(result.Value.FailedJobs).IsEqualTo(1);
-        await Assert.That(result.Value.CancelledJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.TotalJobs).IsEqualTo(6);
+        await Assert.That(result.Value!.PendingJobs).IsEqualTo(3);
+        await Assert.That(result.Value!.ProcessingJobs).IsEqualTo(0);
+        await Assert.That(result.Value!.CompletedJobs).IsEqualTo(2);
+        await Assert.That(result.Value!.FailedJobs).IsEqualTo(1);
+        await Assert.That(result.Value!.CancelledJobs).IsEqualTo(0);
     }
 
     //
@@ -138,15 +138,15 @@ public sealed class AdminTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.Id).IsEqualTo(jobId);
-        await Assert.That(result.Value.JobType).IsEqualTo("TestJob");
-        await Assert.That(result.Value.Status).IsEqualTo(JobStatus.Completed);
-        await Assert.That(result.Value.Payload).IsEqualTo("{\"key\":\"value\"}");
-        await Assert.That(result.Value.Result).IsEqualTo("Success");
-        await Assert.That(result.Value.RetryCount).IsEqualTo(0);
-        await Assert.That(result.Value.MaxRetries).IsEqualTo(3);
-        await Assert.That(result.Value.CreatedByUserId).IsEqualTo(userId);
-        await Assert.That(result.Value.CorrelationId).IsEqualTo("corr-123");
+        await Assert.That(result.Value!.Id).IsEqualTo(jobId);
+        await Assert.That(result.Value!.JobType).IsEqualTo("TestJob");
+        await Assert.That(result.Value!.Status).IsEqualTo(JobStatus.Completed);
+        await Assert.That(result.Value!.Payload).IsEqualTo("{\"key\":\"value\"}");
+        await Assert.That(result.Value!.Result).IsEqualTo("Success");
+        await Assert.That(result.Value!.RetryCount).IsEqualTo(0);
+        await Assert.That(result.Value!.MaxRetries).IsEqualTo(3);
+        await Assert.That(result.Value!.CreatedByUserId).IsEqualTo(userId);
+        await Assert.That(result.Value!.CorrelationId).IsEqualTo("corr-123");
     }
 
     [Test]
@@ -181,7 +181,7 @@ public sealed class AdminTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Items.Count).IsEqualTo(0);
-        await Assert.That(result.Value.TotalCount).IsEqualTo(0);
+        await Assert.That(result.Value!.TotalCount).IsEqualTo(0);
     }
 
     [Test]
@@ -204,8 +204,8 @@ public sealed class AdminTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.Items.Count).IsEqualTo(5);
-        await Assert.That(result.Value.TotalCount).IsEqualTo(8); // 0, 2, 4, 6, 8, 10, 12, 14 are Completed
+        await Assert.That(result.Value!.Items.Count).IsEqualTo(5);
+        await Assert.That(result.Value!.TotalCount).IsEqualTo(8); // 0, 2, 4, 6, 8, 10, 12, 14 are Completed
     }
 
     //
@@ -683,8 +683,8 @@ public sealed class AdminTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.Items.Count).IsEqualTo(1);
-        await Assert.That(result.Value.TotalCount).IsEqualTo(1);
-        await Assert.That(result.Value.Items[0].Status).IsEqualTo(JobStatus.Pending);
+        await Assert.That(result.Value!.TotalCount).IsEqualTo(1);
+        await Assert.That(result.Value!.Items[0].Status).IsEqualTo(JobStatus.Pending);
     }
 
     [Test]
@@ -719,8 +719,8 @@ public sealed class AdminTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.Items.Count).IsEqualTo(2);
-        await Assert.That(result.Value.TotalCount).IsEqualTo(2);
-        await Assert.That(result.Value.Items[0].JobType).IsEqualTo("SyncCompetitions");
-        await Assert.That(result.Value.Items[1].JobType).IsEqualTo("SyncCompetitions");
+        await Assert.That(result.Value!.TotalCount).IsEqualTo(2);
+        await Assert.That(result.Value!.Items[0].JobType).IsEqualTo("SyncCompetitions");
+        await Assert.That(result.Value!.Items[1].JobType).IsEqualTo("SyncCompetitions");
     }
 }

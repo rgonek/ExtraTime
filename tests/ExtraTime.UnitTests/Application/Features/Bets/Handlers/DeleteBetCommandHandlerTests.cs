@@ -61,7 +61,7 @@ public sealed class DeleteBetCommandHandlerTests : HandlerTestBase
         var otherUserId = Guid.NewGuid();
         var leagueId = Guid.NewGuid();
         var betId = Guid.NewGuid();
-        
+
         var bet = new BetBuilder()
             .WithId(betId)
             .WithLeagueId(leagueId)

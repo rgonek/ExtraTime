@@ -19,24 +19,24 @@ public sealed class DeleteLeagueTests : IntegrationTestBase
 
         SetCurrentUser(ownerId);
         var handler = new CreateLeagueCommandHandler(Context, CurrentUserService, generator);
-        
+
         var command = new CreateLeagueCommand(
-            "Test League", 
-            null, 
-            false, 
-            10, 
-            3, 
-            1, 
-            5, 
-            null, 
+            "Test League",
+            null,
+            false,
+            10,
+            3,
+            1,
+            5,
+            null,
             null);
 
         var result = await handler.Handle(command, default);
-        
+
         // Clear change tracker to ensure subsequent operations simulate a fresh request
         Context.ChangeTracker.Clear();
-        
-        return result.Value.Id;
+
+        return result.Value!.Id;
     }
 
     [Test]

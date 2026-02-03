@@ -43,10 +43,10 @@ public sealed class RegisterCommandHandlerTests : HandlerTestBase
     {
         // Arrange
         var command = new RegisterCommand("new@example.com", "newuser", "Password123!");
-        
+
         var mockUsers = CreateMockDbSet(new List<User>().AsQueryable());
         Context.Users.Returns(mockUsers);
-        
+
         _passwordHasher.Hash(command.Password).Returns("hashed-password");
         _tokenService.GenerateRefreshToken().Returns("refresh-token");
         _tokenService.GetRefreshTokenExpiration().Returns(_now.AddDays(7));
@@ -57,7 +57,7 @@ public sealed class RegisterCommandHandlerTests : HandlerTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        Context.Users.Received(1).Add(Arg.Is<User>(u => 
+        Context.Users.Received(1).Add(Arg.Is<User>(u =>
             u.Email == command.Email && u.Username == command.Username));
         await Context.Received(1).SaveChangesAsync(CancellationToken);
     }
@@ -68,7 +68,7 @@ public sealed class RegisterCommandHandlerTests : HandlerTestBase
         // Arrange
         var existingUser = new UserBuilder().WithEmail("exists@example.com").Build();
         var command = new RegisterCommand(existingUser.Email, "other", "Password123!");
-        
+
         var users = new List<User> { existingUser }.AsQueryable();
         var mockUsers = CreateMockDbSet(users);
         Context.Users.Returns(mockUsers);

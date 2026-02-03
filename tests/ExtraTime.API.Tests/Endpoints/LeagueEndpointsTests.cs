@@ -32,7 +32,7 @@ public sealed class LeagueEndpointsTests : ApiTestBase
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Created);
-        
+
         var league = await response.Content.ReadFromJsonAsync<LeagueDto>();
         await Assert.That(league).IsNotNull();
         await Assert.That(league!.Name).IsEqualTo("API Test League");
@@ -46,9 +46,10 @@ public sealed class LeagueEndpointsTests : ApiTestBase
         // Arrange - Create league by user 1
         var token1 = await GetAuthTokenAsync("owner@example.com");
         SetAuthHeader(token1);
-        
-        var createResponse = await Client.PostAsJsonAsync("/api/leagues", new { 
-            Name = "Joinable League", 
+
+        var createResponse = await Client.PostAsJsonAsync("/api/leagues", new
+        {
+            Name = "Joinable League",
             MaxMembers = 10,
             ScoreExactMatch = 3,
             ScoreCorrectResult = 1,

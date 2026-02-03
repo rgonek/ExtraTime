@@ -22,7 +22,7 @@ public abstract class ApiTestBase
         await DatabaseLock.WaitAsync();
         _lockTaken = true;
 
-        try 
+        try
         {
             await Factory.EnsureInitializedAsync();
             Client = Factory.CreateClient();
@@ -31,7 +31,7 @@ public abstract class ApiTestBase
             // Initialize Respawn for database cleanup or handle InMemory
             using var scope = Factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            
+
             if (CustomWebApplicationFactory.UseInMemory)
             {
                 await context.Database.EnsureDeletedAsync();
@@ -40,7 +40,7 @@ public abstract class ApiTestBase
             else
             {
                 var connection = context.Database.GetDbConnection();
-                
+
                 if (connection.State != System.Data.ConnectionState.Open)
                     await connection.OpenAsync();
 
@@ -67,7 +67,7 @@ public abstract class ApiTestBase
     public void DisposeTest()
     {
         Client?.Dispose();
-        
+
         if (_lockTaken)
         {
             DatabaseLock.Release();
@@ -92,7 +92,7 @@ public abstract class ApiTestBase
             Username = email.Split('@')[0].Length < 3 ? email.Split('@')[0] + "123" : email.Split('@')[0],
             Password = password
         };
-        
+
         var registerResponse = await Client.PostAsJsonAsync("/api/auth/register", registerRequest);
 
         if (registerResponse.IsSuccessStatusCode)

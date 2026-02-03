@@ -32,10 +32,10 @@ public sealed class CreateLeagueCommandHandlerTests : HandlerTestBase
 
         var mockUsers = CreateMockDbSet(new List<User> { user }.AsQueryable());
         Context.Users.Returns(mockUsers);
-        
+
         var mockLeagues = CreateMockDbSet(new List<League>().AsQueryable());
         Context.Leagues.Returns(mockLeagues);
-        
+
         var mockMembers = CreateMockDbSet(new List<LeagueMember>().AsQueryable());
         Context.LeagueMembers.Returns(mockMembers);
 
@@ -49,7 +49,7 @@ public sealed class CreateLeagueCommandHandlerTests : HandlerTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Name).IsEqualTo("New League");
         await Assert.That(result.Value.InviteCode).IsEqualTo("INVITE123");
-        
+
         Context.Leagues.Received(1).Add(Arg.Is<League>(l => l.Name == "New League" && l.OwnerId == userId));
         await Context.Received(1).SaveChangesAsync(CancellationToken);
     }

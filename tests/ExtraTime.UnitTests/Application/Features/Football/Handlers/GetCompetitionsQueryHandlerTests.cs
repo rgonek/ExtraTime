@@ -52,11 +52,11 @@ public sealed class GetCompetitionsQueryHandlerTests : HandlerTestBase
             .WithCode("LL")
             .Build();
 
-        var competitions = new List<Domain.Entities.Competition> 
-        { 
-            competition1, 
-            competition2, 
-            competition3 
+        var competitions = new List<Domain.Entities.Competition>
+        {
+            competition1,
+            competition2,
+            competition3
         }.AsQueryable();
 
         var mockCompetitions = CreateMockDbSet(competitions);
@@ -70,7 +70,7 @@ public sealed class GetCompetitionsQueryHandlerTests : HandlerTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Count).IsEqualTo(3);
-        
+
         // Verify ordering by name (Champions League, La Liga, Premier League)
         await Assert.That(result.Value![0].Name).IsEqualTo("Champions League");
         await Assert.That(result.Value![1].Name).IsEqualTo("La Liga");
@@ -103,7 +103,7 @@ public sealed class GetCompetitionsQueryHandlerTests : HandlerTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Count).IsEqualTo(1);
-        
+
         var dto = result.Value![0];
         await Assert.That(dto.Id).IsEqualTo(competition.Id);
         await Assert.That(dto.ExternalId).IsEqualTo(competition.ExternalId);

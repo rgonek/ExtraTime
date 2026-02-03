@@ -62,17 +62,17 @@ public sealed class BetCalculationTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        
+
         var betResult = await Context.BetResults
             .FirstOrDefaultAsync(r => r.BetId == bet.Id);
-        
+
         await Assert.That(betResult).IsNotNull();
         await Assert.That(betResult!.PointsEarned).IsEqualTo(3);
         await Assert.That(betResult.IsExactMatch).IsTrue();
 
         await jobDispatcher.Received(1).EnqueueAsync(
-            "RecalculateLeagueStandings", 
-            Arg.Any<object>(), 
+            "RecalculateLeagueStandings",
+            Arg.Any<object>(),
             Arg.Any<CancellationToken>());
     }
 

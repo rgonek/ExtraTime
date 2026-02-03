@@ -45,6 +45,7 @@ builder.Services.AddOpenApi(options =>
     options.AddDocumentTransformer((document, context, cancellationToken) =>
     {
         document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
         document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
         {
             Type = SecuritySchemeType.Http,
@@ -59,7 +60,7 @@ builder.Services.AddOpenApi(options =>
         var schemeReference = new OpenApiSecuritySchemeReference("Bearer");
         requirement.Add(schemeReference, []);
         document.Security.Add(requirement);
-        
+
         return Task.CompletedTask;
     });
 });
@@ -100,7 +101,7 @@ if (app.Environment.IsDevelopment())
 {
     // Map OpenAPI document endpoint (required for Scalar)
     app.MapOpenApi();
-    
+
     // Configure Scalar UI
     app.MapScalarApiReference(options =>
     {

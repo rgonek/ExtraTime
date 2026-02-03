@@ -62,7 +62,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
         var bets = new List<Bet> { bet1, bet2 }.AsQueryable();
         var mockBets = CreateMockDbSet(bets);
         Context.Bets.Returns(mockBets);
-        
+
         var mockStandings = CreateMockDbSet(new List<LeagueStanding>().AsQueryable());
         Context.LeagueStandings.Returns(mockStandings);
 
@@ -105,7 +105,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
 
         var mockBets = CreateMockDbSet(bets.AsQueryable());
         Context.Bets.Returns(mockBets);
-        
+
         var mockStandings = CreateMockDbSet(new List<LeagueStanding>().AsQueryable());
         Context.LeagueStandings.Returns(mockStandings);
 
@@ -135,7 +135,7 @@ public sealed class StandingsCalculatorTests : HandlerTestBase
 
         var mockBets = CreateMockDbSet(new List<Bet> { bet }.AsQueryable());
         Context.Bets.Returns(mockBets);
-        
+
         var mockStandings = CreateMockDbSet(new List<LeagueStanding> { existingStanding }.AsQueryable());
         Context.LeagueStandings.Returns(mockStandings);
 

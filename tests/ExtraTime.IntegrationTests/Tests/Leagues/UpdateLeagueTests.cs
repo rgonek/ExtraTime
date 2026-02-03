@@ -55,13 +55,13 @@ public sealed class UpdateLeagueTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
-        await Assert.That(result.Value.Name).IsEqualTo("Updated League Name");
-        await Assert.That(result.Value.Description).IsEqualTo("Updated Description");
-        await Assert.That(result.Value.IsPublic).IsTrue();
-        await Assert.That(result.Value.MaxMembers).IsEqualTo(100);
-        await Assert.That(result.Value.ScoreExactMatch).IsEqualTo(5);
-        await Assert.That(result.Value.ScoreCorrectResult).IsEqualTo(2);
-        await Assert.That(result.Value.BettingDeadlineMinutes).IsEqualTo(15);
+        await Assert.That(result.Value!.Name).IsEqualTo("Updated League Name");
+        await Assert.That(result.Value!.Description).IsEqualTo("Updated Description");
+        await Assert.That(result.Value!.IsPublic).IsTrue();
+        await Assert.That(result.Value!.MaxMembers).IsEqualTo(100);
+        await Assert.That(result.Value!.ScoreExactMatch).IsEqualTo(5);
+        await Assert.That(result.Value!.ScoreCorrectResult).IsEqualTo(2);
+        await Assert.That(result.Value!.BettingDeadlineMinutes).IsEqualTo(15);
 
         // Verify persistence
         var updatedLeague = await Context.Leagues.FindAsync(league.Id);

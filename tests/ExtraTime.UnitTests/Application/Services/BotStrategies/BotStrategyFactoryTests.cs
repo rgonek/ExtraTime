@@ -156,7 +156,7 @@ public sealed class BotStrategyFactoryTests
         factory.GetStrategy(BotStrategy.StatsAnalyst);
 
         // Assert - Strategy should work without throwing (calculator was resolved)
-        await Assert.That(true).IsTrue(); // Just verify no exception thrown
+        await Assert.That(factory).IsNotNull(); // Just verify no exception thrown
     }
 
     [Test]

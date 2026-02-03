@@ -47,7 +47,7 @@ public sealed class TokenServiceTests
 
         // Assert
         await Assert.That(token).IsNotNull();
-        
+
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
 

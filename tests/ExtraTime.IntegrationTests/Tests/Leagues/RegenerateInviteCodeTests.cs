@@ -45,9 +45,9 @@ public sealed class RegenerateInviteCodeTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
-        await Assert.That(result.Value.InviteCode).IsNotNull();
-        await Assert.That(result.Value.InviteCode).IsNotEqualTo(originalCode);
-        await Assert.That(result.Value.InviteCode.Length).IsEqualTo(8);
+        await Assert.That(result.Value!.InviteCode).IsNotNull();
+        await Assert.That(result.Value!.InviteCode).IsNotEqualTo(originalCode);
+        await Assert.That(result.Value!.InviteCode.Length).IsEqualTo(8);
 
         // Verify persistence
         var updatedLeague = await Context.Leagues.FindAsync(league.Id);
@@ -131,7 +131,7 @@ public sealed class RegenerateInviteCodeTests : IntegrationTestBase
         var regenerateResult = await regenerateHandler.Handle(regenerateCommand, default);
 
         await Assert.That(regenerateResult.IsSuccess).IsTrue();
-        var newInviteCode = regenerateResult.Value.InviteCode;
+        var newInviteCode = regenerateResult.Value!.InviteCode;
 
         // Now try to join with the old code
         SetCurrentUser(newUserId);

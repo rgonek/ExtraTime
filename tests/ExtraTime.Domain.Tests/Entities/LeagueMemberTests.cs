@@ -116,11 +116,11 @@ public sealed class LeagueMemberTests
         // Note: This would typically be enforced by database constraints
         // The domain entity itself doesn't prevent duplicate creation
         // This test documents the expected behavior
-        
+
         // Arrange
         var leagueId = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        
+
         // Act
         var member1 = LeagueMember.Create(leagueId, userId, MemberRole.Member);
         var member2 = LeagueMember.Create(leagueId, userId, MemberRole.Member);

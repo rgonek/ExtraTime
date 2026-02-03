@@ -337,7 +337,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.Name).IsEqualTo("Updated Name");
+        await Assert.That(result.Value!.Name).IsEqualTo("Updated Name");
 
         var updatedLeague = await Context.Leagues.FindAsync(league.Id);
         await Assert.That(updatedLeague!.Name).IsEqualTo("Updated Name");
@@ -391,7 +391,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
 
         var updatedLeague = await Context.Leagues.FindAsync(league.Id);
         var allowedIds = System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(updatedLeague!.AllowedCompetitionIds!);
-        
+
         await Assert.That(allowedIds).Contains(competition1.Id);
         await Assert.That(allowedIds).Contains(competition2.Id);
     }
@@ -509,8 +509,8 @@ public sealed class LeagueManagementTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.InviteCode).IsEqualTo("NEW456");
-        await Assert.That(result.Value.InviteCodeExpiresAt).IsNull();
+        await Assert.That(result.Value!.InviteCode).IsEqualTo("NEW456");
+        await Assert.That(result.Value!.InviteCodeExpiresAt).IsNull();
 
         var updatedLeague = await Context.Leagues.FindAsync(league.Id);
         await Assert.That(updatedLeague!.InviteCode).IsEqualTo("NEW456");
@@ -549,7 +549,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.InviteCodeExpiresAt).IsEqualTo(expiresAt);
+        await Assert.That(result.Value!.InviteCodeExpiresAt).IsEqualTo(expiresAt);
 
         // Verify in database
         var updatedLeague = await Context.Leagues.FirstOrDefaultAsync(l => l.Id == league.Id);
@@ -659,7 +659,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).WithUsername("testuser").Build();
-        
+
         var otherUserId = Guid.NewGuid();
         var otherUser = new UserBuilder().WithId(otherUserId).WithUsername("otheruser").Build();
 
@@ -672,7 +672,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
             .WithOwnerId(otherUserId)
             .Build();
         Context.Leagues.Add(league1);
-        
+
         var league2 = new LeagueBuilder()
             .WithName("League 2")
             .WithOwnerId(userId)
@@ -684,7 +684,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
             .WithOwnerId(otherUserId)
             .Build();
         Context.Leagues.Add(league3);
-        
+
         await Context.SaveChangesAsync();
 
         // Update timestamps manually
@@ -759,7 +759,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).WithUsername("currentuser").Build();
-        
+
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).WithUsername("leagueowner").Build();
 
@@ -778,12 +778,12 @@ public sealed class LeagueManagementTests : IntegrationTestBase
         // Add two more members to the league (owner membership is already created)
         var trackedLeague = await Context.Leagues.Include(l => l.Members).FirstAsync(l => l.Id == league.Id);
         trackedLeague.AddMember(userId, MemberRole.Member);
-        
+
         var member3Id = Guid.NewGuid();
         var member3User = new UserBuilder().WithId(member3Id).Build();
         Context.Users.Add(member3User);
         await Context.SaveChangesAsync();
-        
+
         trackedLeague.AddMember(member3Id, MemberRole.Member);
         await Context.SaveChangesAsync();
 
@@ -815,7 +815,7 @@ public sealed class LeagueManagementTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
-        
+
         var otherUserId = Guid.NewGuid();
         var otherUser = new UserBuilder().WithId(otherUserId).Build();
 

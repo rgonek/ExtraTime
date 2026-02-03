@@ -77,9 +77,9 @@ public sealed class League : BaseAuditableEntity
 
         // Owner is automatically a member
         league.AddMember(ownerId, MemberRole.Owner);
-        
+
         league.AddDomainEvent(new LeagueCreated(league.Id, ownerId));
-        
+
         return league;
     }
 
@@ -116,7 +116,7 @@ public sealed class League : BaseAuditableEntity
 
         InviteCode = newCode;
         InviteCodeExpiresAt = expiresAt;
-        
+
         AddDomainEvent(new LeagueInviteCodeRegenerated(Id, newCode));
     }
 

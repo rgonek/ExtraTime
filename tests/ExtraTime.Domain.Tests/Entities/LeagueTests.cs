@@ -22,7 +22,7 @@ public sealed class LeagueTests
         await Assert.That(league.OwnerId).IsEqualTo(ownerId);
         await Assert.That(league.InviteCode).IsEqualTo(inviteCode);
         await Assert.That(league.Members).Count().IsEqualTo(1);
-        
+
         var ownerMember = league.Members.First();
         await Assert.That(ownerMember.UserId).IsEqualTo(ownerId);
         await Assert.That(ownerMember.Role).IsEqualTo(MemberRole.Owner);

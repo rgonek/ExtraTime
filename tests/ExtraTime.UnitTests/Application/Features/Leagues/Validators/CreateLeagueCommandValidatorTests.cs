@@ -10,16 +10,16 @@ public sealed class CreateLeagueCommandValidatorTests : ValidatorTestBase<Create
     public async Task Validate_ValidCommand_HasNoErrors()
     {
         var command = new CreateLeagueCommand(
-            "Test League", 
-            "Description", 
-            false, 
-            20, 
-            3, 
-            1, 
-            5, 
-            null, 
+            "Test League",
+            "Description",
+            false,
+            20,
+            3,
+            1,
+            5,
+            null,
             null);
-        
+
         var result = await Validator.TestValidateAsync(command);
         await Assert.That(result.IsValid).IsTrue();
     }
@@ -28,16 +28,16 @@ public sealed class CreateLeagueCommandValidatorTests : ValidatorTestBase<Create
     public async Task Validate_EmptyName_HasError()
     {
         var command = new CreateLeagueCommand(
-            "", 
-            null, 
-            false, 
-            20, 
-            3, 
-            1, 
-            5, 
-            null, 
+            "",
+            null,
+            false,
+            20,
+            3,
+            1,
+            5,
+            null,
             null);
-            
+
         var result = await Validator.TestValidateAsync(command);
         result.ShouldHaveValidationErrorFor(x => x.Name);
     }
@@ -46,16 +46,16 @@ public sealed class CreateLeagueCommandValidatorTests : ValidatorTestBase<Create
     public async Task Validate_InvalidMaxMembers_HasError()
     {
         var command = new CreateLeagueCommand(
-            "Test League", 
-            null, 
-            false, 
-            300, 
-            3, 
-            1, 
-            5, 
-            null, 
+            "Test League",
+            null,
+            false,
+            300,
+            3,
+            1,
+            5,
+            null,
             null);
-            
+
         var result = await Validator.TestValidateAsync(command);
         result.ShouldHaveValidationErrorFor(x => x.MaxMembers);
     }
@@ -64,16 +64,16 @@ public sealed class CreateLeagueCommandValidatorTests : ValidatorTestBase<Create
     public async Task Validate_InvalidScoring_HasError()
     {
         var command = new CreateLeagueCommand(
-            "Test League", 
-            null, 
-            false, 
-            20, 
-            -1, 
-            1, 
-            5, 
-            null, 
+            "Test League",
+            null,
+            false,
+            20,
+            -1,
+            1,
+            5,
+            null,
             null);
-            
+
         var result = await Validator.TestValidateAsync(command);
         result.ShouldHaveValidationErrorFor(x => x.ScoreExactMatch);
     }

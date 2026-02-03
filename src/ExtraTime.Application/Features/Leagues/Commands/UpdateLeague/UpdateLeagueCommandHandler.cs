@@ -60,7 +60,7 @@ public sealed class UpdateLeagueCommandHandler(
                 request.ScoreExactMatch,
                 request.ScoreCorrectResult,
                 request.BettingDeadlineMinutes);
-            
+
             league.SetCompetitionFilter(allowedCompetitionIds);
         }
         catch (Exception ex)

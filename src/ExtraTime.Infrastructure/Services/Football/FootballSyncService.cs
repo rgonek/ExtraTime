@@ -252,7 +252,7 @@ public sealed class FootballSyncService(
                     apiMatch.Stage,
                     apiMatch.Group,
                     apiMatch.Venue);
-                
+
                 match.UpdateScore(
                     apiMatch.Score.FullTime.Home,
                     apiMatch.Score.FullTime.Away,
@@ -275,7 +275,7 @@ public sealed class FootballSyncService(
                     apiMatch.Score.FullTime.Away,
                     apiMatch.Score.HalfTime.Home,
                     apiMatch.Score.HalfTime.Away);
-                
+
                 match.UpdateMetadata(
                     apiMatch.Matchday,
                     apiMatch.Stage,

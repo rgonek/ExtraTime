@@ -66,7 +66,7 @@ public sealed class Match : BaseEntity
         if (Status == newStatus) return;
 
         // Prevent moving from final states back to active states unless necessary
-        if ((Status == MatchStatus.Finished || Status == MatchStatus.Cancelled) && 
+        if ((Status == MatchStatus.Finished || Status == MatchStatus.Cancelled) &&
             (newStatus == MatchStatus.Scheduled || newStatus == MatchStatus.InPlay))
         {
             // For now, allow it but maybe log it? External API sometimes corrects status.

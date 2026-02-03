@@ -102,7 +102,7 @@ public sealed class TeamTests
     {
         // Arrange
         var team = Team.Create(12345, "Old Name", "Old Short", "TLA", "https://old.com/logo.png", "Old Colors", "Old Venue");
-        
+
         // Act
         team.UpdateDetails("New Name", "New Short", "NEW", "https://new.com/logo.png", "New Colors", "New Venue");
 
@@ -120,7 +120,7 @@ public sealed class TeamTests
     {
         // Arrange
         var team = Team.Create(12345, "Name", "Short", "TLA", "https://logo.png", "Colors", "Venue");
-        
+
         // Act
         team.UpdateDetails("New Name", "New Short", null, null, null, null);
 
@@ -160,7 +160,7 @@ public sealed class TeamTests
         // Arrange
         var team = Team.Create(12345, "Name", "Short");
         var originalSyncTime = team.LastSyncedAt;
-        
+
         await Task.Delay(10);
 
         // Act

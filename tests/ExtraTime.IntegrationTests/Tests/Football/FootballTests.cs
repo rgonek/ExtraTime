@@ -37,7 +37,7 @@ public sealed class FootballTests : IntegrationTestBase
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.Count).IsEqualTo(3);
 
-        var names = result.Value.Select(c => c.Name).ToList();
+        var names = result.Value!.Select(c => c.Name).ToList();
         await Assert.That(names).Contains("Premier League");
         await Assert.That(names).Contains("La Liga");
         await Assert.That(names).Contains("Bundesliga");
@@ -76,9 +76,9 @@ public sealed class FootballTests : IntegrationTestBase
         var result = await handler.Handle(query, default);
 
         // Assert
-        await Assert.That(result.Value[0].Name).IsEqualTo("A League");
-        await Assert.That(result.Value[1].Name).IsEqualTo("M League");
-        await Assert.That(result.Value[2].Name).IsEqualTo("Z League");
+        await Assert.That(result.Value![0].Name).IsEqualTo("A League");
+        await Assert.That(result.Value![1].Name).IsEqualTo("M League");
+        await Assert.That(result.Value![2].Name).IsEqualTo("Z League");
     }
 
     //
@@ -119,7 +119,7 @@ public sealed class FootballTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.Items.Count).IsEqualTo(20);
-        await Assert.That(result.Value.TotalCount).IsEqualTo(25);
+        await Assert.That(result.Value!.TotalCount).IsEqualTo(25);
     }
 
     [Test]
@@ -135,7 +135,7 @@ public sealed class FootballTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Items.Count).IsEqualTo(0);
-        await Assert.That(result.Value.TotalCount).IsEqualTo(0);
+        await Assert.That(result.Value!.TotalCount).IsEqualTo(0);
     }
 
     [Test]
@@ -164,7 +164,7 @@ public sealed class FootballTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.Value!.Items.Count).IsEqualTo(1);
-        await Assert.That(result.Value.Items[0].Id).IsEqualTo(match1.Id);
+        await Assert.That(result.Value!.Items[0].Id).IsEqualTo(match1.Id);
     }
 
     [Test]
@@ -192,7 +192,7 @@ public sealed class FootballTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.Value!.Items.Count).IsEqualTo(1);
-        await Assert.That(result.Value.Items[0].Id).IsEqualTo(match2.Id);
+        await Assert.That(result.Value!.Items[0].Id).IsEqualTo(match2.Id);
     }
 
     [Test]
@@ -223,8 +223,8 @@ public sealed class FootballTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.Id).IsEqualTo(match.Id);
-        await Assert.That(result.Value.HomeTeam.Name).IsEqualTo("Arsenal");
-        await Assert.That(result.Value.AwayTeam.Name).IsEqualTo("Chelsea");
+        await Assert.That(result.Value!.HomeTeam.Name).IsEqualTo("Arsenal");
+        await Assert.That(result.Value!.AwayTeam.Name).IsEqualTo("Chelsea");
     }
 
     [Test]

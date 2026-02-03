@@ -27,7 +27,7 @@ public sealed class JoinLeagueCommandHandlerTests : HandlerTestBase
     public void Setup()
     {
         Clock.Current = new FakeClock(_now);
-        
+
         // Mock ExecuteInTransactionAsync to execute the operation directly
         Context.ExecuteInTransactionAsync(Arg.Any<Func<CancellationToken, Task<Result>>>(), Arg.Any<IsolationLevel>(), Arg.Any<CancellationToken>())
             .Returns(async callInfo =>
@@ -127,7 +127,7 @@ public sealed class JoinLeagueCommandHandlerTests : HandlerTestBase
             .WithId(leagueId)
             .WithInviteCode(inviteCode)
             .Build();
-        
+
         // Set expired invite code
         league.RegenerateInviteCode(inviteCode, _now.AddDays(-1));
 
