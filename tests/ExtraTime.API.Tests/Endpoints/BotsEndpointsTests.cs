@@ -52,7 +52,6 @@ public sealed class BotsEndpointsTests : ApiTestBase
     }
 
     [Test]
-    [SkipOnGitHubActions]
 [SkipIfInMemory]
     public async Task GetLeagueBots_Authenticated_ReturnsOk()
     {
@@ -95,7 +94,6 @@ public sealed class BotsEndpointsTests : ApiTestBase
     }
 
     [Test]
-    [SkipOnGitHubActions]
 [SkipIfInMemory]
     public async Task AddBotToLeague_ValidBot_ReturnsOkOrNotFound()
     {
@@ -174,7 +172,6 @@ public sealed class BotsEndpointsTests : ApiTestBase
     }
 
     [Test]
-    [SkipOnGitHubActions]
 [SkipIfInMemory]
     public async Task RemoveBotFromLeague_BotNotFound_ReturnsBadRequest()
     {

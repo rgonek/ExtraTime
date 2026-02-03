@@ -130,7 +130,6 @@ public sealed class AdminEndpointsTests : ApiTestBase
     }
 
     [Test]
-    [SkipOnGitHubActions]
     public async Task GetJobs_WithPagination_ReturnsOkOrForbidden()
     {
         // Arrange - Regular user token (admin endpoints require Admin role)

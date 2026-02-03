@@ -8,6 +8,7 @@ public sealed class SkipIfInMemoryAttribute() : SkipAttribute("Skipping test in 
 {
     public override Task<bool> ShouldSkip(TestRegisteredContext context)
     {
-        return Task.FromResult(CustomWebApplicationFactory.UseInMemory);
+        var dbType = Environment.GetEnvironmentVariable("TEST_MODE");
+        return Task.FromResult(!string.Equals(dbType, "SqlServer", StringComparison.OrdinalIgnoreCase));
     }
 }

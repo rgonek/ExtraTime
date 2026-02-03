@@ -17,7 +17,6 @@ public sealed class RegenerateInviteCodeTests : IntegrationTestBase
 {
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task RegenerateInviteCode_GeneratesNewCode()
     {
         // Arrange
@@ -59,7 +58,6 @@ public sealed class RegenerateInviteCodeTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task RegenerateInviteCode_NotOwner_ReturnsForbidden()
     {
         // Arrange
@@ -104,7 +102,6 @@ public sealed class RegenerateInviteCodeTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task RegenerateInviteCode_OldCodeInvalid()
     {
         // Arrange

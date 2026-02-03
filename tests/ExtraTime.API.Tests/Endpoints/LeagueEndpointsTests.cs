@@ -40,7 +40,6 @@ public sealed class LeagueEndpointsTests : ApiTestBase
     }
 
     [Test]
-    [SkipOnGitHubActions]
     [SkipIfInMemory]
     public async Task JoinLeague_ValidCode_ReturnsOk()
     {

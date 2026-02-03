@@ -13,7 +13,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 {
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task LeagueConfiguration_TableName_IsCorrect()
     {
         // Act
@@ -26,7 +25,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task UserConfiguration_Email_HasUniqueIndex()
     {
         // Act
@@ -44,7 +42,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task UserConfiguration_Username_HasUniqueIndex()
     {
         // Act
@@ -62,7 +59,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task BetConfiguration_CompositeIndex_LeagueMatchUser()
     {
         // Act
@@ -83,7 +79,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task LeagueConfiguration_InviteCode_HasIndex()
     {
         // Act
@@ -101,7 +96,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task MatchConfiguration_Status_StoredAsString()
     {
         // Act
@@ -141,7 +135,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task BotConfiguration_Strategy_StoredAsString()
     {
         // Arrange
@@ -169,7 +162,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task ForeignKey_League_Owner_RestrictDelete()
     {
         // Arrange
@@ -201,7 +193,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task ForeignKey_Bet_League_CascadeDelete()
     {
         // Arrange
@@ -249,7 +240,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task AllConfigurations_HaveRequiredFields()
     {
         // This test verifies that all entity configurations properly enforce required fields

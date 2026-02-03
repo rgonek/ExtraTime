@@ -15,7 +15,6 @@ public sealed class CalculateBetResultsIntegrationTests : IntegrationTestBase
 {
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task Calculate_ExactMatch_AwardsExactPoints()
     {
         // Arrange
@@ -76,7 +75,6 @@ public sealed class CalculateBetResultsIntegrationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task Calculate_CorrectResult_AwardsResultPoints()
     {
         // Arrange
@@ -137,7 +135,6 @@ public sealed class CalculateBetResultsIntegrationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task Calculate_WrongResult_ZeroPoints()
     {
         // Arrange
@@ -198,7 +195,6 @@ public sealed class CalculateBetResultsIntegrationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task Calculate_CustomScoring_UsesLeagueRules()
     {
         // Arrange - Create two leagues with different scoring rules
@@ -277,7 +273,6 @@ public sealed class CalculateBetResultsIntegrationTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task Calculate_MultipleBets_AllProcessed()
     {
         // Arrange

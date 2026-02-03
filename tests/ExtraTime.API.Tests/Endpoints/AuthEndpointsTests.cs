@@ -30,7 +30,6 @@ public sealed class AuthEndpointsTests : ApiTestBase
     }
 
     [Test]
-    [SkipOnGitHubActions]
     [SkipIfInMemory]
     public async Task Login_ValidCredentials_ReturnsOk()
     {

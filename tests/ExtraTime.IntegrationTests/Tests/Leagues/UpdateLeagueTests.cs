@@ -16,7 +16,6 @@ public sealed class UpdateLeagueTests : IntegrationTestBase
 {
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task UpdateLeague_ValidData_UpdatesLeague()
     {
         // Arrange
@@ -74,7 +73,6 @@ public sealed class UpdateLeagueTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task UpdateLeague_NotOwner_ReturnsForbidden()
     {
         // Arrange
@@ -122,7 +120,6 @@ public sealed class UpdateLeagueTests : IntegrationTestBase
 
     [Test]
     [TestCategory(TestCategories.Significant)]
-    [SkipOnGitHubActions]
     public async Task UpdateLeague_InvalidName_ReturnsValidationError()
     {
         // Arrange
