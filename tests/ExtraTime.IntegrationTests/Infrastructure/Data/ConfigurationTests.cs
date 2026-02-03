@@ -169,7 +169,7 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [Test]
     [TestCategory(TestCategories.Significant)]
     [SkipOnGitHubActions]
-    public async Task ForeignKey_League_Owner_CascadeDelete()
+    public async Task ForeignKey_League_Owner_RestrictDelete()
     {
         // Arrange
         var user = new UserBuilder().Build();
@@ -181,30 +181,27 @@ public sealed class ConfigurationTests : IntegrationTestBase
         Context.Leagues.Add(league);
         await Context.SaveChangesAsync();
 
-        var leagueId = league.Id;
-
-        // Act - Delete the user (owner)
-        Context.Users.Remove(user);
-        await Context.SaveChangesAsync();
-
-        // Assert - Verify cascade behavior
-        // Since League has Restrict delete behavior on Owner, the league should still exist
-        var leagueExists = await Context.Leagues.AnyAsync(l => l.Id == leagueId);
-        await Assert.That(leagueExists).IsTrue();
-
-        // But the OwnerId foreign key relationship is restricted
+        // Act & Assert
+        // Verify the configuration in the model
         var entityType = Context.Model.FindEntityType(typeof(League));
         var ownerFk = entityType!.GetForeignKeys()
             .FirstOrDefault(fk => fk.PrincipalEntityType.ClrType == typeof(User));
 
         await Assert.That(ownerFk).IsNotNull();
         await Assert.That(ownerFk!.DeleteBehavior).IsEqualTo(DeleteBehavior.Restrict);
+
+        // Verify that trying to delete the owner throws an exception because of the restriction
+        await Assert.That(async () =>
+        {
+            Context.Users.Remove(user);
+            await Context.SaveChangesAsync();
+        }).Throws<InvalidOperationException>();
     }
 
     [Test]
     [TestCategory(TestCategories.Significant)]
     [SkipOnGitHubActions]
-    public async Task ForeignKey_Bet_League_RestrictDelete()
+    public async Task ForeignKey_Bet_League_CascadeDelete()
     {
         // Arrange
         var user = new UserBuilder().Build();
@@ -237,9 +234,16 @@ public sealed class ConfigurationTests : IntegrationTestBase
         var leagueFk = entityType!.GetForeignKeys()
             .FirstOrDefault(fk => fk.Properties.Any(p => p.Name == "LeagueId"));
 
-        // Assert
+        // Assert - Verify it is configured as Cascade
         await Assert.That(leagueFk).IsNotNull();
         await Assert.That(leagueFk!.DeleteBehavior).IsEqualTo(DeleteBehavior.Cascade);
+        
+        // Verify it actually works in DB
+        Context.Leagues.Remove(league);
+        await Context.SaveChangesAsync();
+        
+        var betExists = await Context.Bets.AnyAsync(b => b.Id == bet.Id);
+        await Assert.That(betExists).IsFalse();
     }
 
     [Test]
