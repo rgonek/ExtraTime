@@ -53,10 +53,9 @@ public sealed class BotsEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task GetLeagueBots_Authenticated_ReturnsOk()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league
         var token = await GetAuthTokenAsync("leaguebotuser@example.com");
         SetAuthHeader(token);
@@ -97,10 +96,9 @@ public sealed class BotsEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task AddBotToLeague_ValidBot_ReturnsOkOrNotFound()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league and get bot
         var token = await GetAuthTokenAsync("addbotuser@example.com");
         SetAuthHeader(token);
@@ -177,10 +175,9 @@ public sealed class BotsEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task RemoveBotFromLeague_BotNotFound_ReturnsBadRequest()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league
         var token = await GetAuthTokenAsync("removebotuser@example.com");
         SetAuthHeader(token);

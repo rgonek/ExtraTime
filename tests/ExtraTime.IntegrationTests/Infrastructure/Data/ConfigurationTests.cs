@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace ExtraTime.IntegrationTests.Infrastructure.Data;
 
+[SkipIfInMemory]
 public sealed class ConfigurationTests : IntegrationTestBase
 {
     [Test]
@@ -15,8 +16,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task LeagueConfiguration_TableName_IsCorrect()
     {
-        if (IsInMemory) return;
-
         // Act
         var entityType = Context.Model.FindEntityType(typeof(League));
 
@@ -30,8 +29,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task UserConfiguration_Email_HasUniqueIndex()
     {
-        if (IsInMemory) return;
-
         // Act
         var entityType = Context.Model.FindEntityType(typeof(User));
         var emailProperty = entityType!.FindProperty("Email");
@@ -50,8 +47,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task UserConfiguration_Username_HasUniqueIndex()
     {
-        if (IsInMemory) return;
-
         // Act
         var entityType = Context.Model.FindEntityType(typeof(User));
         var usernameProperty = entityType!.FindProperty("Username");
@@ -70,8 +65,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task BetConfiguration_CompositeIndex_LeagueMatchUser()
     {
-        if (IsInMemory) return;
-
         // Act
         var entityType = Context.Model.FindEntityType(typeof(Bet));
         var indexes = entityType!.GetIndexes().ToList();
@@ -93,8 +86,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task LeagueConfiguration_InviteCode_HasIndex()
     {
-        if (IsInMemory) return;
-
         // Act
         var entityType = Context.Model.FindEntityType(typeof(League));
         var inviteCodeProperty = entityType!.FindProperty("InviteCode");
@@ -113,8 +104,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task MatchConfiguration_Status_StoredAsString()
     {
-        if (IsInMemory) return;
-
         // Act
         var entityType = Context.Model.FindEntityType(typeof(Match));
         var statusProperty = entityType!.FindProperty("Status");
@@ -155,8 +144,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task BotConfiguration_Strategy_StoredAsString()
     {
-        if (IsInMemory) return;
-
         // Arrange
         var user = new UserBuilder().Build();
         Context.Users.Add(user);
@@ -185,8 +172,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task ForeignKey_League_Owner_RestrictDelete()
     {
-        if (IsInMemory) return;
-
         // Arrange
         var user = new UserBuilder().Build();
         Context.Users.Add(user);
@@ -219,8 +204,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task ForeignKey_Bet_League_CascadeDelete()
     {
-        if (IsInMemory) return;
-
         // Arrange
         var user = new UserBuilder().Build();
         Context.Users.Add(user);
@@ -269,8 +252,6 @@ public sealed class ConfigurationTests : IntegrationTestBase
     [SkipOnGitHubActions]
     public async Task AllConfigurations_HaveRequiredFields()
     {
-        if (IsInMemory) return;
-
         // This test verifies that all entity configurations properly enforce required fields
 
         // Arrange & Act - Test User required fields

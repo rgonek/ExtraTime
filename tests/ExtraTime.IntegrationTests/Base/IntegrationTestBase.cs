@@ -16,8 +16,6 @@ public abstract class IntegrationTestBase : IAsyncDisposable
     protected ICurrentUserService CurrentUserService { get; private set; } = null!;
     protected IMediator Mediator { get; private set; } = null!;
 
-    protected bool IsInMemory => Context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory";
-
     [Before(Test)]
     public async Task SetupAsync()
     {

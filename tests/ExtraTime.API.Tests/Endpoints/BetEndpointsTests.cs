@@ -26,10 +26,9 @@ public sealed class BetEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task PlaceBet_ValidData_ReturnsCreated()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league and get auth token
         var token = await GetAuthTokenAsync("betuser1@example.com");
         SetAuthHeader(token);
@@ -163,10 +162,9 @@ public sealed class BetEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task DeleteBet_NotFound_ReturnsNotFound()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league
         var token = await GetAuthTokenAsync("deletebetuser@example.com");
         SetAuthHeader(token);
@@ -219,10 +217,9 @@ public sealed class BetEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task GetMyBets_Authenticated_ReturnsOk()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league and join
         var token = await GetAuthTokenAsync("mybetsuser@example.com");
         SetAuthHeader(token);
@@ -295,10 +292,9 @@ public sealed class BetEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task GetMatchBets_InvalidMatch_ReturnsNotFound()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league
         var token = await GetAuthTokenAsync("matchbetsuser@example.com");
         SetAuthHeader(token);
@@ -368,10 +364,9 @@ public sealed class BetEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task GetLeagueStandings_Authenticated_ReturnsOk()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league
         var token = await GetAuthTokenAsync("standingsuser@example.com");
         SetAuthHeader(token);
@@ -444,10 +439,9 @@ public sealed class BetEndpointsTests : ApiTestBase
 
     [Test]
     [SkipOnGitHubActions]
+[SkipIfInMemory]
     public async Task GetUserStats_InvalidUser_ReturnsNotFound()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league
         var token = await GetAuthTokenAsync("userstatsuser@example.com");
         SetAuthHeader(token);
