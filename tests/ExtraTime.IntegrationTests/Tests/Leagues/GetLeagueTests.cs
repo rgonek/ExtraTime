@@ -37,7 +37,7 @@ public sealed class GetLeagueTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
-        
+
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).Build();
 
@@ -71,7 +71,7 @@ public sealed class GetLeagueTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).WithUsername("member1").Build();
-        
+
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).WithUsername("leagueowner").Build();
 
@@ -136,10 +136,10 @@ public sealed class GetLeagueTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).WithUsername("member1").Build();
-        
+
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).WithUsername("owner").Build();
-        
+
         var member2Id = Guid.NewGuid();
         var member2 = new UserBuilder().WithId(member2Id).WithUsername("member2").Build();
 
@@ -198,7 +198,7 @@ public sealed class GetLeagueTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
-        
+
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).Build();
 
@@ -247,7 +247,7 @@ public sealed class GetLeagueTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
-        
+
         var ownerId = Guid.NewGuid();
         var owner = new UserBuilder().WithId(ownerId).Build();
 

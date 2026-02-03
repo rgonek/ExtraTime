@@ -169,7 +169,7 @@ public sealed class LeagueStandingTests
         // Arrange
         var standing = LeagueStanding.Create(Guid.NewGuid(), Guid.NewGuid());
         var originalUpdateTime = standing.LastUpdatedAt;
-        
+
         // Wait a tiny bit to ensure different timestamp
         await Task.Delay(10);
 
@@ -186,7 +186,7 @@ public sealed class LeagueStandingTests
         // Arrange
         var standing = LeagueStanding.Create(Guid.NewGuid(), Guid.NewGuid());
         var originalUpdateTime = standing.LastUpdatedAt;
-        
+
         // Wait a tiny bit to ensure different timestamp
         await Task.Delay(10);
 

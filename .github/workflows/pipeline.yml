@@ -98,6 +98,8 @@ jobs:
       - name: Run API Tests
         run: |
           dotnet test tests/ExtraTime.API.Tests/ExtraTime.API.Tests.csproj --configuration Release
+        env:
+          TEST_MODE: SqlServer # Triggers Testcontainers SqlServer mode
 
   # ============================================
   # STAGE 3: Deployment

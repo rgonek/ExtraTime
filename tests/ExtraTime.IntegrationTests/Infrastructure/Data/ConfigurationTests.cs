@@ -229,11 +229,11 @@ public sealed class ConfigurationTests : IntegrationTestBase
         // Assert - Verify it is configured as Cascade
         await Assert.That(leagueFk).IsNotNull();
         await Assert.That(leagueFk!.DeleteBehavior).IsEqualTo(DeleteBehavior.Cascade);
-        
+
         // Verify it actually works in DB
         Context.Leagues.Remove(league);
         await Context.SaveChangesAsync();
-        
+
         var betExists = await Context.Bets.AnyAsync(b => b.Id == bet.Id);
         await Assert.That(betExists).IsFalse();
     }

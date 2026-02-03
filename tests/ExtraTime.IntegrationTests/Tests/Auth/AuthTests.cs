@@ -55,10 +55,10 @@ public sealed class AuthTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.AccessToken).IsNotNullOrEmpty();
-        await Assert.That(result.Value.RefreshToken).IsNotNullOrEmpty();
-        await Assert.That(result.Value.User.Email).IsEqualTo(email.ToLowerInvariant());
-        await Assert.That(result.Value.User.Username).IsEqualTo(username);
+        await Assert.That(result.Value!.AccessToken).IsNotNullOrEmpty();
+        await Assert.That(result.Value!.RefreshToken).IsNotNullOrEmpty();
+        await Assert.That(result.Value!.User.Email).IsEqualTo(email.ToLowerInvariant());
+        await Assert.That(result.Value!.User.Username).IsEqualTo(username);
 
         // Verify user was persisted
         var user = await Context.Users
@@ -162,7 +162,7 @@ public sealed class AuthTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.User.Email).IsEqualTo(email);
+        await Assert.That(result.Value!.User.Email).IsEqualTo(email);
     }
 
     [Test]
@@ -223,7 +223,7 @@ public sealed class AuthTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.User.Email).IsEqualTo(lowerEmail);
+        await Assert.That(result.Value!.User.Email).IsEqualTo(lowerEmail);
     }
 
     //
@@ -254,17 +254,17 @@ public sealed class AuthTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.AccessToken).IsNotNullOrEmpty();
-        await Assert.That(result.Value.RefreshToken).IsNotNullOrEmpty();
-        await Assert.That(result.Value.RefreshToken).IsNotEqualTo(refreshToken.Token); // New token generated
+        await Assert.That(result.Value!.AccessToken).IsNotNullOrEmpty();
+        await Assert.That(result.Value!.RefreshToken).IsNotNullOrEmpty();
+        await Assert.That(result.Value!.RefreshToken).IsNotEqualTo(refreshToken.Token); // New token generated
 
         // Verify old token is revoked
         var oldToken = await Context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken.Token);
         await Assert.That(oldToken!.RevokedAt).IsNotNull();
-        await Assert.That(oldToken.ReplacedByToken).IsEqualTo(result.Value.RefreshToken);
+        await Assert.That(oldToken.ReplacedByToken).IsEqualTo(result.Value!.RefreshToken);
 
         // Verify new token exists
-        var newToken = await Context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == result.Value.RefreshToken);
+        var newToken = await Context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == result.Value!.RefreshToken);
         await Assert.That(newToken).IsNotNull();
         await Assert.That(newToken!.UserId).IsEqualTo(user.Id);
     }
@@ -384,9 +384,9 @@ public sealed class AuthTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.Id).IsEqualTo(userId);
-        await Assert.That(result.Value.Email).IsEqualTo("test@example.com");
-        await Assert.That(result.Value.Username).IsEqualTo("testuser");
-        await Assert.That(result.Value.Role).IsEqualTo(UserRole.User);
+        await Assert.That(result.Value!.Email).IsEqualTo("test@example.com");
+        await Assert.That(result.Value!.Username).IsEqualTo("testuser");
+        await Assert.That(result.Value!.Role).IsEqualTo(UserRole.User);
     }
 
     [Test]

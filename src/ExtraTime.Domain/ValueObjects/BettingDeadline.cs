@@ -8,7 +8,7 @@ public sealed record BettingDeadline
     {
         if (minutesBeforeMatch < 0)
             throw new ArgumentException("Betting deadline cannot be negative", nameof(minutesBeforeMatch));
-        
+
         MinutesBeforeMatch = minutesBeforeMatch;
     }
 

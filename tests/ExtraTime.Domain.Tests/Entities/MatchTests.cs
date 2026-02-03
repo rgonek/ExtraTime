@@ -23,7 +23,7 @@ public sealed class MatchTests
     {
         // Arrange
         var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Scheduled);
-        
+
         // Act
         match.UpdateStatus(MatchStatus.InPlay);
 
@@ -109,7 +109,7 @@ public sealed class MatchTests
     {
         // Arrange
         var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Scheduled);
-        
+
         // Act
         match.UpdateMetadata(5, "Quarter Final", "Group A", "Old Trafford");
 
@@ -126,7 +126,7 @@ public sealed class MatchTests
         // Arrange
         var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Scheduled);
         match.UpdateMetadata(5, "Stage", "Group", "Venue");
-        
+
         // Act
         match.UpdateMetadata(null, null, null, null);
 
@@ -143,7 +143,7 @@ public sealed class MatchTests
         // Arrange
         var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Scheduled);
         var newDate = Clock.UtcNow.AddDays(1);
-        
+
         // Act
         match.SyncDetails(newDate, MatchStatus.InPlay, 1, 0);
 

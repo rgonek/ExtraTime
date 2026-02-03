@@ -49,7 +49,7 @@ public sealed class LoginCommandHandlerTests : HandlerTestBase
         var users = new List<User> { user }.AsQueryable();
         var mockUsers = CreateMockDbSet(users);
         Context.Users.Returns(mockUsers);
-        
+
         var mockTokens = CreateMockDbSet(new List<RefreshToken>().AsQueryable());
         Context.RefreshTokens.Returns(mockTokens);
 

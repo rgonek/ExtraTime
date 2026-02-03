@@ -8,7 +8,7 @@ public sealed record Score
     {
         if (value < 0)
             throw new ArgumentException("Score cannot be negative", nameof(value));
-        
+
         Value = value;
     }
 

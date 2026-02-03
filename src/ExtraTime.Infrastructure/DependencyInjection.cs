@@ -39,7 +39,7 @@ public static class DependencyInjection
             {
                 var connectionString = configuration.GetConnectionString("extratime");
                 services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(connectionString, sqlOptions => 
+                    options.UseSqlServer(connectionString, sqlOptions =>
                     {
                         sqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
                         sqlOptions.EnableRetryOnFailure(

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Clock, Trophy, ChevronDown, Timer } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -236,9 +237,12 @@ function TeamRow({
       {/* Team crest */}
       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shadow-sm ring-1 ring-border/50">
         {crest ? (
-          <img
+          <Image
             src={crest}
             alt=""
+            width={24}
+            height={24}
+            unoptimized
             className="w-6 h-6 object-contain"
           />
         ) : (

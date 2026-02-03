@@ -23,14 +23,14 @@ public sealed class CreateLeagueTests : IntegrationTestBase
         var handler = new CreateLeagueCommandHandler(Context, CurrentUserService, inviteCodeGenerator);
 
         var command = new CreateLeagueCommand(
-            "Integration League", 
-            "Test description", 
-            false, 
-            50, 
-            3, 
-            1, 
-            5, 
-            null, 
+            "Integration League",
+            "Test description",
+            false,
+            50,
+            3,
+            1,
+            5,
+            null,
             null);
 
         // Act
@@ -38,16 +38,16 @@ public sealed class CreateLeagueTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        
+
         var league = await Context.Leagues
             .FirstOrDefaultAsync(l => l.Name == "Integration League");
-        
+
         await Assert.That(league).IsNotNull();
         await Assert.That(league!.OwnerId).IsEqualTo(userId);
-        
+
         var membership = await Context.LeagueMembers
             .FirstOrDefaultAsync(m => m.LeagueId == league.Id && m.UserId == userId);
-        
+
         await Assert.That(membership).IsNotNull();
         await Assert.That(membership!.Role).IsEqualTo(ExtraTime.Domain.Enums.MemberRole.Owner);
     }

@@ -5,12 +5,10 @@ namespace ExtraTime.IntegrationTests.Fixtures;
 public class SharedContainerFixture : IAsyncDisposable
 {
     private readonly MsSqlContainer _container;
-    
+
     public SharedContainerFixture()
     {
-        // Using constructor with image as recommended
-        _container = new MsSqlBuilder()
-            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+        _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
             .Build();
     }
 

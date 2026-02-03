@@ -28,7 +28,7 @@ public sealed class BotTests : IntegrationTestBase
             .WithEmail($"bot_{shortGuid}@extratime.local")
             .WithUsername($"{name}_{shortGuid}")
             .Build();
-        
+
         var bot = new BotBuilder()
             .WithUserId(botUserId)
             .WithName(name)
@@ -61,12 +61,12 @@ public sealed class BotTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
-        await Assert.That(result.Value.Name).IsEqualTo("TestBot");
+        await Assert.That(result.Value!.Name).IsEqualTo("TestBot");
 
         // Verify bot persisted to database
         var bot = await Context.Bots.FirstOrDefaultAsync(b => b.Name == "TestBot");
         await Assert.That(bot).IsNotNull();
-        
+
         // Verify associated user created
         var user = await Context.Users.FirstOrDefaultAsync(u => u.Id == bot!.UserId);
         await Assert.That(user).IsNotNull();
@@ -86,7 +86,7 @@ public sealed class BotTests : IntegrationTestBase
             null,
             BotStrategy.HomeFavorer,
             null);
-        
+
         await handler.Handle(firstCommand, default);
 
         // Act - Try to create second bot with same name
@@ -95,7 +95,7 @@ public sealed class BotTests : IntegrationTestBase
             null,
             BotStrategy.Random,
             null);
-        
+
         var result = await handler.Handle(secondCommand, default);
 
         // Assert
@@ -127,7 +127,7 @@ public sealed class BotTests : IntegrationTestBase
                 null,
                 strategy,
                 strategy == BotStrategy.StatsAnalyst ? "{\"formWeight\":0.4}" : null);
-            
+
             var result = await handler.Handle(command, default);
 
             // Assert
@@ -522,9 +522,9 @@ public sealed class BotTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Count).IsEqualTo(3);
-        await Assert.That(result.Value.Any(b => b.Name == "RandomBot")).IsTrue();
-        await Assert.That(result.Value.Any(b => b.Name == "HomeFavorerBot")).IsTrue();
-        await Assert.That(result.Value.Any(b => b.Name == "DrawPredictorBot")).IsTrue();
+        await Assert.That(result.Value!.Any(b => b.Name == "RandomBot")).IsTrue();
+        await Assert.That(result.Value!.Any(b => b.Name == "HomeFavorerBot")).IsTrue();
+        await Assert.That(result.Value!.Any(b => b.Name == "DrawPredictorBot")).IsTrue();
     }
 
     [Test]
@@ -672,10 +672,10 @@ public sealed class BotTests : IntegrationTestBase
     {
         // Arrange
         var botService = new BotBettingService(
-            Context, 
-            new BotStrategyFactory(Substitute.For<IServiceProvider>()), 
-            Substitute.For<ITeamFormCalculator>(), 
-            TimeProvider.System, 
+            Context,
+            new BotStrategyFactory(Substitute.For<IServiceProvider>()),
+            Substitute.For<ITeamFormCalculator>(),
+            TimeProvider.System,
             Substitute.For<Microsoft.Extensions.Logging.ILogger<BotBettingService>>());
 
         var handler = new PlaceBotBetsCommandHandler(botService);

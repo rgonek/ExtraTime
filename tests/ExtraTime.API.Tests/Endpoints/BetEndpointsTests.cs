@@ -25,7 +25,7 @@ public sealed class BetEndpointsTests : ApiTestBase
     }
 
     [Test]
-[SkipIfInMemory]
+    [SkipIfInMemory]
     public async Task PlaceBet_ValidData_ReturnsCreated()
     {
         // Arrange - Create league and get auth token
@@ -160,7 +160,7 @@ public sealed class BetEndpointsTests : ApiTestBase
     }
 
     [Test]
-[SkipIfInMemory]
+    [SkipIfInMemory]
     public async Task DeleteBet_NotFound_ReturnsNotFound()
     {
         // Arrange - Create league
@@ -214,7 +214,7 @@ public sealed class BetEndpointsTests : ApiTestBase
     }
 
     [Test]
-[SkipIfInMemory]
+    [SkipIfInMemory]
     public async Task GetMyBets_Authenticated_ReturnsOk()
     {
         // Arrange - Create league and join
@@ -288,7 +288,7 @@ public sealed class BetEndpointsTests : ApiTestBase
     }
 
     [Test]
-[SkipIfInMemory]
+    [SkipIfInMemory]
     public async Task GetMatchBets_InvalidMatch_ReturnsNotFound()
     {
         // Arrange - Create league
@@ -359,7 +359,7 @@ public sealed class BetEndpointsTests : ApiTestBase
     }
 
     [Test]
-[SkipIfInMemory]
+    [SkipIfInMemory]
     public async Task GetLeagueStandings_Authenticated_ReturnsOk()
     {
         // Arrange - Create league
@@ -433,7 +433,7 @@ public sealed class BetEndpointsTests : ApiTestBase
     }
 
     [Test]
-[SkipIfInMemory]
+    [SkipIfInMemory]
     public async Task GetUserStats_InvalidUser_ReturnsNotFound()
     {
         // Arrange - Create league

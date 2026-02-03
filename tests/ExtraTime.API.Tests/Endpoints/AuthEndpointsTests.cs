@@ -24,7 +24,7 @@ public sealed class AuthEndpointsTests : ApiTestBase
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        
+
         var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
         await Assert.That(result!.AccessToken).IsNotNull();
     }
@@ -61,7 +61,7 @@ public sealed class AuthEndpointsTests : ApiTestBase
 
         // Assert
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.OK);
-        
+
         var result = await response.Content.ReadFromJsonAsync<UserDto>();
         await Assert.That(result!.Email).IsEqualTo("me@example.com");
     }

@@ -6,7 +6,7 @@ namespace ExtraTime.IntegrationTests;
 public static class TestConfig
 {
     public static SharedContainerFixture? SqlContainer { get; private set; }
-    
+
     // Default to InMemory if not specified
     public static bool UseSqlServer => Environment.GetEnvironmentVariable("TEST_MODE") == "SqlServer";
 
@@ -35,7 +35,7 @@ public static class TestConfig
         {
             return new SqlServerTestDatabase(SqlContainer.ConnectionString);
         }
-        
+
         return new InMemoryTestDatabase();
     }
 }

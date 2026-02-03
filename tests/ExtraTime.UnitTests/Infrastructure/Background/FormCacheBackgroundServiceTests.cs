@@ -56,7 +56,7 @@ public sealed class FormCacheBackgroundServiceTests
 
         // Act
         await service.StartAsync(cts.Token);
-        await Task.Delay(200); 
+        await Task.Delay(200);
         await service.StopAsync(cts.Token);
 
         // Assert

@@ -34,10 +34,11 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
 builder.AddProject<Projects.ExtraTime_Functions>("func-sync-matches")
     .WithReference(database)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
-    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true") 
+    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
     .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
     .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithCommand("sync-now", "Sync Matches", async _ => {
+    .WithCommand("sync-now", "Sync Matches", async _ =>
+    {
         // Trigger logic would go here
         return new ExecuteCommandResult { Success = true };
     })
@@ -48,7 +49,8 @@ builder.AddProject<Projects.ExtraTime_Functions>("func-calculate-bets")
     .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
     .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
     .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithCommand("calculate-now", "Calculate Bets", async _ => {
+    .WithCommand("calculate-now", "Calculate Bets", async _ =>
+    {
         return new ExecuteCommandResult { Success = true };
     })
     .WaitForCompletion(migrations);
@@ -58,7 +60,8 @@ builder.AddProject<Projects.ExtraTime_Functions>("func-bot-betting")
     .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
     .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
     .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
-    .WithCommand("bots-now", "Run Bots", async _ => {
+    .WithCommand("bots-now", "Run Bots", async _ =>
+    {
         return new ExecuteCommandResult { Success = true };
     })
     .WaitForCompletion(migrations);

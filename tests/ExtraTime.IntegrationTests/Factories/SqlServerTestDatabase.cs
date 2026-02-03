@@ -18,7 +18,7 @@ public class SqlServerTestDatabase : ITestDatabase
     {
         _masterConnectionString = masterConnectionString;
         _dbName = $"DB_{Guid.NewGuid():N}"; // valid sql identifier
-        
+
         var builder = new SqlConnectionStringBuilder(_masterConnectionString)
         {
             InitialCatalog = _dbName
@@ -67,7 +67,7 @@ public class SqlServerTestDatabase : ITestDatabase
 
         // Drop Database to clean up
         // Note: Use master connection to drop
-        try 
+        try
         {
             SqlConnection.ClearAllPools(); // Important to release locks
             await using var conn = new SqlConnection(_masterConnectionString);

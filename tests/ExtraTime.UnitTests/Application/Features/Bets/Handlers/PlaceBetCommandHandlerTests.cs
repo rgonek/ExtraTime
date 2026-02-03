@@ -48,15 +48,15 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
 
         var mockLeagues = CreateMockDbSet(new List<League> { league }.AsQueryable());
         Context.Leagues.Returns(mockLeagues);
-        
-        var mockMembers = CreateMockDbSet(new List<LeagueMember> { 
-            new LeagueMemberBuilder().WithLeagueId(league.Id).WithUserId(userId).Build() 
+
+        var mockMembers = CreateMockDbSet(new List<LeagueMember> {
+            new LeagueMemberBuilder().WithLeagueId(league.Id).WithUserId(userId).Build()
         }.AsQueryable());
         Context.LeagueMembers.Returns(mockMembers);
-        
+
         var mockMatches = CreateMockDbSet(new List<Match> { match }.AsQueryable());
         Context.Matches.Returns(mockMatches);
-        
+
         var mockBets = CreateMockDbSet(new List<Bet>().AsQueryable());
         Context.Bets.Returns(mockBets);
 
@@ -65,9 +65,9 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        Context.Bets.Received(1).Add(Arg.Is<Bet>(b => 
-            b.LeagueId == league.Id && 
-            b.UserId == userId && 
+        Context.Bets.Received(1).Add(Arg.Is<Bet>(b =>
+            b.LeagueId == league.Id &&
+            b.UserId == userId &&
             b.MatchId == match.Id &&
             b.PredictedHomeScore == 2));
         await Context.Received(1).SaveChangesAsync(CancellationToken);
@@ -91,12 +91,12 @@ public sealed class PlaceBetCommandHandlerTests : HandlerTestBase
 
         var mockLeagues = CreateMockDbSet(new List<League> { league }.AsQueryable());
         Context.Leagues.Returns(mockLeagues);
-        
-        var mockMembers = CreateMockDbSet(new List<LeagueMember> { 
-            new LeagueMemberBuilder().WithLeagueId(league.Id).WithUserId(userId).Build() 
+
+        var mockMembers = CreateMockDbSet(new List<LeagueMember> {
+            new LeagueMemberBuilder().WithLeagueId(league.Id).WithUserId(userId).Build()
         }.AsQueryable());
         Context.LeagueMembers.Returns(mockMembers);
-        
+
         var mockMatches = CreateMockDbSet(new List<Match> { match }.AsQueryable());
         Context.Matches.Returns(mockMatches);
 

@@ -36,11 +36,11 @@ public sealed class BetLifecycleTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
-        
+
         var competition = new CompetitionBuilder().Build();
         var homeTeam = new TeamBuilder().Build();
         var awayTeam = new TeamBuilder().Build();
-        
+
         var league = new LeagueBuilder()
             .WithOwnerId(userId)
             .Build();
@@ -70,8 +70,8 @@ public sealed class BetLifecycleTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.PredictedHomeScore).IsEqualTo(2);
-        await Assert.That(result.Value.PredictedAwayScore).IsEqualTo(1);
+        await Assert.That(result.Value!.PredictedHomeScore).IsEqualTo(2);
+        await Assert.That(result.Value!.PredictedAwayScore).IsEqualTo(1);
 
         var bet = await Context.Bets
             .FirstOrDefaultAsync(b => b.LeagueId == league.Id && b.UserId == userId && b.MatchId == match.Id);
@@ -177,11 +177,11 @@ public sealed class BetLifecycleTests : IntegrationTestBase
         // Arrange
         var userId = Guid.NewGuid();
         var user = new UserBuilder().WithId(userId).Build();
-        
+
         var competition = new CompetitionBuilder().Build();
         var homeTeam = new TeamBuilder().Build();
         var awayTeam = new TeamBuilder().Build();
-        
+
         var league = new LeagueBuilder()
             .WithOwnerId(userId)
             .Build();
@@ -216,8 +216,8 @@ public sealed class BetLifecycleTests : IntegrationTestBase
 
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value.PredictedHomeScore).IsEqualTo(2);
-        await Assert.That(result.Value.PredictedAwayScore).IsEqualTo(1);
+        await Assert.That(result.Value!.PredictedHomeScore).IsEqualTo(2);
+        await Assert.That(result.Value!.PredictedAwayScore).IsEqualTo(1);
 
         var updatedBet = await Context.Bets.FindAsync(existingBet.Id);
         await Assert.That(updatedBet!.PredictedHomeScore).IsEqualTo(2);

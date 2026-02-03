@@ -116,7 +116,7 @@ public sealed class CompetitionTests
     {
         // Arrange
         var competition = Competition.Create(2021, "Old Name", "OLD", "Old Country", "https://old.com/logo.png");
-        
+
         // Act
         competition.UpdateDetails("New Name", "NEW", "New Country", "https://new.com/logo.png");
 
@@ -132,7 +132,7 @@ public sealed class CompetitionTests
     {
         // Arrange
         var competition = Competition.Create(2021, "Name", "CODE", "Country", "https://logo.png");
-        
+
         // Act
         competition.UpdateDetails("New Name", "NEW", "New Country", null);
 
@@ -146,7 +146,7 @@ public sealed class CompetitionTests
         // Arrange
         var competition = Competition.Create(2021, "Name", "CODE", "Country");
         var originalSyncTime = competition.LastSyncedAt;
-        
+
         await Task.Delay(10);
 
         // Act
@@ -196,7 +196,7 @@ public sealed class CompetitionTests
         // Arrange
         var competition = Competition.Create(2021, "Name", "CODE", "Country");
         var originalSyncTime = competition.LastSyncedAt;
-        
+
         await Task.Delay(10);
 
         // Act

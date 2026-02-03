@@ -78,7 +78,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
-        await Assert.That(result.Value.Count).IsEqualTo(2);
+        await Assert.That(result.Value!.Count).IsEqualTo(2);
     }
 
     [Test]
@@ -136,7 +136,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         // Assert - Before deadline, bets should not be visible (returns 0)
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
-        await Assert.That(result.Value.Count).IsEqualTo(0);
+        await Assert.That(result.Value!.Count).IsEqualTo(0);
     }
 
     [Test]
@@ -289,7 +289,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
-        await Assert.That(result.Value.Count).IsEqualTo(0);
+        await Assert.That(result.Value!.Count).IsEqualTo(0);
     }
 
     [Test]
@@ -351,7 +351,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
-        await Assert.That(result.Value.Count).IsEqualTo(1);
+        await Assert.That(result.Value!.Count).IsEqualTo(1);
         await Assert.That(result.Value[0].Result).IsNotNull();
         await Assert.That(result.Value[0].Result!.PointsEarned).IsEqualTo(5);
         await Assert.That(result.Value[0].Result!.IsExactMatch).IsTrue();
@@ -418,7 +418,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.Count).IsEqualTo(1);
-        
+
         var myBet = result.Value[0];
         await Assert.That(myBet.BetId).IsEqualTo(bet.Id);
         await Assert.That(myBet.MatchId).IsEqualTo(match.Id);
@@ -552,7 +552,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Count).IsEqualTo(3);
-        
+
         // Should be ordered by MatchDateUtc descending (latest first)
         await Assert.That(result.Value[0].MatchId).IsEqualTo(match2.Id); // +2 days
         await Assert.That(result.Value[1].MatchId).IsEqualTo(match1.Id); // +1 day
@@ -608,7 +608,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.Count).IsEqualTo(1);
-        
+
         var myBet = result.Value[0];
         await Assert.That(myBet.Result).IsNotNull();
         await Assert.That(myBet.Result!.PointsEarned).IsEqualTo(3);
@@ -696,7 +696,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         var trackedLeague = await Context.Leagues.Include(l => l.Members).FirstAsync(l => l.Id == league.Id);
         trackedLeague.AddMember(targetUserId, MemberRole.Member);
         await Context.SaveChangesAsync();
-        
+
         // Create standing for target user
         var standing = LeagueStanding.Create(league.Id, targetUserId);
         standing.ApplyBetResult(5, true, true);  // Exact match
@@ -720,10 +720,10 @@ public sealed class BetQueryTests : IntegrationTestBase
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsNotNull();
         await Assert.That(result.Value!.UserId).IsEqualTo(targetUserId);
-        await Assert.That(result.Value.TotalPoints).IsEqualTo(8);
-        await Assert.That(result.Value.BetsPlaced).IsEqualTo(3);
-        await Assert.That(result.Value.ExactMatches).IsEqualTo(1);
-        await Assert.That(result.Value.CorrectResults).IsEqualTo(2);
+        await Assert.That(result.Value!.TotalPoints).IsEqualTo(8);
+        await Assert.That(result.Value!.BetsPlaced).IsEqualTo(3);
+        await Assert.That(result.Value!.ExactMatches).IsEqualTo(1);
+        await Assert.That(result.Value!.CorrectResults).IsEqualTo(2);
     }
 
     [Test]
@@ -843,7 +843,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value!.TotalPoints).IsEqualTo(10);
-        await Assert.That(result.Value.Rank).IsEqualTo(1);
+        await Assert.That(result.Value!.Rank).IsEqualTo(1);
     }
 
     //
@@ -875,7 +875,7 @@ public sealed class BetQueryTests : IntegrationTestBase
 
         var userStanding = LeagueStanding.Create(league.Id, userId);
         userStanding.ApplyBetResult(5, true, true);
-        userStanding.ApplyBetResult(3, true, false); 
+        userStanding.ApplyBetResult(3, true, false);
         Context.LeagueStandings.Add(userStanding);
 
         var member2Standing = LeagueStanding.Create(league.Id, member2Id);
@@ -1057,7 +1057,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         var result = await handler.Handle(query, default);
 
         // Assert - user2 should be higher rank
-        await Assert.That(result.Value[0].UserId).IsEqualTo(user2Id);
+        await Assert.That(result.Value![0].UserId).IsEqualTo(user2Id);
         await Assert.That(result.Value[1].UserId).IsEqualTo(user1Id);
     }
 
@@ -1104,7 +1104,7 @@ public sealed class BetQueryTests : IntegrationTestBase
         var result = await handler.Handle(query, default);
 
         // Assert - user1 should be higher rank (fewer bets)
-        await Assert.That(result.Value[0].UserId).IsEqualTo(user1Id);
+        await Assert.That(result.Value![0].UserId).IsEqualTo(user1Id);
         await Assert.That(result.Value[1].UserId).IsEqualTo(user2Id);
     }
 }

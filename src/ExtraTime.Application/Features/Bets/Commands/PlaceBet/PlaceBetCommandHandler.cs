@@ -81,7 +81,7 @@ public sealed class PlaceBetCommandHandler(
                 request.MatchId,
                 request.PredictedHomeScore,
                 request.PredictedAwayScore);
-            
+
             context.Bets.Add(existingBet);
         }
         else

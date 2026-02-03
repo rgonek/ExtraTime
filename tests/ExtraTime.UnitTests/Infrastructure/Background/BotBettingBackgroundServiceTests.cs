@@ -51,12 +51,12 @@ public sealed class BotBettingBackgroundServiceTests
         // Arrange
         var service = GetService();
         using var cts = new CancellationTokenSource();
-        
+
         _botService.PlaceBetsForUpcomingMatchesAsync(Arg.Any<CancellationToken>()).Returns(5);
 
         // Act
         await service.StartAsync(cts.Token);
-        await Task.Delay(200); 
+        await Task.Delay(200);
         await service.StopAsync(cts.Token);
 
         // Assert
