@@ -11,6 +11,7 @@ public sealed class CompetitionTeamConfiguration : IEntityTypeConfiguration<Comp
         builder.ToTable("CompetitionTeams");
 
         builder.HasKey(ct => ct.Id);
+        builder.Property(ct => ct.Id).ValueGeneratedNever();
 
         builder.Property(ct => ct.Season)
             .IsRequired();

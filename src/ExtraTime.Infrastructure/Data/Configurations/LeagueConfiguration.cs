@@ -11,6 +11,7 @@ public sealed class LeagueConfiguration : IEntityTypeConfiguration<League>
         builder.ToTable("Leagues");
 
         builder.HasKey(l => l.Id);
+        builder.Property(l => l.Id).ValueGeneratedNever();
 
         builder.Property(l => l.Name)
             .IsRequired()
@@ -34,14 +35,12 @@ public sealed class LeagueConfiguration : IEntityTypeConfiguration<League>
         builder.HasMany(l => l.Members)
             .WithOne(lm => lm.League)
             .HasForeignKey(lm => lm.LeagueId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .Metadata.PrincipalToDependent!.SetPropertyAccessMode(PropertyAccessMode.Field);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(l => l.BotMembers)
             .WithOne(bm => bm.League)
             .HasForeignKey(bm => bm.LeagueId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .Metadata.PrincipalToDependent!.SetPropertyAccessMode(PropertyAccessMode.Field);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(l => l.BotsEnabled)
             .IsRequired()

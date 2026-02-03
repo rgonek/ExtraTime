@@ -11,6 +11,7 @@ public sealed class BotConfiguration : IEntityTypeConfiguration<Bot>
         builder.ToTable("Bots");
 
         builder.HasKey(b => b.Id);
+        builder.Property(b => b.Id).ValueGeneratedNever();
 
         builder.Property(b => b.Name)
             .IsRequired()

@@ -11,6 +11,7 @@ public sealed class LeagueStandingConfiguration : IEntityTypeConfiguration<Leagu
         builder.ToTable("LeagueStandings");
 
         builder.HasKey(ls => ls.Id);
+        builder.Property(ls => ls.Id).ValueGeneratedNever();
 
         builder.HasOne(ls => ls.League)
             .WithMany()

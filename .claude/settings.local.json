@@ -78,12 +78,12 @@
       "Bash(Get-ChildItem -Path \"D:\\\\Dev\\\\ExtraTime\\\\.claude\" -Recurse)",
       "Bash(Select-Object FullName)",
       "Bash(Get-ChildItem -Path \"$env:USERPROFILE\\\\.claude\" -Recurse -ErrorAction SilentlyContinue)",
-      "Bash($env:TEST_DATABASE_TYPE=\"InMemory\")",
-      "Bash($env:TEST_DATABASE_TYPE = \"InMemory\")",
-      "Bash(TEST_DATABASE_TYPE=InMemory dotnet test:*)",
+      "Bash($env:TEST_MODE=\"InMemory\")",
+      "Bash($env:TEST_MODE = \"InMemory\")",
+      "Bash(TEST_MODE=InMemory dotnet test:*)",
       "Bash(Get-ChildItem -Path \"D:\\\\Dev\\\\ExtraTime\\\\tests\" -Recurse -Directory)",
-      "Bash($env:TEST_DATABASE_TYPE=\"SqlServer\")",
-      "Bash(TEST_DATABASE_TYPE=SqlServer dotnet test:*)"
+      "Bash($env:TEST_MODE=\"SqlServer\")",
+      "Bash(TEST_MODE=SqlServer dotnet test:*)"
     ]
   }
 }

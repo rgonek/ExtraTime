@@ -36,8 +36,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 return;
 
             // Check for environment variable configuration
-            var dbType = Environment.GetEnvironmentVariable("TEST_DATABASE_TYPE");
-            if (string.Equals(dbType, "InMemory", StringComparison.OrdinalIgnoreCase))
+            var dbType = Environment.GetEnvironmentVariable("TEST_MODE");
+            if (!string.Equals(dbType, "SqlServer", StringComparison.OrdinalIgnoreCase))
             {
                 _useInMemory = true;
                 Environment.SetEnvironmentVariable("UseInMemoryDatabase", "true");

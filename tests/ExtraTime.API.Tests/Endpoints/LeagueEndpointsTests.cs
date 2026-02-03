@@ -40,11 +40,9 @@ public sealed class LeagueEndpointsTests : ApiTestBase
     }
 
     [Test]
-    [SkipOnGitHubActions]
+    [SkipIfInMemory]
     public async Task JoinLeague_ValidCode_ReturnsOk()
     {
-        if (CustomWebApplicationFactory.UseInMemory) return;
-
         // Arrange - Create league by user 1
         var token1 = await GetAuthTokenAsync("owner@example.com");
         SetAuthHeader(token1);

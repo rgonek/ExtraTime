@@ -11,6 +11,7 @@ public sealed class LeagueMemberConfiguration : IEntityTypeConfiguration<LeagueM
         builder.ToTable("LeagueMembers");
 
         builder.HasKey(lm => lm.Id);
+        builder.Property(lm => lm.Id).ValueGeneratedNever();
 
         builder.Property(lm => lm.Role)
             .IsRequired()

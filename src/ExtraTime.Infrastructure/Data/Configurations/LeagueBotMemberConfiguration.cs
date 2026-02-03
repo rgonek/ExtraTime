@@ -11,6 +11,7 @@ public sealed class LeagueBotMemberConfiguration : IEntityTypeConfiguration<Leag
         builder.ToTable("LeagueBotMembers");
 
         builder.HasKey(lbm => lbm.Id);
+        builder.Property(lbm => lbm.Id).ValueGeneratedNever();
 
         builder.HasOne(lbm => lbm.League)
             .WithMany(l => l.BotMembers)

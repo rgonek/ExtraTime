@@ -6,9 +6,11 @@ using ExtraTime.UnitTests.Helpers;
 using ExtraTime.UnitTests.TestData;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using TUnit.Core;
 
 namespace ExtraTime.UnitTests.Infrastructure.Services;
 
+[NotInParallel]
 public sealed class StandingsCalculatorTests : HandlerTestBase
 {
     private readonly StandingsCalculator _calculator;
