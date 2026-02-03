@@ -9,7 +9,7 @@ public sealed class FormCacheBackgroundService(
     IServiceScopeFactory scopeFactory,
     ILogger<FormCacheBackgroundService> logger) : BackgroundService
 {
-    private static readonly TimeSpan Interval = TimeSpan.FromHours(4);
+    internal static TimeSpan Interval = TimeSpan.FromHours(4);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

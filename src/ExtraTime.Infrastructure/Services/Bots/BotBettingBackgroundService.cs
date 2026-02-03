@@ -9,7 +9,7 @@ public sealed class BotBettingBackgroundService(
     IServiceScopeFactory scopeFactory,
     ILogger<BotBettingBackgroundService> logger) : BackgroundService
 {
-    private static readonly TimeSpan Interval = TimeSpan.FromMinutes(30);
+    internal static TimeSpan Interval = TimeSpan.FromMinutes(30);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

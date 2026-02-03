@@ -10,9 +10,9 @@ public sealed class FootballSyncHostedService(
     IServiceScopeFactory serviceScopeFactory,
     ILogger<FootballSyncHostedService> logger) : BackgroundService
 {
-    private static readonly TimeSpan InitialDelay = TimeSpan.FromSeconds(10);
-    private static readonly TimeSpan DailySyncInterval = TimeSpan.FromHours(24);
-    private static readonly TimeSpan LiveSyncInterval = TimeSpan.FromMinutes(5);
+    internal static TimeSpan InitialDelay = TimeSpan.FromSeconds(10);
+    internal static TimeSpan DailySyncInterval = TimeSpan.FromHours(24);
+    internal static TimeSpan LiveSyncInterval = TimeSpan.FromMinutes(5);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

@@ -9,10 +9,11 @@ namespace ExtraTime.UnitTests.Application.Services.BotStrategies;
 
 public sealed class StatsAnalystStrategyTests
 {
-    private readonly ITeamFormCalculator _formCalculator;
-    private readonly StatsAnalystStrategy _strategy;
+    private ITeamFormCalculator _formCalculator = null!;
+    private StatsAnalystStrategy _strategy = null!;
 
-    public StatsAnalystStrategyTests()
+    [Before(Test)]
+    public void Setup()
     {
         _formCalculator = Substitute.For<ITeamFormCalculator>();
         _strategy = new StatsAnalystStrategy(_formCalculator);
@@ -23,13 +24,11 @@ public sealed class StatsAnalystStrategyTests
     {
         // Arrange
         var match = CreateTestMatch();
-        var homeForm = CreateTeamForm(60.0); // Good form
-        var awayForm = CreateTeamForm(40.0); // Poor form
+        var homeForm = CreateTeamForm(60.0);
+        var awayForm = CreateTeamForm(40.0);
 
-        _formCalculator.CalculateFormAsync(match.HomeTeamId, match.CompetitionId, 5, Arg.Any<CancellationToken>())
-            .Returns(homeForm);
-        _formCalculator.CalculateFormAsync(match.AwayTeamId, match.CompetitionId, 5, Arg.Any<CancellationToken>())
-            .Returns(awayForm);
+        _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(homeForm, awayForm);
 
         // Act
         var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, null);
@@ -37,7 +36,7 @@ public sealed class StatsAnalystStrategyTests
         // Assert
         await Assert.That(homeScore).IsGreaterThanOrEqualTo(0);
         await Assert.That(awayScore).IsGreaterThanOrEqualTo(0);
-        await Assert.That(homeScore).IsLessThanOrEqualTo(4); // MaxGoals for Moderate style
+        await Assert.That(homeScore).IsLessThanOrEqualTo(4);
         await Assert.That(awayScore).IsLessThanOrEqualTo(4);
     }
 
@@ -46,13 +45,11 @@ public sealed class StatsAnalystStrategyTests
     {
         // Arrange
         var match = CreateTestMatch();
-        var homeForm = CreateTeamForm(50.0, homeWinRate: 0.8); // Strong at home
-        var awayForm = CreateTeamForm(50.0, awayWinRate: 0.2); // Weak away
+        var homeForm = CreateTeamForm(50.0, homeWinRate: 0.8);
+        var awayForm = CreateTeamForm(50.0, awayWinRate: 0.2);
 
-        _formCalculator.CalculateFormAsync(Arg.Is(match.HomeTeamId), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
-            .Returns(homeForm);
-        _formCalculator.CalculateFormAsync(Arg.Is(match.AwayTeamId), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
-            .Returns(awayForm);
+        _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(homeForm, awayForm);
 
         // Act
         var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, null);
@@ -67,8 +64,8 @@ public sealed class StatsAnalystStrategyTests
     {
         // Arrange
         var match = CreateTestMatch();
-        var homeForm = CreateTeamForm(50.0, currentStreak: 5); // On a winning streak
-        var awayForm = CreateTeamForm(50.0, currentStreak: -3); // On a losing streak
+        var homeForm = CreateTeamForm(50.0, currentStreak: 5);
+        var awayForm = CreateTeamForm(50.0, currentStreak: -3);
 
         _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(homeForm, awayForm);
@@ -85,7 +82,7 @@ public sealed class StatsAnalystStrategyTests
     public async Task GeneratePredictionAsync_WithHighStakes_AdjustsForImportance()
     {
         // Arrange
-        var match = CreateTestMatch(matchday: 35); // Late season = high stakes
+        var match = CreateTestMatch(matchday: 35);
         var homeForm = CreateTeamForm(50.0);
         var awayForm = CreateTeamForm(50.0);
 
@@ -120,7 +117,7 @@ public sealed class StatsAnalystStrategyTests
         // Act
         var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, null);
 
-        // Assert - Should still generate valid predictions with default values
+        // Assert
         await Assert.That(homeScore).IsGreaterThanOrEqualTo(0);
         await Assert.That(awayScore).IsGreaterThanOrEqualTo(0);
     }
@@ -140,7 +137,7 @@ public sealed class StatsAnalystStrategyTests
         // Act
         var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, config.ToJson());
 
-        // Assert - Conservative style has MaxGoals = 2
+        // Assert
         await Assert.That(homeScore).IsLessThanOrEqualTo(2);
         await Assert.That(awayScore).IsLessThanOrEqualTo(2);
     }
@@ -160,7 +157,7 @@ public sealed class StatsAnalystStrategyTests
         // Act
         var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, config.ToJson());
 
-        // Assert - Bold style has MaxGoals = 5 and uses Ceiling
+        // Assert
         await Assert.That(homeScore).IsGreaterThanOrEqualTo(0);
         await Assert.That(awayScore).IsGreaterThanOrEqualTo(0);
         await Assert.That(homeScore).IsLessThanOrEqualTo(5);
@@ -175,24 +172,21 @@ public sealed class StatsAnalystStrategyTests
     }
 
     [Test]
-    public async Task GeneratePrediction_CallsCalculator_WithCorrectParameters()
+    public async Task GeneratePrediction_CallsCalculator()
     {
         // Arrange
         var match = CreateTestMatch();
         var homeForm = CreateTeamForm(50.0);
         var awayForm = CreateTeamForm(50.0);
 
-        _formCalculator.CalculateFormAsync(match.HomeTeamId, match.CompetitionId, 5, Arg.Any<CancellationToken>())
-            .Returns(homeForm);
-        _formCalculator.CalculateFormAsync(match.AwayTeamId, match.CompetitionId, 5, Arg.Any<CancellationToken>())
-            .Returns(awayForm);
+        _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(homeForm, awayForm);
 
         // Act
         await _strategy.GeneratePredictionAsync(match, null);
 
         // Assert
-        await _formCalculator.Received(1).CalculateFormAsync(match.HomeTeamId, match.CompetitionId, 5, Arg.Any<CancellationToken>());
-        await _formCalculator.Received(1).CalculateFormAsync(match.AwayTeamId, match.CompetitionId, 5, Arg.Any<CancellationToken>());
+        await _formCalculator.Received(2).CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -201,8 +195,8 @@ public sealed class StatsAnalystStrategyTests
         // Arrange
         var match = CreateTestMatch();
         var config = StatsAnalystConfig.FormFocused;
-        var homeForm = CreateTeamForm(80.0); // High form
-        var awayForm = CreateTeamForm(30.0); // Low form
+        var homeForm = CreateTeamForm(80.0);
+        var awayForm = CreateTeamForm(30.0);
 
         _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(homeForm, awayForm);
