@@ -89,6 +89,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
                     DbAdapter = DbAdapter.SqlServer,
                     SchemasToInclude = new[] { "dbo" }
                 });
+                await connection.CloseAsync();
             }
             _migrated = true;
         }
