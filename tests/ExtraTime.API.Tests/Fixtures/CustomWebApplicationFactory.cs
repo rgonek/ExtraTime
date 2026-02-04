@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
+using Respawn;
 using Testcontainers.MsSql;
 
 namespace ExtraTime.API.Tests.Fixtures;
@@ -16,6 +17,7 @@ namespace ExtraTime.API.Tests.Fixtures;
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private static MsSqlContainer? Container;
+    public static Respawner? Respawner { get; private set; }
 
     private static bool _initialized;
     private static bool _migrated;
@@ -78,6 +80,16 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             else
             {
                 await context.Database.MigrateAsync();
+
+                // Initialize Respawner ONCE after migration
+                var connection = context.Database.GetDbConnection();
+                await connection.OpenAsync();
+                Respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
+                {
+                    DbAdapter = DbAdapter.SqlServer,
+                    SchemasToInclude = new[] { "dbo" }
+                });
+                await connection.CloseAsync();
             }
             _migrated = true;
         }
@@ -86,6 +98,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
             InitLock.Release();
         }
     }
+
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

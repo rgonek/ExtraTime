@@ -9,7 +9,9 @@ namespace ExtraTime.IntegrationTests.Base;
 
 public abstract class IntegrationTestBase : IAsyncDisposable
 {
+    private static readonly SemaphoreSlim _lock = new(1, 1);
     private ITestDatabase? _db;
+    private bool _lockTaken;
 
     // Primary Context for the test (Arrange/Act)
     protected ApplicationDbContext Context { get; private set; } = null!;
@@ -19,17 +21,24 @@ public abstract class IntegrationTestBase : IAsyncDisposable
     [Before(Test)]
     public async Task SetupAsync()
     {
-        // 1. Get a database (InMemory or SQL Server based on Config)
+        // 1. Concurrency Control (Sequential execution for SQL Server)
+        if (TestConfig.UseSqlServer)
+        {
+            await _lock.WaitAsync();
+            _lockTaken = true;
+        }
+
+        // 2. Get a database (InMemory or SQL Server based on Config)
         _db = TestConfig.CreateDatabase();
 
-        // 2. Initialize (Create DB/Schema)
+        // 3. Initialize (Reset DB/Create Schema)
         await _db.InitializeAsync();
 
-        // 3. Setup Mocks
+        // 4. Setup Mocks
         CurrentUserService = Substitute.For<ICurrentUserService>();
         Mediator = Substitute.For<IMediator>();
 
-        // 4. Create Context
+        // 5. Create Context
         Context = CreateDbContext();
     }
 
@@ -45,7 +54,14 @@ public abstract class IntegrationTestBase : IAsyncDisposable
         {
             await _db.DisposeAsync();
         }
+
+        if (_lockTaken)
+        {
+            _lock.Release();
+            _lockTaken = false;
+        }
     }
+
 
     public async ValueTask DisposeAsync()
     {

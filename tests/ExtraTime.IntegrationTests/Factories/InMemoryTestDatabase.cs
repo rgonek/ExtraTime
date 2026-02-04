@@ -35,7 +35,14 @@ public class InMemoryTestDatabase : ITestDatabase
         await _context.Database.EnsureCreatedAsync();
     }
 
+    public Task ResetAsync()
+    {
+        // InMemory creates a fresh database per instance, so no reset needed
+        return Task.CompletedTask;
+    }
+
     public async ValueTask DisposeAsync()
+
     {
         await _context.DisposeAsync();
     }

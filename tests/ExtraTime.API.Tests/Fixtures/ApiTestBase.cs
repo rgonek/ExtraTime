@@ -13,10 +13,10 @@ public abstract class ApiTestBase
     private static readonly CustomWebApplicationFactory Factory = new();
     private static readonly SemaphoreSlim DatabaseLock = new(1, 1);
     private bool _lockTaken;
-    private Respawner _respawner = null!;
     protected HttpClient Client { get; private set; } = null!;
 
     [Before(Test)]
+
     public async Task InitializeAsync()
     {
         await DatabaseLock.WaitAsync();
@@ -44,15 +44,14 @@ public abstract class ApiTestBase
                 if (connection.State != System.Data.ConnectionState.Open)
                     await connection.OpenAsync();
 
-                _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
+                if (CustomWebApplicationFactory.Respawner != null)
                 {
-                    DbAdapter = DbAdapter.SqlServer
-                });
-
-                await _respawner.ResetAsync(connection);
+                    await CustomWebApplicationFactory.Respawner.ResetAsync(connection);
+                }
             }
         }
         catch (Exception)
+
         {
             if (_lockTaken)
             {
