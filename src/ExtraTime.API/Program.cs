@@ -6,6 +6,7 @@ using ExtraTime.Infrastructure.Data;
 using ExtraTime.API.Features.Admin;
 using ExtraTime.API.Features.Auth;
 using ExtraTime.API.Features.Bots;
+using ExtraTime.API.Features.DevTriggers;
 using ExtraTime.API.Features.Football;
 using ExtraTime.API.Features.Health;
 using ExtraTime.API.Features.Leagues;
@@ -111,6 +112,9 @@ if (app.Environment.IsDevelopment())
                .WithModels(true)
                .WithDownloadButton(true);
     });
+
+    // Map dev-only trigger endpoints for Aspire dashboard
+    app.MapDevTriggerEndpoints();
 }
 
 app.UseHttpsRedirection();

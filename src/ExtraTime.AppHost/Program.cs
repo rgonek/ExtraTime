@@ -27,44 +27,23 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WaitForCompletion(migrations)
     .WithExternalHttpEndpoints();
 
-// 4. Azure Functions - Manual Triggers (Feature 1)
-// We disable timers using AzureWebJobs.{Name}.Disabled = true
-// And add buttons to trigger them manually
+// Get the API endpoint URL to pass to the scripts
+var apiEndpoint = api.GetEndpoint("http");
 
-builder.AddProject<Projects.ExtraTime_Functions>("func-sync-matches")
-    .WithReference(database)
-    .WithEnvironment("FootballData__ApiKey", footballDataKey)
-    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithCommand("sync-now", "Sync Matches", async _ =>
-    {
-        // Trigger logic would go here
-        return new ExecuteCommandResult { Success = true };
-    })
-    .WaitForCompletion(migrations);
+// 4. Separate trigger resources with dedicated log streams
+// Each resource has its own log stream in the dashboard
+// Restart a resource in the dashboard to trigger its operation again
+var syncMatches = builder.AddExecutable("sync-matches", "pwsh", "src/ExtraTime.AppHost/scripts", "-File", "trigger-sync-matches.ps1", "-ApiUrl", apiEndpoint)
+    .WithReference(api)
+    .WaitFor(api);
 
-builder.AddProject<Projects.ExtraTime_Functions>("func-calculate-bets")
-    .WithReference(database)
-    .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithCommand("calculate-now", "Calculate Bets", async _ =>
-    {
-        return new ExecuteCommandResult { Success = true };
-    })
-    .WaitForCompletion(migrations);
+var calculateBets = builder.AddExecutable("calculate-bets", "pwsh", "src/ExtraTime.AppHost/scripts", "-File", "trigger-calculate-bets.ps1", "-ApiUrl", apiEndpoint)
+    .WithReference(api)
+    .WaitFor(api);
 
-builder.AddProject<Projects.ExtraTime_Functions>("func-bot-betting")
-    .WithReference(database)
-    .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
-    .WithCommand("bots-now", "Run Bots", async _ =>
-    {
-        return new ExecuteCommandResult { Success = true };
-    })
-    .WaitForCompletion(migrations);
+var botBetting = builder.AddExecutable("bot-betting", "pwsh", "src/ExtraTime.AppHost/scripts", "-File", "trigger-bot-betting.ps1", "-ApiUrl", apiEndpoint)
+    .WithReference(api)
+    .WaitFor(api);
 
 // Next.js frontend
 var web = builder.AddExecutable("web", "bun", "../../web", "run", "dev")
