@@ -4,6 +4,7 @@ using ExtraTime.Application.Features.Bets.Commands.CalculateBetResults;
 using ExtraTime.Application.Features.Bots.Services;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Infrastructure;
+using ExtraTime.Infrastructure.Services;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,9 @@ builder.AddServiceDefaults();
 // Add application and infrastructure services
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Override ICurrentUserService for background context (no HTTP request)
+builder.Services.AddSingleton<ICurrentUserService, BackgroundUserService>();
 
 // Build the host
 var host = builder.Build();

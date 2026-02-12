@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,5 +12,12 @@
     <ProjectReference Include="..\ExtraTime.Infrastructure\ExtraTime.Infrastructure.csproj" />
     <ProjectReference Include="..\ExtraTime.ServiceDefaults\ExtraTime.ServiceDefaults.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 
 </Project>
