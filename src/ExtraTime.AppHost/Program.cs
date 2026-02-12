@@ -27,43 +27,27 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WaitForCompletion(migrations)
     .WithExternalHttpEndpoints();
 
-// 4. Azure Functions - Manual Triggers (Feature 1)
-// We disable timers using AzureWebJobs.{Name}.Disabled = true
-// And add buttons to trigger them manually
-
-builder.AddProject<Projects.ExtraTime_Functions>("func-sync-matches")
+// 4. Dev trigger resources - each has its own isolated log stream
+// These run operations in separate processes with full application logging
+// Restart a resource in the dashboard to trigger its operation again
+var funcGroup = builder.AddResource(new ParameterResource("functions", _ => "Group"));
+var syncMatches = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-matches")
     .WithReference(database)
+    .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
-    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithCommand("sync-now", "Sync Matches", async _ =>
-    {
-        // Trigger logic would go here
-        return new ExecuteCommandResult { Success = true };
-    })
+    .WithArgs("sync-matches")
     .WaitForCompletion(migrations);
 
-builder.AddProject<Projects.ExtraTime_Functions>("func-calculate-bets")
+var calculateBets = builder.AddProject<Projects.ExtraTime_DevTriggers>("calculate-bets")
     .WithReference(database)
-    .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithCommand("calculate-now", "Calculate Bets", async _ =>
-    {
-        return new ExecuteCommandResult { Success = true };
-    })
+    .WithParentRelationship(funcGroup)
+    .WithArgs("calculate-bets")
     .WaitForCompletion(migrations);
 
-builder.AddProject<Projects.ExtraTime_Functions>("func-bot-betting")
+var botBetting = builder.AddProject<Projects.ExtraTime_DevTriggers>("bot-betting")
     .WithReference(database)
-    .WithEnvironment("AzureWebJobs.BotBetting.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.SyncMatches.Disabled", "true")
-    .WithEnvironment("AzureWebJobs.CalculateBetResults.Disabled", "true")
-    .WithCommand("bots-now", "Run Bots", async _ =>
-    {
-        return new ExecuteCommandResult { Success = true };
-    })
+    .WithParentRelationship(funcGroup)
+    .WithArgs("bot-betting")
     .WaitForCompletion(migrations);
 
 // Next.js frontend

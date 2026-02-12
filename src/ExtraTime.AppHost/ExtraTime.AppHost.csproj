@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ExtraTime.API\ExtraTime.API.csproj" />
-    <ProjectReference Include="..\ExtraTime.Functions\ExtraTime.Functions.csproj" />
+    <ProjectReference Include="..\ExtraTime.DevTriggers\ExtraTime.DevTriggers.csproj" />
     <ProjectReference Include="..\ExtraTime.MigrationService\ExtraTime.MigrationService.csproj" />
   </ItemGroup>
 
