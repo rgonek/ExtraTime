@@ -27,23 +27,24 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WaitForCompletion(migrations)
     .WithExternalHttpEndpoints();
 
-// Get the API endpoint URL to pass to the scripts
-var apiEndpoint = api.GetEndpoint("http");
-
-// 4. Separate trigger resources with dedicated log streams
-// Each resource has its own log stream in the dashboard
+// 4. Dev trigger resources - each has its own isolated log stream
+// These run operations in separate processes with full application logging
 // Restart a resource in the dashboard to trigger its operation again
-var syncMatches = builder.AddExecutable("sync-matches", "pwsh", "src/ExtraTime.AppHost/scripts", "-File", "trigger-sync-matches.ps1", "-ApiUrl", apiEndpoint)
-    .WithReference(api)
-    .WaitFor(api);
+var syncMatches = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-matches")
+    .WithReference(database)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
+    .WithArgs("sync-matches")
+    .WaitForCompletion(migrations);
 
-var calculateBets = builder.AddExecutable("calculate-bets", "pwsh", "src/ExtraTime.AppHost/scripts", "-File", "trigger-calculate-bets.ps1", "-ApiUrl", apiEndpoint)
-    .WithReference(api)
-    .WaitFor(api);
+var calculateBets = builder.AddProject<Projects.ExtraTime_DevTriggers>("calculate-bets")
+    .WithReference(database)
+    .WithArgs("calculate-bets")
+    .WaitForCompletion(migrations);
 
-var botBetting = builder.AddExecutable("bot-betting", "pwsh", "src/ExtraTime.AppHost/scripts", "-File", "trigger-bot-betting.ps1", "-ApiUrl", apiEndpoint)
-    .WithReference(api)
-    .WaitFor(api);
+var botBetting = builder.AddProject<Projects.ExtraTime_DevTriggers>("bot-betting")
+    .WithReference(database)
+    .WithArgs("bot-betting")
+    .WaitForCompletion(migrations);
 
 // Next.js frontend
 var web = builder.AddExecutable("web", "bun", "../../web", "run", "dev")

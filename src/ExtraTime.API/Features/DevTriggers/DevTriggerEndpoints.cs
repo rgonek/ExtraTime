@@ -28,9 +28,10 @@ public static class DevTriggerEndpoints
 
     private static async Task<IResult> SyncMatchesAsync(
         IFootballSyncService syncService,
-        ILogger<DevTriggerEndpoints> logger,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
+        var logger = loggerFactory.CreateLogger("DevTriggers.SyncMatches");
         logger.LogInformation("[DEV-TRIGGER] Starting match sync operation");
         var startTime = DateTime.UtcNow;
 
@@ -62,9 +63,10 @@ public static class DevTriggerEndpoints
     private static async Task<IResult> CalculateBetsAsync(
         IApplicationDbContext context,
         IMediator mediator,
-        ILogger<DevTriggerEndpoints> logger,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
+        var logger = loggerFactory.CreateLogger("DevTriggers.CalculateBets");
         logger.LogInformation("[DEV-TRIGGER] Starting bet calculation operation");
         var startTime = DateTime.UtcNow;
 
@@ -134,9 +136,10 @@ public static class DevTriggerEndpoints
 
     private static async Task<IResult> BotBettingAsync(
         IBotBettingService botService,
-        ILogger<DevTriggerEndpoints> logger,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
+        var logger = loggerFactory.CreateLogger("DevTriggers.BotBetting");
         logger.LogInformation("[DEV-TRIGGER] Starting bot betting operation");
         var startTime = DateTime.UtcNow;
 

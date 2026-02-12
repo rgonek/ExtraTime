@@ -8,6 +8,7 @@
     <Project Path="src/ExtraTime.API/ExtraTime.API.csproj" />
     <Project Path="src/ExtraTime.AppHost/ExtraTime.AppHost.csproj" />
     <Project Path="src/ExtraTime.Application/ExtraTime.Application.csproj" />
+    <Project Path="src/ExtraTime.DevTriggers/ExtraTime.DevTriggers.csproj" />
     <Project Path="src/ExtraTime.Domain/ExtraTime.Domain.csproj" />
     <Project Path="src/ExtraTime.Functions/ExtraTime.Functions.csproj" />
     <Project Path="src/ExtraTime.Infrastructure/ExtraTime.Infrastructure.csproj" />
