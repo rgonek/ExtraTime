@@ -30,19 +30,23 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
 // 4. Dev trigger resources - each has its own isolated log stream
 // These run operations in separate processes with full application logging
 // Restart a resource in the dashboard to trigger its operation again
+var funcGroup = builder.AddResource(new ParameterResource("functions", _ => "Group"));
 var syncMatches = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-matches")
     .WithReference(database)
+    .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WithArgs("sync-matches")
     .WaitForCompletion(migrations);
 
 var calculateBets = builder.AddProject<Projects.ExtraTime_DevTriggers>("calculate-bets")
     .WithReference(database)
+    .WithParentRelationship(funcGroup)
     .WithArgs("calculate-bets")
     .WaitForCompletion(migrations);
 
 var botBetting = builder.AddProject<Projects.ExtraTime_DevTriggers>("bot-betting")
     .WithReference(database)
+    .WithParentRelationship(funcGroup)
     .WithArgs("bot-betting")
     .WaitForCompletion(migrations);
 
