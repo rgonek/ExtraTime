@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -115,13 +115,13 @@ namespace ExtraTime.Infrastructure.Migrations
 
             migrationBuilder.Sql(
                 """
-                INSERT INTO Seasons (Id, ExternalId, CompetitionId, StartYear, StartDate, EndDate, CurrentMatchday, IsCurrent, CreatedAt, UpdatedAt)
+                INSERT INTO Seasons (Id, ExternalId, CompetitionId, StartYear, StartDate, EndDate, CurrentMatchday, IsCurrent)
                 SELECT NEWID(), 0, c.Id, YEAR(c.CurrentSeasonStart), c.CurrentSeasonStart, c.CurrentSeasonEnd,
-                       ISNULL(c.CurrentMatchday, 1), 1, GETUTCDATE(), GETUTCDATE()
+                       ISNULL(c.CurrentMatchday, 1), 1
                 FROM Competitions c WHERE c.CurrentSeasonStart IS NOT NULL;
 
-                INSERT INTO SeasonTeams (Id, SeasonId, TeamId, CreatedAt, UpdatedAt)
-                SELECT NEWID(), s.Id, ct.TeamId, GETUTCDATE(), GETUTCDATE()
+                INSERT INTO SeasonTeams (Id, SeasonId, TeamId)
+                SELECT NEWID(), s.Id, ct.TeamId
                 FROM CompetitionTeams ct
                 INNER JOIN Seasons s ON s.CompetitionId = ct.CompetitionId AND s.StartYear = ct.Season;
                 """);
@@ -181,7 +181,7 @@ namespace ExtraTime.Infrastructure.Migrations
                 column: "SeasonId",
                 principalTable: "Seasons",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />

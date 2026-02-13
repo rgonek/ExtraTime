@@ -42,6 +42,6 @@ public sealed class MatchConfiguration : IEntityTypeConfiguration<Match>
         builder.HasOne(m => m.Season)
             .WithMany(s => s.Matches)
             .HasForeignKey(m => m.SeasonId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
