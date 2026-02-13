@@ -16,6 +16,7 @@ public sealed class Competition : BaseEntity
 
     public ICollection<CompetitionTeam> CompetitionTeams { get; private set; } = [];
     public ICollection<Match> Matches { get; private set; } = [];
+    public ICollection<Season> Seasons { get; private set; } = [];
 
     private Competition() { } // Required for EF Core
 

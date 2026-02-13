@@ -10,8 +10,10 @@ public interface IApplicationDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<BackgroundJob> BackgroundJobs { get; }
     DbSet<Competition> Competitions { get; }
+    DbSet<Season> Seasons { get; }
     DbSet<Team> Teams { get; }
     DbSet<CompetitionTeam> CompetitionTeams { get; }
+    DbSet<SeasonTeam> SeasonTeams { get; }
     DbSet<Match> Matches { get; }
     DbSet<League> Leagues { get; }
     DbSet<LeagueMember> LeagueMembers { get; }
@@ -20,6 +22,7 @@ public interface IApplicationDbContext
     DbSet<Bot> Bots { get; }
     DbSet<BetResult> BetResults { get; }
     DbSet<LeagueStanding> LeagueStandings { get; }
+    DbSet<FootballStanding> FootballStandings { get; }
     DbSet<TeamFormCache> TeamFormCaches { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 

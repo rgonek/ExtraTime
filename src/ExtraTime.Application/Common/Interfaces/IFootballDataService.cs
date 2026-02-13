@@ -8,4 +8,5 @@ public interface IFootballDataService
     Task<IReadOnlyList<TeamApiDto>> GetTeamsForCompetitionAsync(int competitionExternalId, CancellationToken ct = default);
     Task<IReadOnlyList<MatchApiDto>> GetMatchesForCompetitionAsync(int competitionExternalId, DateTime? dateFrom = null, DateTime? dateTo = null, CancellationToken ct = default);
     Task<IReadOnlyList<MatchApiDto>> GetLiveMatchesAsync(CancellationToken ct = default);
+    Task<StandingsApiResponse?> GetStandingsAsync(int competitionExternalId, CancellationToken ct = default);
 }

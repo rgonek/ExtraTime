@@ -108,13 +108,13 @@ With batching (8 per minute), even 40 calls only takes ~5 minutes.
 
 ### Task 1: Domain Layer - New Entities
 
-- [ ] **1.1** Create `src/ExtraTime.Domain/Enums/StandingType.cs`
-- [ ] **1.2** Create `src/ExtraTime.Domain/Entities/Season.cs`
-- [ ] **1.3** Create `src/ExtraTime.Domain/Entities/SeasonTeam.cs`
-- [ ] **1.4** Create `src/ExtraTime.Domain/Entities/FootballStanding.cs`
-- [ ] **1.5** Modify `Match.cs` - Add `SeasonId` property (nullable Guid)
-- [ ] **1.6** Modify `Competition.cs` - Add `Seasons` navigation property
-- [ ] **1.7** Modify `Team.cs` - Add `SeasonTeams` and `FootballStandings` navigations
+ - [x] **1.1** Create `src/ExtraTime.Domain/Enums/StandingType.cs`
+ - [x] **1.2** Create `src/ExtraTime.Domain/Entities/Season.cs`
+ - [x] **1.3** Create `src/ExtraTime.Domain/Entities/SeasonTeam.cs`
+ - [x] **1.4** Create `src/ExtraTime.Domain/Entities/FootballStanding.cs`
+ - [x] **1.5** Modify `Match.cs` - Add `SeasonId` property (nullable Guid)
+ - [x] **1.6** Modify `Competition.cs` - Add `Seasons` navigation property
+ - [x] **1.7** Modify `Team.cs` - Add `SeasonTeams` and `FootballStandings` navigations
 
 #### StandingType Enum
 ```csharp
@@ -212,12 +212,12 @@ public sealed class FootballStanding : BaseEntity
 
 ### Task 2: Application Layer - DTOs and Interfaces
 
-- [ ] **2.1** Create `src/ExtraTime.Application/Features/Football/DTOs/StandingsDtos.cs`
-- [ ] **2.2** Modify `CompetitionDtos.cs` - Add `Id` to `CurrentSeasonApiDto`
-- [ ] **2.3** Modify `IFootballDataService.cs` - Add `GetStandingsAsync`
-- [ ] **2.4** Modify `IFootballSyncService.cs` - Add per-competition sync methods
-- [ ] **2.5** Modify `IApplicationDbContext.cs` - Add `Seasons`, `SeasonTeams`, `FootballStandings` DbSets
-- [ ] **2.6** Create `src/ExtraTime.Application/Common/Interfaces/IBetResultsService.cs`
+ - [x] **2.1** Create `src/ExtraTime.Application/Features/Football/DTOs/StandingsDtos.cs`
+ - [x] **2.2** Modify `CompetitionDtos.cs` - Add `Id` to `CurrentSeasonApiDto`
+ - [x] **2.3** Modify `IFootballDataService.cs` - Add `GetStandingsAsync`
+ - [x] **2.4** Modify `IFootballSyncService.cs` - Add per-competition sync methods
+ - [x] **2.5** Modify `IApplicationDbContext.cs` - Add `Seasons`, `SeasonTeams`, `FootballStandings` DbSets
+ - [x] **2.6** Create `src/ExtraTime.Application/Common/Interfaces/IBetResultsService.cs`
 
 #### New DTOs
 ```csharp
@@ -280,11 +280,11 @@ public interface IBetResultsService
 
 ### Task 3: Infrastructure Layer - EF Configurations
 
-- [ ] **3.1** Create `src/ExtraTime.Infrastructure/Data/Configurations/SeasonConfiguration.cs`
-- [ ] **3.2** Create `src/ExtraTime.Infrastructure/Data/Configurations/SeasonTeamConfiguration.cs`
-- [ ] **3.3** Create `src/ExtraTime.Infrastructure/Data/Configurations/FootballStandingConfiguration.cs`
-- [ ] **3.4** Modify `MatchConfiguration.cs` - Add SeasonId FK and index
-- [ ] **3.5** Modify `ApplicationDbContext.cs` - Add DbSets
+ - [x] **3.1** Create `src/ExtraTime.Infrastructure/Data/Configurations/SeasonConfiguration.cs`
+ - [x] **3.2** Create `src/ExtraTime.Infrastructure/Data/Configurations/SeasonTeamConfiguration.cs`
+ - [x] **3.3** Create `src/ExtraTime.Infrastructure/Data/Configurations/FootballStandingConfiguration.cs`
+ - [x] **3.4** Modify `MatchConfiguration.cs` - Add SeasonId FK and index
+ - [x] **3.5** Modify `ApplicationDbContext.cs` - Add DbSets
 
 #### SeasonConfiguration
 ```csharp
@@ -351,11 +351,12 @@ public sealed class FootballStandingConfiguration : IEntityTypeConfiguration<Foo
 
 ### Task 4: Database Migration
 
-- [ ] **4.1** Create migration: `dotnet ef migrations add AddSeasonAndStandings --startup-project ../ExtraTime.API`
-- [ ] **4.2** Review generated migration
-- [ ] **4.3** Add data migration SQL to seed existing seasons from Competition data
-- [ ] **4.4** Test migration locally
-- [ ] **4.5** Apply migration
+
+ - [x] **4.1** Create migration: `dotnet ef migrations add AddSeasonAndStandings --startup-project ../ExtraTime.API`
+ - [x] **4.2** Review generated migration
+ - [x] **4.3** Add data migration SQL to seed existing seasons from Competition data
+ - [ ] **4.4** Test migration locally (blocked: SQL Server not reachable)
+ - [ ] **4.5** Apply migration (blocked: SQL Server not reachable)
 
 #### Data Migration SQL
 ```sql
@@ -376,10 +377,11 @@ INNER JOIN Seasons s ON s.CompetitionId = ct.CompetitionId AND s.StartYear = ct.
 
 ### Task 5: Infrastructure Layer - Service Updates
 
-- [ ] **5.1** Modify `FootballDataService.cs` - Add `GetStandingsAsync`
-- [ ] **5.2** Modify `FootballSyncService.cs` - Add per-competition sync methods with smart detection
-- [ ] **5.3** Create `src/ExtraTime.Infrastructure/Services/BetResultsService.cs`
-- [ ] **5.4** Modify `DependencyInjection.cs` - Register `IBetResultsService`
+
+ - [x] **5.1** Modify `FootballDataService.cs` - Add `GetStandingsAsync`
+ - [x] **5.2** Modify `FootballSyncService.cs` - Add per-competition sync methods with smart detection
+ - [x] **5.3** Create `src/ExtraTime.Infrastructure/Services/BetResultsService.cs`
+ - [x] **5.4** Modify `DependencyInjection.cs` - Register `IBetResultsService`
 
 #### FootballSyncService - Smart Match Detection
 ```csharp
@@ -445,19 +447,16 @@ public sealed class BetResultsService(
 
 ### Task 6: Durable Functions
 
-- [ ] **6.1** Add NuGet package to `ExtraTime.Functions.csproj`:
-  ```xml
-  <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.2.2" />
-  ```
-- [ ] **6.2** Create `src/ExtraTime.Functions/RateLimitConfig.cs`
-- [ ] **6.3** Create `src/ExtraTime.Functions/Orchestrators/SyncFootballDataOrchestrator.cs`
-- [ ] **6.4** Create `src/ExtraTime.Functions/Activities/GetCompetitionIdsActivity.cs`
-- [ ] **6.5** Create `src/ExtraTime.Functions/Activities/SyncCompetitionMatchesActivity.cs`
-- [ ] **6.6** Create `src/ExtraTime.Functions/Activities/SyncCompetitionStandingsActivity.cs`
-- [ ] **6.7** Create `src/ExtraTime.Functions/Activities/SyncCompetitionTeamsActivity.cs`
-- [ ] **6.8** Create `src/ExtraTime.Functions/Triggers/SyncFootballDataTrigger.cs`
-- [ ] **6.9** Delete `src/ExtraTime.Functions/Functions/SyncMatchesFunction.cs`
-- [ ] **6.10** Modify `CalculateBetResultsFunction.cs` - Use `IBetResultsService`
+ - [x] **6.1** Add NuGet package to `ExtraTime.Functions.csproj`:
+ - [x] **6.2** Create `src/ExtraTime.Functions/RateLimitConfig.cs`
+ - [x] **6.3** Create `src/ExtraTime.Functions/Orchestrators/SyncFootballDataOrchestrator.cs`
+ - [x] **6.4** Create `src/ExtraTime.Functions/Activities/GetCompetitionIdsActivity.cs`
+ - [x] **6.5** Create `src/ExtraTime.Functions/Activities/SyncCompetitionMatchesActivity.cs`
+ - [x] **6.6** Create `src/ExtraTime.Functions/Activities/SyncCompetitionStandingsActivity.cs`
+ - [x] **6.7** Create `src/ExtraTime.Functions/Activities/SyncCompetitionTeamsActivity.cs`
+ - [x] **6.8** Create `src/ExtraTime.Functions/Triggers/SyncFootballDataTrigger.cs`
+ - [x] **6.9** Delete `src/ExtraTime.Functions/Functions/SyncMatchesFunction.cs`
+ - [x] **6.10** Modify `CalculateBetResultsFunction.cs` - Use `IBetResultsService`
 
 #### RateLimitConfig
 ```csharp
@@ -643,9 +642,9 @@ public sealed class CalculateBetResultsFunction(
 
 ### Task 7: DevTriggers Updates
 
-- [ ] **7.1** Modify `Program.cs` - Add `sync-standings` command
-- [ ] **7.2** Modify `Program.cs` - Update `calculate-bets` to use `IBetResultsService`
-- [ ] **7.3** Modify `AppHost/Program.cs` - Add `sync-standings` resource
+ - [x] **7.1** Modify `Program.cs` - Add `sync-standings` command
+ - [x] **7.2** Modify `Program.cs` - Update `calculate-bets` to use `IBetResultsService`
+ - [x] **7.3** Modify `AppHost/Program.cs` - Add `sync-standings` resource
 
 #### Updated DevTriggers Program.cs
 ```csharp

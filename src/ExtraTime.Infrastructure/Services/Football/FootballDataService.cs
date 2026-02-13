@@ -101,4 +101,19 @@ public sealed class FootballDataService(
             return [];
         }
     }
+
+    public async Task<StandingsApiResponse?> GetStandingsAsync(int competitionExternalId, CancellationToken ct = default)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync($"competitions/{competitionExternalId}/standings", ct);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<StandingsApiResponse>(ct);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Failed to fetch standings for competition {ExternalId}", competitionExternalId);
+            return null;
+        }
+    }
 }

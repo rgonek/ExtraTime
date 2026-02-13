@@ -36,6 +36,9 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         });
         _logger = Substitute.For<ILogger<FootballSyncService>>();
         _service = new FootballSyncService(Context, _footballDataService, _jobDispatcher, _settings, _logger);
+
+        var mockSeasons = CreateMockDbSet(new List<Season>().AsQueryable());
+        Context.Seasons.Returns(mockSeasons);
     }
 
     [After(Test)]
@@ -52,7 +55,7 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         var apiDto = new CompetitionApiDto(
             2021, "Premier League", "PL",
             new AreaApiDto("England"),
-            new CurrentSeasonApiDto(15, _now, _now.AddMonths(9)),
+            new CurrentSeasonApiDto(555, 15, _now, _now.AddMonths(9)),
             "emblem.png"
         );
         _footballDataService.GetCompetitionAsync(2021, CancellationToken).Returns(apiDto);
@@ -83,7 +86,7 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         var apiDto = new CompetitionApiDto(
             2021, "Premier League", "PL",
             new AreaApiDto("England"),
-            new CurrentSeasonApiDto(15, _now, _now.AddMonths(9)),
+            new CurrentSeasonApiDto(555, 15, _now, _now.AddMonths(9)),
             "new-emblem.png"
         );
         _footballDataService.GetCompetitionAsync(2021, CancellationToken).Returns(apiDto);

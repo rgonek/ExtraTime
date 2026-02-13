@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" />
     <!-- Aspire integration -->
     <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />

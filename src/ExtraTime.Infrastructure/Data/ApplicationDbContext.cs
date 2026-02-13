@@ -17,8 +17,10 @@ public sealed class ApplicationDbContext(
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<BackgroundJob> BackgroundJobs => Set<BackgroundJob>();
     public DbSet<Competition> Competitions => Set<Competition>();
+    public DbSet<Season> Seasons => Set<Season>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<CompetitionTeam> CompetitionTeams => Set<CompetitionTeam>();
+    public DbSet<SeasonTeam> SeasonTeams => Set<SeasonTeam>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<League> Leagues => Set<League>();
     public DbSet<LeagueMember> LeagueMembers => Set<LeagueMember>();
@@ -27,6 +29,7 @@ public sealed class ApplicationDbContext(
     public DbSet<BetResult> BetResults => Set<BetResult>();
     public DbSet<LeagueStanding> LeagueStandings => Set<LeagueStanding>();
     public DbSet<Bot> Bots => Set<Bot>();
+    public DbSet<FootballStanding> FootballStandings => Set<FootballStanding>();
     public DbSet<TeamFormCache> TeamFormCaches => Set<TeamFormCache>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -1,12 +1,13 @@
 using ExtraTime.Application;
 using ExtraTime.Application.Common.Interfaces;
-using ExtraTime.Application.Features.Bets.Commands.CalculateBetResults;
 using ExtraTime.Application.Features.Bots.Services;
 using ExtraTime.Domain.Enums;
 using ExtraTime.Infrastructure;
+using ExtraTime.Infrastructure.Configuration;
 using ExtraTime.Infrastructure.Services;
 using Mediator;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -51,13 +52,17 @@ try
             await RunCalculateBetsAsync(scope.ServiceProvider, logger);
             break;
 
+        case "sync-standings":
+            await RunSyncStandingsAsync(scope.ServiceProvider, logger);
+            break;
+
         case "bot-betting":
             await RunBotBettingAsync(scope.ServiceProvider, logger);
             break;
 
         default:
             logger.LogError("Unknown command: {Command}", command);
-            logger.LogError("Valid commands: sync-matches, calculate-bets, bot-betting");
+            logger.LogError("Valid commands: sync-matches, sync-standings, calculate-bets, bot-betting");
             return 1;
     }
 
@@ -101,52 +106,38 @@ static async Task RunCalculateBetsAsync(IServiceProvider services, ILogger logge
     logger.LogInformation("Starting bet calculation...");
     logger.LogInformation("");
 
-    var context = services.GetRequiredService<IApplicationDbContext>();
-    var mediator = services.GetRequiredService<IMediator>();
+    var betResultsService = services.GetRequiredService<IBetResultsService>();
     var startTime = DateTime.UtcNow;
 
-    // Find all finished matches with uncalculated bets
-    var uncalculatedMatches = await context.Bets
-        .Include(b => b.Match)
-        .Where(b => b.Match.Status == MatchStatus.Finished
-                 && b.Match.HomeScore.HasValue
-                 && b.Match.AwayScore.HasValue
-                 && b.Result == null)
-        .Select(b => new { b.Match.Id, b.Match.CompetitionId })
-        .Distinct()
-        .ToListAsync();
-
-    logger.LogInformation("Found {Count} matches with uncalculated bets", uncalculatedMatches.Count);
-    logger.LogInformation("");
-
-    if (uncalculatedMatches.Count == 0)
-    {
-        logger.LogInformation("No bets to calculate");
-        return;
-    }
-
-    var processedCount = 0;
-    foreach (var match in uncalculatedMatches)
-    {
-        logger.LogInformation("Processing match {MatchId}...", match.Id);
-        var command = new CalculateBetResultsCommand(match.Id, match.CompetitionId);
-        var result = await mediator.Send(command);
-
-        if (result.IsSuccess)
-        {
-            processedCount++;
-            logger.LogInformation("✓ Match {MatchId} processed successfully", match.Id);
-        }
-        else
-        {
-            logger.LogWarning("✗ Match {MatchId} processing failed: {Error}", match.Id, result.Error);
-        }
-    }
+    var processedCount = await betResultsService.CalculateAllPendingBetResultsAsync();
 
     var duration = DateTime.UtcNow - startTime;
     logger.LogInformation("");
-    logger.LogInformation("Processed {Processed}/{Total} matches in {Duration:N2}s",
-        processedCount, uncalculatedMatches.Count, duration.TotalSeconds);
+    logger.LogInformation("Processed {Processed} matches in {Duration:N2}s",
+        processedCount, duration.TotalSeconds);
+}
+
+static async Task RunSyncStandingsAsync(IServiceProvider services, ILogger logger)
+{
+    logger.LogInformation("Starting standings sync...");
+    logger.LogInformation("");
+
+    var syncService = services.GetRequiredService<IFootballSyncService>();
+    var settings = services.GetRequiredService<IOptions<FootballDataSettings>>();
+
+    foreach (var competitionId in settings.Value.SupportedCompetitionIds)
+    {
+        logger.LogInformation("Syncing standings for competition {Id}...", competitionId);
+        var result = await syncService.SyncStandingsForCompetitionAsync(competitionId);
+
+        if (result.NewSeasonDetected)
+        {
+            logger.LogInformation("New season detected! Syncing teams...");
+            await syncService.SyncTeamsForCompetitionAsync(competitionId);
+        }
+    }
+
+    logger.LogInformation("Standings sync completed");
 }
 
 static async Task RunBotBettingAsync(IServiceProvider services, ILogger logger)

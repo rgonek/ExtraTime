@@ -38,6 +38,13 @@ var syncMatches = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-match
     .WithArgs("sync-matches")
     .WaitForCompletion(migrations);
 
+var syncStandings = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-standings")
+    .WithReference(database)
+    .WithParentRelationship(funcGroup)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
+    .WithArgs("sync-standings")
+    .WaitForCompletion(migrations);
+
 var calculateBets = builder.AddProject<Projects.ExtraTime_DevTriggers>("calculate-bets")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
