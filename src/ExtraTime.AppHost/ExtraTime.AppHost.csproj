@@ -9,13 +9,13 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>extratime-apphost</UserSecretsId>
     <!-- Allow central package management for Aspire SDK -->
-    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.SqlServer" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.5.2" />
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" />
   </ItemGroup>
 
   <ItemGroup>

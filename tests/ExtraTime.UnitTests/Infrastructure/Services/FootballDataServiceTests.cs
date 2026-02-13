@@ -54,7 +54,7 @@ public sealed class FootballDataServiceTests
             "Premier League",
             "PL",
             new AreaApiDto("England"),
-            new CurrentSeasonApiDto(15, new DateTime(2024, 8, 1), new DateTime(2025, 5, 30)),
+            new CurrentSeasonApiDto(555, 15, new DateTime(2024, 8, 1), new DateTime(2025, 5, 30)),
             "https://example.com/emblem.png"
         );
         _fakeHandler.SetResponse("competitions/2021", JsonSerializer.Serialize(competitionDto));

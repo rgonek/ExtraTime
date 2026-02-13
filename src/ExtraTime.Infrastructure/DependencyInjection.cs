@@ -98,6 +98,7 @@ public static class DependencyInjection
         services.AddSingleton<IInviteCodeGenerator, InviteCodeGenerator>();
         services.AddScoped<IBetCalculator, BetCalculator>();
         services.AddScoped<IStandingsCalculator, StandingsCalculator>();
+        services.AddScoped<IBetResultsService, BetResultsService>();
 
         // Bot Services
         services.AddScoped<BotSeeder>();

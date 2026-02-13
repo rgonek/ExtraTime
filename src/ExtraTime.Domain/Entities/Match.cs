@@ -11,6 +11,9 @@ public sealed class Match : BaseEntity
     public Guid CompetitionId { get; private set; }
     public Competition Competition { get; private set; } = null!;
 
+    public Guid? SeasonId { get; private set; }
+    public Season? Season { get; private set; }
+
     public Guid HomeTeamId { get; private set; }
     public Team HomeTeam { get; private set; } = null!;
 
@@ -43,12 +46,14 @@ public sealed class Match : BaseEntity
         int? matchday = null,
         string? stage = null,
         string? group = null,
-        string? venue = null)
+        string? venue = null,
+        Guid? seasonId = null)
     {
         return new Match
         {
             ExternalId = externalId,
             CompetitionId = competitionId,
+            SeasonId = seasonId,
             HomeTeamId = homeTeamId,
             AwayTeamId = awayTeamId,
             MatchDateUtc = matchDateUtc,
@@ -123,5 +128,10 @@ public sealed class Match : BaseEntity
         UpdateStatus(status);
         UpdateScore(homeScore, awayScore, homeHalf, awayHalf);
         LastSyncedAt = Clock.UtcNow;
+    }
+
+    public void AssignSeason(Guid seasonId)
+    {
+        SeasonId = seasonId;
     }
 }

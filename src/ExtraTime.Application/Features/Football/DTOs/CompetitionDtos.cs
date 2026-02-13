@@ -12,6 +12,7 @@ public sealed record CompetitionApiDto(
 public sealed record AreaApiDto(string Name);
 
 public sealed record CurrentSeasonApiDto(
+    int Id,
     int? CurrentMatchday,
     DateTime? StartDate,
     DateTime? EndDate);

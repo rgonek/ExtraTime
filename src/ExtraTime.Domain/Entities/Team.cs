@@ -16,6 +16,8 @@ public sealed class Team : BaseEntity
     public ICollection<CompetitionTeam> CompetitionTeams { get; private set; } = [];
     public ICollection<Match> HomeMatches { get; private set; } = [];
     public ICollection<Match> AwayMatches { get; private set; } = [];
+    public ICollection<SeasonTeam> SeasonTeams { get; private set; } = [];
+    public ICollection<FootballStanding> FootballStandings { get; private set; } = [];
 
     private Team() { } // Required for EF Core
 
