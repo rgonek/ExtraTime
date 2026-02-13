@@ -108,9 +108,7 @@ if (app.Environment.IsDevelopment())
     {
         options.WithTitle("ExtraTime API")
                .WithTheme(ScalarTheme.Mars)
-               .WithDefaultHttpClient(ScalarTarget.Http, ScalarClient.Http11)
-               .WithModels(true)
-               .WithDownloadButton(true);
+               .WithDefaultHttpClient(ScalarTarget.Http, ScalarClient.Http11);
     });
 
     // Map dev-only trigger endpoints for Aspire dashboard
@@ -141,4 +139,7 @@ app.MapBetEndpoints();
 app.Run();
 
 // Make Program class accessible to integration tests
-public partial class Program { }
+namespace ExtraTime.API
+{
+    public partial class Program { }
+}

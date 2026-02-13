@@ -14,7 +14,7 @@ using Testcontainers.MsSql;
 
 namespace ExtraTime.API.Tests.Fixtures;
 
-public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public sealed class CustomWebApplicationFactory : WebApplicationFactory<ExtraTime.API.Program>
 {
     private static MsSqlContainer? Container;
     public static Respawner? Respawner { get; private set; }

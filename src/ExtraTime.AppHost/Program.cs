@@ -1,3 +1,4 @@
+using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -30,6 +31,7 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
 // 4. Dev trigger resources - each has its own isolated log stream
 // These run operations in separate processes with full application logging
 // Restart a resource in the dashboard to trigger its operation again
+// Manual start mode prevents them from running automatically on dashboard start
 var funcGroup = builder.AddResource(new ParameterResource("functions", _ => "Group"));
 
 // Full sync - use this to initialize a fresh database
@@ -38,47 +40,54 @@ var syncAll = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-all")
     .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WithArgs("sync-all")
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 var syncCompetitions = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-competitions")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WithArgs("sync-competitions")
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 var syncTeams = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-teams")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WithArgs("sync-teams")
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 var syncStandings = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-standings")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WithArgs("sync-standings")
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 var syncMatches = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-matches")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WithArgs("sync-matches")
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 var calculateBets = builder.AddProject<Projects.ExtraTime_DevTriggers>("calculate-bets")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
     .WithArgs("calculate-bets")
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 var botBetting = builder.AddProject<Projects.ExtraTime_DevTriggers>("bot-betting")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
     .WithArgs("bot-betting")
-    .WaitForCompletion(migrations);
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 // Next.js frontend
 var web = builder.AddExecutable("web", "bun", "../../web", "run", "dev")
