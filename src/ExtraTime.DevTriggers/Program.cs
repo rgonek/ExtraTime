@@ -44,16 +44,28 @@ try
 
     switch (command)
     {
+        case "sync-competitions":
+            await RunSyncCompetitionsAsync(scope.ServiceProvider, logger);
+            break;
+
+        case "sync-teams":
+            await RunSyncTeamsAsync(scope.ServiceProvider, logger);
+            break;
+
         case "sync-matches":
             await RunSyncMatchesAsync(scope.ServiceProvider, logger);
             break;
 
-        case "calculate-bets":
-            await RunCalculateBetsAsync(scope.ServiceProvider, logger);
-            break;
-
         case "sync-standings":
             await RunSyncStandingsAsync(scope.ServiceProvider, logger);
+            break;
+
+        case "sync-all":
+            await RunSyncAllAsync(scope.ServiceProvider, logger);
+            break;
+
+        case "calculate-bets":
+            await RunCalculateBetsAsync(scope.ServiceProvider, logger);
             break;
 
         case "bot-betting":
@@ -62,7 +74,7 @@ try
 
         default:
             logger.LogError("Unknown command: {Command}", command);
-            logger.LogError("Valid commands: sync-matches, sync-standings, calculate-bets, bot-betting");
+            logger.LogError("Valid commands: sync-competitions, sync-teams, sync-matches, sync-standings, sync-all, calculate-bets, bot-betting");
             return 1;
     }
 
@@ -84,6 +96,41 @@ catch (Exception ex)
 finally
 {
     scope.Dispose();
+}
+
+static async Task RunSyncCompetitionsAsync(IServiceProvider services, ILogger logger)
+{
+    logger.LogInformation("Starting competition sync...");
+    logger.LogInformation("");
+
+    var syncService = services.GetRequiredService<IFootballSyncService>();
+    var startTime = DateTime.UtcNow;
+
+    await syncService.SyncCompetitionsAsync();
+
+    var duration = DateTime.UtcNow - startTime;
+    logger.LogInformation("");
+    logger.LogInformation("Competition sync completed in {Duration:N2}s", duration.TotalSeconds);
+}
+
+static async Task RunSyncTeamsAsync(IServiceProvider services, ILogger logger)
+{
+    logger.LogInformation("Starting team sync...");
+    logger.LogInformation("");
+
+    var syncService = services.GetRequiredService<IFootballSyncService>();
+    var settings = services.GetRequiredService<IOptions<FootballDataSettings>>();
+    var startTime = DateTime.UtcNow;
+
+    foreach (var competitionId in settings.Value.SupportedCompetitionIds)
+    {
+        logger.LogInformation("Syncing teams for competition {Id}...", competitionId);
+        await syncService.SyncTeamsForCompetitionAsync(competitionId);
+    }
+
+    var duration = DateTime.UtcNow - startTime;
+    logger.LogInformation("");
+    logger.LogInformation("Team sync completed in {Duration:N2}s", duration.TotalSeconds);
 }
 
 static async Task RunSyncMatchesAsync(IServiceProvider services, ILogger logger)
@@ -138,6 +185,48 @@ static async Task RunSyncStandingsAsync(IServiceProvider services, ILogger logge
     }
 
     logger.LogInformation("Standings sync completed");
+}
+
+static async Task RunSyncAllAsync(IServiceProvider services, ILogger logger)
+{
+    logger.LogInformation("Starting full football data sync...");
+    logger.LogInformation("This will sync: competitions -> standings (creates seasons) -> teams -> matches");
+    logger.LogInformation("");
+
+    var syncService = services.GetRequiredService<IFootballSyncService>();
+    var settings = services.GetRequiredService<IOptions<FootballDataSettings>>();
+    var startTime = DateTime.UtcNow;
+
+    // Step 1: Sync competitions
+    logger.LogInformation("Step 1/4: Syncing competitions...");
+    await syncService.SyncCompetitionsAsync();
+
+    // Step 2: Sync standings (creates Season entities + missing teams)
+    logger.LogInformation("");
+    logger.LogInformation("Step 2/4: Syncing standings (creates seasons)...");
+    foreach (var competitionId in settings.Value.SupportedCompetitionIds)
+    {
+        logger.LogInformation("  Competition {Id}...", competitionId);
+        await syncService.SyncStandingsForCompetitionAsync(competitionId);
+    }
+
+    // Step 3: Sync teams (ensures all teams for competition are present)
+    logger.LogInformation("");
+    logger.LogInformation("Step 3/4: Syncing teams...");
+    foreach (var competitionId in settings.Value.SupportedCompetitionIds)
+    {
+        logger.LogInformation("  Competition {Id}...", competitionId);
+        await syncService.SyncTeamsForCompetitionAsync(competitionId);
+    }
+
+    // Step 4: Sync matches
+    logger.LogInformation("");
+    logger.LogInformation("Step 4/4: Syncing matches...");
+    await syncService.SyncMatchesAsync();
+
+    var duration = DateTime.UtcNow - startTime;
+    logger.LogInformation("");
+    logger.LogInformation("Full sync completed in {Duration:N2}s", duration.TotalSeconds);
 }
 
 static async Task RunBotBettingAsync(IServiceProvider services, ILogger logger)

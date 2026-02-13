@@ -31,11 +31,27 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
 // These run operations in separate processes with full application logging
 // Restart a resource in the dashboard to trigger its operation again
 var funcGroup = builder.AddResource(new ParameterResource("functions", _ => "Group"));
-var syncMatches = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-matches")
+
+// Full sync - use this to initialize a fresh database
+var syncAll = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-all")
     .WithReference(database)
     .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
-    .WithArgs("sync-matches")
+    .WithArgs("sync-all")
+    .WaitForCompletion(migrations);
+
+var syncCompetitions = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-competitions")
+    .WithReference(database)
+    .WithParentRelationship(funcGroup)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
+    .WithArgs("sync-competitions")
+    .WaitForCompletion(migrations);
+
+var syncTeams = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-teams")
+    .WithReference(database)
+    .WithParentRelationship(funcGroup)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
+    .WithArgs("sync-teams")
     .WaitForCompletion(migrations);
 
 var syncStandings = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-standings")
@@ -43,6 +59,13 @@ var syncStandings = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-sta
     .WithParentRelationship(funcGroup)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WithArgs("sync-standings")
+    .WaitForCompletion(migrations);
+
+var syncMatches = builder.AddProject<Projects.ExtraTime_DevTriggers>("sync-matches")
+    .WithReference(database)
+    .WithParentRelationship(funcGroup)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
+    .WithArgs("sync-matches")
     .WaitForCompletion(migrations);
 
 var calculateBets = builder.AddProject<Projects.ExtraTime_DevTriggers>("calculate-bets")
