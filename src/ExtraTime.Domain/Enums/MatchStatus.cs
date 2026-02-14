@@ -9,5 +9,8 @@ public enum MatchStatus
     Finished = 4,
     Postponed = 5,
     Suspended = 6,
-    Cancelled = 7
+    Cancelled = 7,
+    ExtraTime = 8,
+    PenaltyShootout = 9,
+    Awarded = 10
 }

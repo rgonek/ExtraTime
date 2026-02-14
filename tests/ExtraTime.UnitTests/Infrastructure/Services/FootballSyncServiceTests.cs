@@ -54,6 +54,7 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         Clock.Current = new FakeClock(_now);
         var apiDto = new CompetitionApiDto(
             2021, "Premier League", "PL",
+            "LEAGUE",
             new AreaApiDto("England"),
             new CurrentSeasonApiDto(555, 15, _now, _now.AddMonths(9)),
             "emblem.png"
@@ -85,6 +86,7 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
 
         var apiDto = new CompetitionApiDto(
             2021, "Premier League", "PL",
+            "LEAGUE",
             new AreaApiDto("England"),
             new CurrentSeasonApiDto(555, 15, _now, _now.AddMonths(9)),
             "new-emblem.png"
@@ -141,8 +143,12 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         var mockTeams = CreateMockDbSet(new List<Team>().AsQueryable());
         Context.Teams.Returns(mockTeams);
 
-        var mockCompetitionTeams = CreateMockDbSet(new List<CompetitionTeam>().AsQueryable());
-        Context.CompetitionTeams.Returns(mockCompetitionTeams);
+        var season = Season.Create(555, competition.Id, _now.Year, _now, _now.AddMonths(9), 1);
+        var mockSeasons = CreateMockDbSet(new List<Season> { season }.AsQueryable());
+        Context.Seasons.Returns(mockSeasons);
+
+        var mockSeasonTeams = CreateMockDbSet(new List<SeasonTeam>().AsQueryable());
+        Context.SeasonTeams.Returns(mockSeasonTeams);
 
         Context.SaveChangesAsync(CancellationToken).Returns(1);
 
@@ -153,6 +159,7 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         mockTeams.Received(1).Add(Arg.Is<Team>(t =>
             t.ExternalId == 1 &&
             t.Name == "Arsenal"));
+        mockSeasonTeams.Received(1).Add(Arg.Is<SeasonTeam>(st => st.SeasonId == season.Id));
     }
 
     [Test]
@@ -250,6 +257,57 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         await _jobDispatcher.Received(1).EnqueueAsync(
             Arg.Is("CalculateBetResults"),
             Arg.Any<object>(),
+            CancellationToken);
+    }
+
+    [Test]
+    public async Task SyncMatchesForCompetitionAsync_CompetitionMissing_ReturnsNoFinishedMatches()
+    {
+        // Arrange
+        var mockCompetitions = CreateMockDbSet(new List<Competition>().AsQueryable());
+        Context.Competitions.Returns(mockCompetitions);
+
+        // Act
+        var result = await _service.SyncMatchesForCompetitionAsync(2021, CancellationToken);
+
+        // Assert
+        await Assert.That(result).IsEqualTo(new MatchSyncResult(2021, false));
+    }
+
+    [Test]
+    public async Task SyncMatchesForCompetitionAsync_UsesIncrementalDateWindowFilter()
+    {
+        // Arrange
+        Clock.Current = new FakeClock(_now);
+        var competition = Competition.Create(2021, "Premier League", "PL", "England");
+        var mockCompetitions = CreateMockDbSet(new List<Competition> { competition }.AsQueryable());
+        Context.Competitions.Returns(mockCompetitions);
+
+        var mockTeams = CreateMockDbSet(new List<Team>().AsQueryable());
+        Context.Teams.Returns(mockTeams);
+
+        var mockMatches = CreateMockDbSet(new List<Match>().AsQueryable());
+        Context.Matches.Returns(mockMatches);
+        Context.SaveChangesAsync(CancellationToken).Returns(1);
+
+        _footballDataService.GetMatchesForCompetitionAsync(
+                2021,
+                Arg.Any<CompetitionMatchesApiFilter>(),
+                CancellationToken)
+            .Returns(new List<MatchApiDto>());
+
+        // Act
+        _ = await _service.SyncMatchesForCompetitionAsync(2021, CancellationToken);
+
+        // Assert
+        await _footballDataService.Received(1).GetMatchesForCompetitionAsync(
+            2021,
+            Arg.Is<CompetitionMatchesApiFilter>(f =>
+                f.DateFrom == _now.Date.AddDays(-2)
+                && f.DateTo == _now.Date.AddDays(14)
+                && f.Season == null
+                && f.Matchday == null
+                && f.Status == null),
             CancellationToken);
     }
 

@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Refit;
 
 namespace ExtraTime.Infrastructure;
 
@@ -111,13 +112,15 @@ public static class DependencyInjection
         // Football Data Services
         services.Configure<FootballDataSettings>(configuration.GetSection(FootballDataSettings.SectionName));
         services.AddTransient<RateLimitingHandler>();
-        services.AddHttpClient<IFootballDataService, FootballDataService>((serviceProvider, client) =>
-        {
-            var footballSettings = configuration.GetSection(FootballDataSettings.SectionName).Get<FootballDataSettings>();
-            client.BaseAddress = new Uri(footballSettings?.BaseUrl ?? "https://api.football-data.org/v4/");
-            client.DefaultRequestHeaders.Add("X-Auth-Token", footballSettings?.ApiKey ?? string.Empty);
-        })
-        .AddHttpMessageHandler<RateLimitingHandler>();
+        services.AddRefitClient<IFootballDataApi>()
+            .ConfigureHttpClient(client =>
+            {
+                var footballSettings = configuration.GetSection(FootballDataSettings.SectionName).Get<FootballDataSettings>();
+                client.BaseAddress = new Uri(footballSettings?.BaseUrl ?? "https://api.football-data.org/v4/");
+                client.DefaultRequestHeaders.Add("X-Auth-Token", footballSettings?.ApiKey ?? string.Empty);
+            })
+            .AddHttpMessageHandler<RateLimitingHandler>();
+        services.AddScoped<IFootballDataService, FootballDataService>();
         services.AddScoped<IFootballSyncService, FootballSyncService>();
         // services.AddHostedService<FootballSyncHostedService>();
 

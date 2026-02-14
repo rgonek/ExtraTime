@@ -51,6 +51,7 @@ public sealed class GetMatchesQueryHandler(
                     m.Competition.Id,
                     m.Competition.Name,
                     m.Competition.Code,
+                    m.Competition.Type,
                     m.Competition.Country,
                     m.Competition.LogoUrl),
                 new TeamSummaryDto(
