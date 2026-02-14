@@ -78,11 +78,11 @@ jobs:
   # ============================================
   # STAGE 2: Verification (API & SQL Integration)
   # Requires manual approval via "verification" environment
+  # Runs on all PRs (approval required) and pushes to main/develop
   # ============================================
   verification-tests:
     name: API & SQL Verification
     needs: build-and-fast-test
-    if: github.event_name != 'pull_request' # Optional: only run on pushes to main/develop
     environment: verification
     runs-on: ubuntu-latest
     steps:
