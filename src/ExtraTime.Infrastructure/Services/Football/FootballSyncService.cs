@@ -77,72 +77,13 @@ public sealed class FootballSyncService(
     {
         var competition = await context.Competitions
             .FirstOrDefaultAsync(c => c.Id == competitionId, ct);
-
         if (competition is null)
         {
             logger.LogWarning("Competition {CompetitionId} not found", competitionId);
             return;
         }
 
-        logger.LogInformation("Starting team sync for competition: {Name}", competition.Name);
-
-        var apiTeams = await footballDataService.GetTeamsForCompetitionAsync(competition.ExternalId, ct);
-
-        var currentYear = Clock.UtcNow.Year;
-        var season = competition.CurrentSeasonStart?.Year ?? currentYear;
-
-        foreach (var apiTeam in apiTeams)
-        {
-            var team = await context.Teams
-                .FirstOrDefaultAsync(t => t.ExternalId == apiTeam.Id, ct);
-
-            if (team is null)
-            {
-                team = Team.Create(
-                    apiTeam.Id,
-                    apiTeam.Name,
-                    apiTeam.ShortName,
-                    apiTeam.Tla,
-                    apiTeam.Crest,
-                    apiTeam.ClubColors,
-                    apiTeam.Venue);
-                context.Teams.Add(team);
-                logger.LogInformation("Added new team: {Name}", team.Name);
-            }
-            else
-            {
-                team.UpdateDetails(
-                    apiTeam.Name,
-                    apiTeam.ShortName,
-                    apiTeam.Tla,
-                    apiTeam.Crest,
-                    apiTeam.ClubColors,
-                    apiTeam.Venue);
-                team.RecordSync();
-            }
-
-            await context.SaveChangesAsync(ct);
-
-            var existingLink = await context.CompetitionTeams
-                .FirstOrDefaultAsync(ct2 =>
-                    ct2.CompetitionId == competition.Id &&
-                    ct2.TeamId == team.Id &&
-                    ct2.Season == season, ct);
-
-            if (existingLink is null)
-            {
-                var competitionTeam = new CompetitionTeam
-                {
-                    CompetitionId = competition.Id,
-                    TeamId = team.Id,
-                    Season = season
-                };
-                context.CompetitionTeams.Add(competitionTeam);
-            }
-        }
-
-        await context.SaveChangesAsync(ct);
-        logger.LogInformation("Team sync completed for competition: {Name}", competition.Name);
+        await SyncTeamsForCompetitionAsync(competition.ExternalId, ct);
     }
 
     public async Task SyncTeamsForCompetitionAsync(int competitionExternalId, CancellationToken ct = default)

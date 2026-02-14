@@ -267,9 +267,9 @@ await ExecuteInBatchesAsync(
 - [x] **2.7** Build and run tests to verify
 
 ### Phase 3 Tasks
-- [ ] **3.1** Replace Guid overload of `SyncTeamsForCompetitionAsync` (lines 72-141) with delegation to int overload (lookup competition, call `SyncTeamsForCompetitionAsync(competition.ExternalId, ct)`)
-- [ ] **3.2** Update unit test `SyncTeamsForCompetitionAsync_NewTeams_AddsToDatabase` to verify `SeasonTeams` are created instead of `CompetitionTeams`
-- [ ] **3.3** Build and run tests
+- [x] **3.1** Replace Guid overload of `SyncTeamsForCompetitionAsync` (lines 72-141) with delegation to int overload (lookup competition, call `SyncTeamsForCompetitionAsync(competition.ExternalId, ct)`)
+- [x] **3.2** Update unit test `SyncTeamsForCompetitionAsync_NewTeams_AddsToDatabase` to verify `SeasonTeams` are created instead of `CompetitionTeams`
+- [x] **3.3** Build and run tests
 
 ### Phase 4 Tasks
 - [ ] **4.1** In `ProcessMatchesAsync`: before the loop, collect all team external IDs and pre-fetch into `Dictionary<int, Team>`; also pre-fetch existing matches by external ID into `Dictionary<int, Match>`; replace per-item queries with dict lookups
