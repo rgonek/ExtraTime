@@ -79,6 +79,18 @@ public sealed class FootballDataServiceTests
     }
 
     [Test]
+    public async Task GetTeamsForCompetitionAsync_WithFilter_PassesSeasonFilter()
+    {
+        var response = new TeamsApiResponse([]);
+        var filter = new CompetitionTeamsApiFilter(Season: 2025);
+        _footballDataApi.GetTeamsForCompetitionAsync(2021, season: 2025, ct: _ct).Returns(response);
+
+        _ = await _service.GetTeamsForCompetitionAsync(2021, filter, _ct);
+
+        await _footballDataApi.Received(1).GetTeamsForCompetitionAsync(2021, season: 2025, ct: _ct);
+    }
+
+    [Test]
     public async Task GetMatchesForCompetitionAsync_PassesDateFilters()
     {
         var response = new MatchesApiResponse([]);
@@ -130,6 +142,46 @@ public sealed class FootballDataServiceTests
     }
 
     [Test]
+    public async Task GetMatchesForCompetitionAsync_WithFilter_PassesAllFilters()
+    {
+        var response = new MatchesApiResponse([]);
+        var dateFrom = new DateTime(2026, 2, 1);
+        var dateTo = new DateTime(2026, 2, 28);
+        var filter = new CompetitionMatchesApiFilter(
+            Season: 2025,
+            Matchday: 23,
+            Status: "FINISHED",
+            DateFrom: dateFrom,
+            DateTo: dateTo,
+            Stage: "REGULAR_SEASON",
+            Group: "GROUP_A");
+
+        _footballDataApi.GetMatchesForCompetitionAsync(
+            2021,
+            2025,
+            23,
+            "FINISHED",
+            dateFrom,
+            dateTo,
+            "REGULAR_SEASON",
+            "GROUP_A",
+            _ct).Returns(response);
+
+        _ = await _service.GetMatchesForCompetitionAsync(2021, filter, _ct);
+
+        await _footballDataApi.Received(1).GetMatchesForCompetitionAsync(
+            2021,
+            2025,
+            23,
+            "FINISHED",
+            dateFrom,
+            dateTo,
+            "REGULAR_SEASON",
+            "GROUP_A",
+            _ct);
+    }
+
+    [Test]
     public async Task GetLiveMatchesAsync_UsesExpandedStatusFilter()
     {
         var response = new MatchesApiResponse([]);
@@ -159,5 +211,24 @@ public sealed class FootballDataServiceTests
 
         await Assert.That(result).IsNotNull();
         await Assert.That(result!.Competition.Id).IsEqualTo(2021);
+    }
+
+    [Test]
+    public async Task GetStandingsAsync_WithFilter_PassesAllFilters()
+    {
+        var standings = new StandingsApiResponse(
+            new StandingsCompetitionApiDto(2021, "Premier League", "PL"),
+            new SeasonApiDto(555, new DateTime(2024, 8, 1), new DateTime(2025, 5, 30), 10, null),
+            []);
+        var filter = new CompetitionStandingsApiFilter(
+            Season: 2025,
+            Matchday: 23,
+            Date: new DateTime(2026, 2, 1));
+
+        _footballDataApi.GetStandingsAsync(2021, 2025, 23, filter.Date, _ct).Returns(standings);
+
+        _ = await _service.GetStandingsAsync(2021, filter, _ct);
+
+        await _footballDataApi.Received(1).GetStandingsAsync(2021, 2025, 23, filter.Date, _ct);
     }
 }

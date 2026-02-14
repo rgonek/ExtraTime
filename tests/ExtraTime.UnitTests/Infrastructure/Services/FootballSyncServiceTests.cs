@@ -261,6 +261,57 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
     }
 
     [Test]
+    public async Task SyncMatchesForCompetitionAsync_CompetitionMissing_ReturnsNoFinishedMatches()
+    {
+        // Arrange
+        var mockCompetitions = CreateMockDbSet(new List<Competition>().AsQueryable());
+        Context.Competitions.Returns(mockCompetitions);
+
+        // Act
+        var result = await _service.SyncMatchesForCompetitionAsync(2021, CancellationToken);
+
+        // Assert
+        await Assert.That(result).IsEqualTo(new MatchSyncResult(2021, false));
+    }
+
+    [Test]
+    public async Task SyncMatchesForCompetitionAsync_UsesIncrementalDateWindowFilter()
+    {
+        // Arrange
+        Clock.Current = new FakeClock(_now);
+        var competition = Competition.Create(2021, "Premier League", "PL", "England");
+        var mockCompetitions = CreateMockDbSet(new List<Competition> { competition }.AsQueryable());
+        Context.Competitions.Returns(mockCompetitions);
+
+        var mockTeams = CreateMockDbSet(new List<Team>().AsQueryable());
+        Context.Teams.Returns(mockTeams);
+
+        var mockMatches = CreateMockDbSet(new List<Match>().AsQueryable());
+        Context.Matches.Returns(mockMatches);
+        Context.SaveChangesAsync(CancellationToken).Returns(1);
+
+        _footballDataService.GetMatchesForCompetitionAsync(
+                2021,
+                Arg.Any<CompetitionMatchesApiFilter>(),
+                CancellationToken)
+            .Returns(new List<MatchApiDto>());
+
+        // Act
+        _ = await _service.SyncMatchesForCompetitionAsync(2021, CancellationToken);
+
+        // Assert
+        await _footballDataService.Received(1).GetMatchesForCompetitionAsync(
+            2021,
+            Arg.Is<CompetitionMatchesApiFilter>(f =>
+                f.DateFrom == _now.Date.AddDays(-2)
+                && f.DateTo == _now.Date.AddDays(14)
+                && f.Season == null
+                && f.Matchday == null
+                && f.Status == null),
+            CancellationToken);
+    }
+
+    [Test]
     public async Task SyncLiveMatchResultsAsync_LiveMatch_UpdatesScore()
     {
         // Arrange
