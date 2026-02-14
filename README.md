@@ -59,6 +59,7 @@ A social betting app where friends create leagues, predict football match outcom
 - [.NET 10 SDK](https://dotnet.microsoft.com/download) or later
 - [Node.js 22](https://nodejs.org/) or [Bun](https://bun.sh/)
 - [Docker](https://www.docker.com/) (for SQL Server container)
+- [Azure Functions Core Tools v4](https://learn.microsoft.com/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools)
 
 ### Quick Start with .NET Aspire (Recommended)
 
@@ -80,6 +81,12 @@ This starts all services with the Aspire dashboard for observability:
 - **Frontend**: http://localhost:3000
 - **API**: https://localhost:5001
 - **Swagger**: https://localhost:5001/swagger
+- **Functions Runtime**: `functions-runtime` resource (Azure Functions host, explicit start)
+- **Manual Dev Triggers**: `sync-*`, `calculate-bets`, `bot-betting` resources (explicit start)
+
+For background jobs in development, use the Aspire dashboard in hybrid mode:
+- Start **`functions-runtime`** when you want production-path Azure Functions behavior (timers/durable orchestration).
+- Start a **DevTrigger** resource when you want deterministic one-shot execution from the dashboard.
 
 ### Alternative: Docker Compose
 
