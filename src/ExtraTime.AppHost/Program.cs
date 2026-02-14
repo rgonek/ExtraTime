@@ -12,6 +12,8 @@ var sqlServer = builder.AddSqlServer("sql")
     .WithLifetime(ContainerLifetime.Persistent);
 
 var database = sqlServer.AddDatabase("extratime");
+var functionsStorage = builder.AddAzureStorage("functions-storage")
+    .RunAsEmulator();
 
 // 1. External Football Data API Resource (Feature 3)
 // Visualizing the external dependency in the dashboard
@@ -30,6 +32,7 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WithExternalHttpEndpoints();
 
 var functionsRuntime = builder.AddAzureFunctionsProject<Projects.ExtraTime_Functions>("functions-runtime")
+    .WithHostStorage(functionsStorage)
     .WithReference(database)
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WaitForCompletion(migrations)
