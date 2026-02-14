@@ -7,6 +7,9 @@ namespace ExtraTime.Functions.Orchestrators;
 
 public static class SyncFootballDataOrchestrator
 {
+    private static readonly TaskOptions ActivityRetryOptions = TaskOptions.FromRetryPolicy(
+        new RetryPolicy(maxNumberOfAttempts: 3, firstRetryInterval: TimeSpan.FromSeconds(20)));
+
     [Function(nameof(SyncFootballDataOrchestrator))]
     public static async Task RunOrchestrator(
         [OrchestrationTrigger] TaskOrchestrationContext context)
@@ -17,15 +20,17 @@ public static class SyncFootballDataOrchestrator
 
         // Phase 0: Ensure competitions exist (required for all other syncs)
         logger.LogInformation("Phase 0: Syncing competitions");
-        await context.CallActivityAsync(nameof(Activities.SyncCompetitionsActivity), Array.Empty<object>());
+        await CallActivityWithRetryAsync(context, nameof(Activities.SyncCompetitionsActivity));
 
         // No rate limit wait needed - next calls are DB/config reads, not API calls
-        var competitionIds = await context.CallActivityAsync<List<int>>(
-            nameof(Activities.GetCompetitionIdsActivity), Array.Empty<object>());
+        var competitionIds = await CallActivityWithRetryAsync<List<int>>(
+            context,
+            nameof(Activities.GetCompetitionIdsActivity));
 
         // Check if any competition needs initial setup (no current season)
-        var competitionsNeedingSetup = await context.CallActivityAsync<List<int>>(
-            nameof(Activities.GetCompetitionsWithoutSeasonActivity), Array.Empty<object>());
+        var competitionsNeedingSetup = await CallActivityWithRetryAsync<List<int>>(
+            context,
+            nameof(Activities.GetCompetitionsWithoutSeasonActivity));
 
         // Phase 0.5: Initialize new competitions BEFORE match sync
         // New competitions need: standings (creates season) -> teams -> then matches will work
@@ -34,9 +39,7 @@ public static class SyncFootballDataOrchestrator
             logger.LogInformation("Phase 0.5: Initializing {Count} new competitions (standings + teams)",
                 competitionsNeedingSetup.Count);
 
-            await context.CreateTimer(
-                context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-                CancellationToken.None);
+            await WaitForBatchWindowAsync(context);
 
             // Sync standings for new competitions (creates seasons + some teams from standings data)
             await ExecuteInBatchesAsync<StandingsSyncResult>(
@@ -44,9 +47,7 @@ public static class SyncFootballDataOrchestrator
                 competitionsNeedingSetup,
                 nameof(Activities.SyncCompetitionStandingsActivity));
 
-            await context.CreateTimer(
-                context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-                CancellationToken.None);
+            await WaitForBatchWindowAsync(context);
 
             // Sync teams for new competitions (ensures all teams are present)
             await ExecuteInBatchesAsync(
@@ -59,9 +60,7 @@ public static class SyncFootballDataOrchestrator
         // Now new competitions have seasons + teams, so matches will sync correctly
         logger.LogInformation("Phase 1: Syncing matches for {Count} competitions", competitionIds.Count);
 
-        await context.CreateTimer(
-            context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-            CancellationToken.None);
+        await WaitForBatchWindowAsync(context);
 
         var matchResults = await ExecuteInBatchesAsync<MatchSyncResult>(
             context,
@@ -85,9 +84,7 @@ public static class SyncFootballDataOrchestrator
             logger.LogInformation("Phase 2: Syncing standings for {Count} competitions",
                 competitionsNeedingStandings.Count);
 
-            await context.CreateTimer(
-                context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-                CancellationToken.None);
+            await WaitForBatchWindowAsync(context);
 
             var standingsResults = await ExecuteInBatchesAsync<StandingsSyncResult>(
                 context,
@@ -105,9 +102,7 @@ public static class SyncFootballDataOrchestrator
                 logger.LogInformation("Phase 3: Syncing teams for {Count} competitions with new seasons",
                     competitionsWithNewSeasons.Count);
 
-                await context.CreateTimer(
-                    context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-                    CancellationToken.None);
+                await WaitForBatchWindowAsync(context);
 
                 await ExecuteInBatchesAsync(
                     context,
@@ -131,16 +126,14 @@ public static class SyncFootballDataOrchestrator
         {
             var batch = batches[i];
             var tasks = batch.Select(id =>
-                context.CallActivityAsync<TResult>(activityName, id));
+                context.CallActivityAsync<TResult>(activityName, id, ActivityRetryOptions));
 
             var batchResults = await Task.WhenAll(tasks);
             results.AddRange(batchResults);
 
             if (i < batches.Count - 1)
             {
-                await context.CreateTimer(
-                    context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-                    CancellationToken.None);
+                await WaitForBatchWindowAsync(context);
             }
         }
 
@@ -158,16 +151,37 @@ public static class SyncFootballDataOrchestrator
         {
             var batch = batches[i];
             var tasks = batch.Select(id =>
-                context.CallActivityAsync(activityName, id));
+                context.CallActivityAsync(activityName, id, ActivityRetryOptions));
 
             await Task.WhenAll(tasks.Cast<Task>());
 
             if (i < batches.Count - 1)
             {
-                await context.CreateTimer(
-                    context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-                    CancellationToken.None);
+                await WaitForBatchWindowAsync(context);
             }
         }
+    }
+
+    private static Task<TResult> CallActivityWithRetryAsync<TResult>(
+        TaskOrchestrationContext context,
+        string activityName,
+        object? input = null)
+    {
+        return context.CallActivityAsync<TResult>(activityName, input, ActivityRetryOptions);
+    }
+
+    private static Task CallActivityWithRetryAsync(
+        TaskOrchestrationContext context,
+        string activityName,
+        object? input = null)
+    {
+        return context.CallActivityAsync(activityName, input, ActivityRetryOptions);
+    }
+
+    private static Task WaitForBatchWindowAsync(TaskOrchestrationContext context)
+    {
+        return context.CreateTimer(
+            context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
+            CancellationToken.None);
     }
 }
