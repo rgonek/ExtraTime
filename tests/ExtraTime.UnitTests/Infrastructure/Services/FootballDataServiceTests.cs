@@ -70,7 +70,7 @@ public sealed class FootballDataServiceTests
             new TeamApiDto(1, "Arsenal", "Arsenal", "ARS", "https://example.com/arsenal.png", "Red / White", "Emirates Stadium"),
             new TeamApiDto(2, "Chelsea", "Chelsea", "CHE", "https://example.com/chelsea.png", "Blue", "Stamford Bridge")
         ]);
-        _footballDataApi.GetTeamsForCompetitionAsync(2021, _ct).Returns(response);
+        _footballDataApi.GetTeamsForCompetitionAsync(2021, ct: _ct).Returns(response);
 
         var result = await _service.GetTeamsForCompetitionAsync(2021, _ct);
 
@@ -84,17 +84,44 @@ public sealed class FootballDataServiceTests
         var response = new MatchesApiResponse([]);
         var dateFrom = new DateTime(2026, 2, 1);
         var dateTo = new DateTime(2026, 2, 28);
-        _footballDataApi.GetMatchesForCompetitionAsync(2021, dateFrom, dateTo, _ct).Returns(response);
+        _footballDataApi.GetMatchesForCompetitionAsync(
+            2021,
+            null,
+            null,
+            null,
+            dateFrom,
+            dateTo,
+            null,
+            null,
+            _ct).Returns(response);
 
         _ = await _service.GetMatchesForCompetitionAsync(2021, dateFrom, dateTo, _ct);
 
-        await _footballDataApi.Received(1).GetMatchesForCompetitionAsync(2021, dateFrom, dateTo, _ct);
+        await _footballDataApi.Received(1).GetMatchesForCompetitionAsync(
+            2021,
+            null,
+            null,
+            null,
+            dateFrom,
+            dateTo,
+            null,
+            null,
+            _ct);
     }
 
     [Test]
     public async Task GetMatchesForCompetitionAsync_TaskCanceled_ReturnsEmptyList()
     {
-        _footballDataApi.GetMatchesForCompetitionAsync(2021, null, null, _ct)
+        _footballDataApi.GetMatchesForCompetitionAsync(
+            2021,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            _ct)
             .Returns(Task.FromException<MatchesApiResponse>(new TaskCanceledException("Timed out")));
 
         var result = await _service.GetMatchesForCompetitionAsync(2021, null, null, _ct);
@@ -126,7 +153,7 @@ public sealed class FootballDataServiceTests
             new StandingsCompetitionApiDto(2021, "Premier League", "PL"),
             new SeasonApiDto(555, new DateTime(2024, 8, 1), new DateTime(2025, 5, 30), 10, null),
             []);
-        _footballDataApi.GetStandingsAsync(2021, _ct).Returns(standings);
+        _footballDataApi.GetStandingsAsync(2021, null, null, null, _ct).Returns(standings);
 
         var result = await _service.GetStandingsAsync(2021, _ct);
 
