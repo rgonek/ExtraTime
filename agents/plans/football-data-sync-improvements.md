@@ -279,11 +279,11 @@ await ExecuteInBatchesAsync(
 - [x] **4.5** Build and run tests
 
 ### Phase 5 Tasks
-- [ ] **5.1** Add `<PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />` to `Directory.Packages.props` and `<PackageReference Include="Refit.HttpClientFactory" />` to `ExtraTime.Infrastructure.csproj`
-- [ ] **5.2** Create `IFootballDataApi` Refit interface at `src/ExtraTime.Infrastructure/Services/Football/IFootballDataApi.cs` (internal, 5 methods matching API endpoints, `[Query(Format = "yyyy-MM-dd")]` for date params)
-- [ ] **5.3** Refactor `FootballDataService`: replace `HttpClient` with `IFootballDataApi` in constructor; wrap each call with `catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException)`; remove manual URL building and `ReadFromJsonAsync` calls
-- [ ] **5.4** Update DI in `DependencyInjection.cs`: replace `AddHttpClient<IFootballDataService, FootballDataService>` with `AddRefitClient<IFootballDataApi>()` (keep `ConfigureHttpClient` for base URL + auth header + `AddHttpMessageHandler<RateLimitingHandler>`); add `services.AddScoped<IFootballDataService, FootballDataService>()`
-- [ ] **5.5** Build and run tests; verify HttpClient still gets standard resilience from ServiceDefaults
+- [x] **5.1** Add `<PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />` to `Directory.Packages.props` and `<PackageReference Include="Refit.HttpClientFactory" />` to `ExtraTime.Infrastructure.csproj`
+- [x] **5.2** Create `IFootballDataApi` Refit interface at `src/ExtraTime.Infrastructure/Services/Football/IFootballDataApi.cs` (internal, 5 methods matching API endpoints, `[Query(Format = "yyyy-MM-dd")]` for date params)
+- [x] **5.3** Refactor `FootballDataService`: replace `HttpClient` with `IFootballDataApi` in constructor; wrap each call with `catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException)`; remove manual URL building and `ReadFromJsonAsync` calls
+- [x] **5.4** Update DI in `DependencyInjection.cs`: replace `AddHttpClient<IFootballDataService, FootballDataService>` with `AddRefitClient<IFootballDataApi>()` (keep `ConfigureHttpClient` for base URL + auth header + `AddHttpMessageHandler<RateLimitingHandler>`); add `services.AddScoped<IFootballDataService, FootballDataService>()`
+- [x] **5.5** Build and run tests; verify HttpClient still gets standard resilience from ServiceDefaults
 
 ### Phase 6 Tasks
 - [ ] **6.1** Add generic `ExecuteInBatchesAsync<TResult>` method to `SyncFootballDataOrchestrator` (chunk, parallel execute, timer between batches); add non-generic `ExecuteInBatchesAsync` overload for void activities

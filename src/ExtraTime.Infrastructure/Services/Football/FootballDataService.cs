@@ -1,14 +1,14 @@
-using System.Net.Http.Json;
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Football.DTOs;
 using ExtraTime.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Refit;
 
 namespace ExtraTime.Infrastructure.Services.Football;
 
-public sealed class FootballDataService(
-    HttpClient httpClient,
+internal sealed class FootballDataService(
+    IFootballDataApi footballDataApi,
     IOptions<FootballDataSettings> settings,
     ILogger<FootballDataService> logger) : IFootballDataService
 {
@@ -18,11 +18,9 @@ public sealed class FootballDataService(
     {
         try
         {
-            var response = await httpClient.GetAsync($"competitions/{externalId}", ct);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<CompetitionApiDto>(ct);
+            return await footballDataApi.GetCompetitionAsync(externalId, ct);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException)
         {
             logger.LogError(ex, "Failed to fetch competition {ExternalId}", externalId);
             return null;
@@ -35,12 +33,10 @@ public sealed class FootballDataService(
     {
         try
         {
-            var response = await httpClient.GetAsync($"competitions/{competitionExternalId}/teams", ct);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<TeamsApiResponse>(ct);
-            return result?.Teams ?? [];
+            var result = await footballDataApi.GetTeamsForCompetitionAsync(competitionExternalId, ct);
+            return result.Teams;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException)
         {
             logger.LogError(ex, "Failed to fetch teams for competition {ExternalId}", competitionExternalId);
             return [];
@@ -55,30 +51,10 @@ public sealed class FootballDataService(
     {
         try
         {
-            var url = $"competitions/{competitionExternalId}/matches";
-            var queryParams = new List<string>();
-
-            if (dateFrom.HasValue)
-            {
-                queryParams.Add($"dateFrom={dateFrom.Value:yyyy-MM-dd}");
-            }
-
-            if (dateTo.HasValue)
-            {
-                queryParams.Add($"dateTo={dateTo.Value:yyyy-MM-dd}");
-            }
-
-            if (queryParams.Count > 0)
-            {
-                url += "?" + string.Join("&", queryParams);
-            }
-
-            var response = await httpClient.GetAsync(url, ct);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<MatchesApiResponse>(ct);
-            return result?.Matches ?? [];
+            var result = await footballDataApi.GetMatchesForCompetitionAsync(competitionExternalId, dateFrom, dateTo, ct);
+            return result.Matches;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException)
         {
             logger.LogError(ex, "Failed to fetch matches for competition {ExternalId}", competitionExternalId);
             return [];
@@ -90,12 +66,13 @@ public sealed class FootballDataService(
         try
         {
             var competitionIds = string.Join(",", _settings.SupportedCompetitionIds);
-            var response = await httpClient.GetAsync($"matches?status=IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT&competitions={competitionIds}", ct);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<MatchesApiResponse>(ct);
-            return result?.Matches ?? [];
+            var result = await footballDataApi.GetMatchesAsync(
+                "IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT",
+                competitionIds,
+                ct);
+            return result.Matches;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException)
         {
             logger.LogError(ex, "Failed to fetch live matches");
             return [];
@@ -106,11 +83,9 @@ public sealed class FootballDataService(
     {
         try
         {
-            var response = await httpClient.GetAsync($"competitions/{competitionExternalId}/standings", ct);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<StandingsApiResponse>(ct);
+            return await footballDataApi.GetStandingsAsync(competitionExternalId, ct);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is ApiException or HttpRequestException or TaskCanceledException)
         {
             logger.LogError(ex, "Failed to fetch standings for competition {ExternalId}", competitionExternalId);
             return null;
