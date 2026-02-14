@@ -286,9 +286,9 @@ await ExecuteInBatchesAsync(
 - [x] **5.5** Build and run tests; verify HttpClient still gets standard resilience from ServiceDefaults
 
 ### Phase 6 Tasks
-- [ ] **6.1** Add generic `ExecuteInBatchesAsync<TResult>` method to `SyncFootballDataOrchestrator` (chunk, parallel execute, timer between batches); add non-generic `ExecuteInBatchesAsync` overload for void activities
-- [ ] **6.2** Replace `SyncMatchesForCompetitionsAsync`, `SyncStandingsForCompetitionsAsync`, `SyncTeamsForCompetitionsAsync` with calls to the generic method; delete the three old methods
-- [ ] **6.3** Build and run tests
+- [x] **6.1** Add generic `ExecuteInBatchesAsync<TResult>` method to `SyncFootballDataOrchestrator` (chunk, parallel execute, timer between batches); add non-generic `ExecuteInBatchesAsync` overload for void activities
+- [x] **6.2** Replace `SyncMatchesForCompetitionsAsync`, `SyncStandingsForCompetitionsAsync`, `SyncTeamsForCompetitionsAsync` with calls to the generic method; delete the three old methods
+- [x] **6.3** Build and run tests
 
 ---
 

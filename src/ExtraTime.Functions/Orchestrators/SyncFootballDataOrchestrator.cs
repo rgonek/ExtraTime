@@ -39,14 +39,20 @@ public static class SyncFootballDataOrchestrator
                 CancellationToken.None);
 
             // Sync standings for new competitions (creates seasons + some teams from standings data)
-            await SyncStandingsForCompetitionsAsync(context, competitionsNeedingSetup, logger);
+            await ExecuteInBatchesAsync<StandingsSyncResult>(
+                context,
+                competitionsNeedingSetup,
+                nameof(Activities.SyncCompetitionStandingsActivity));
 
             await context.CreateTimer(
                 context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
                 CancellationToken.None);
 
             // Sync teams for new competitions (ensures all teams are present)
-            await SyncTeamsForCompetitionsAsync(context, competitionsNeedingSetup, logger);
+            await ExecuteInBatchesAsync(
+                context,
+                competitionsNeedingSetup,
+                nameof(Activities.SyncCompetitionTeamsActivity));
         }
 
         // Phase 1: Sync matches for ALL competitions
@@ -57,7 +63,10 @@ public static class SyncFootballDataOrchestrator
             context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
             CancellationToken.None);
 
-        var matchResults = await SyncMatchesForCompetitionsAsync(context, competitionIds, logger);
+        var matchResults = await ExecuteInBatchesAsync<MatchSyncResult>(
+            context,
+            competitionIds,
+            nameof(Activities.SyncCompetitionMatchesActivity));
 
         // Phase 2: Sync standings for existing competitions (if matches finished or 5 AM)
         // Exclude competitions that were just initialized in Phase 0.5
@@ -80,8 +89,10 @@ public static class SyncFootballDataOrchestrator
                 context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
                 CancellationToken.None);
 
-            var standingsResults = await SyncStandingsForCompetitionsAsync(
-                context, competitionsNeedingStandings, logger);
+            var standingsResults = await ExecuteInBatchesAsync<StandingsSyncResult>(
+                context,
+                competitionsNeedingStandings,
+                nameof(Activities.SyncCompetitionStandingsActivity));
 
             // Phase 3: Sync teams for competitions with new seasons
             var competitionsWithNewSeasons = standingsResults
@@ -98,27 +109,29 @@ public static class SyncFootballDataOrchestrator
                     context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
                     CancellationToken.None);
 
-                await SyncTeamsForCompetitionsAsync(context, competitionsWithNewSeasons, logger);
+                await ExecuteInBatchesAsync(
+                    context,
+                    competitionsWithNewSeasons,
+                    nameof(Activities.SyncCompetitionTeamsActivity));
             }
         }
 
         logger.LogInformation("Football data sync completed");
     }
 
-    private static async Task<List<MatchSyncResult>> SyncMatchesForCompetitionsAsync(
+    private static async Task<List<TResult>> ExecuteInBatchesAsync<TResult>(
         TaskOrchestrationContext context,
         List<int> competitionIds,
-        ILogger logger)
+        string activityName)
     {
-        var results = new List<MatchSyncResult>();
+        var results = new List<TResult>();
         var batches = competitionIds.Chunk(RateLimitConfig.CompetitionsPerBatch).ToList();
 
         for (var i = 0; i < batches.Count; i++)
         {
             var batch = batches[i];
             var tasks = batch.Select(id =>
-                context.CallActivityAsync<MatchSyncResult>(
-                    nameof(Activities.SyncCompetitionMatchesActivity), id));
+                context.CallActivityAsync<TResult>(activityName, id));
 
             var batchResults = await Task.WhenAll(tasks);
             results.AddRange(batchResults);
@@ -134,39 +147,10 @@ public static class SyncFootballDataOrchestrator
         return results;
     }
 
-    private static async Task<List<StandingsSyncResult>> SyncStandingsForCompetitionsAsync(
+    private static async Task ExecuteInBatchesAsync(
         TaskOrchestrationContext context,
         List<int> competitionIds,
-        ILogger logger)
-    {
-        var results = new List<StandingsSyncResult>();
-        var batches = competitionIds.Chunk(RateLimitConfig.CompetitionsPerBatch).ToList();
-
-        for (var i = 0; i < batches.Count; i++)
-        {
-            var batch = batches[i];
-            var tasks = batch.Select(id =>
-                context.CallActivityAsync<StandingsSyncResult>(
-                    nameof(Activities.SyncCompetitionStandingsActivity), id));
-
-            var batchResults = await Task.WhenAll(tasks);
-            results.AddRange(batchResults);
-
-            if (i < batches.Count - 1)
-            {
-                await context.CreateTimer(
-                    context.CurrentUtcDateTime.Add(RateLimitConfig.BatchWaitTime),
-                    CancellationToken.None);
-            }
-        }
-
-        return results;
-    }
-
-    private static async Task SyncTeamsForCompetitionsAsync(
-        TaskOrchestrationContext context,
-        List<int> competitionIds,
-        ILogger logger)
+        string activityName)
     {
         var batches = competitionIds.Chunk(RateLimitConfig.CompetitionsPerBatch).ToList();
 
@@ -174,8 +158,7 @@ public static class SyncFootballDataOrchestrator
         {
             var batch = batches[i];
             var tasks = batch.Select(id =>
-                context.CallActivityAsync(
-                    nameof(Activities.SyncCompetitionTeamsActivity), id));
+                context.CallActivityAsync(activityName, id));
 
             await Task.WhenAll(tasks.Cast<Task>());
 
