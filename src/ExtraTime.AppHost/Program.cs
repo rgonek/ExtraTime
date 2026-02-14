@@ -1,4 +1,5 @@
 using Aspire.Hosting;
+using Aspire.Hosting.Azure;
 using Aspire.Hosting.ApplicationModel;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -27,6 +28,12 @@ var api = builder.AddProject<Projects.ExtraTime_API>("api")
     .WithEnvironment("FootballData__ApiKey", footballDataKey)
     .WaitForCompletion(migrations)
     .WithExternalHttpEndpoints();
+
+var functionsRuntime = builder.AddAzureFunctionsProject<Projects.ExtraTime_Functions>("functions-runtime")
+    .WithReference(database)
+    .WithEnvironment("FootballData__ApiKey", footballDataKey)
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
 
 // 4. Dev trigger resources - each has its own isolated log stream
 // These run operations in separate processes with full application logging
