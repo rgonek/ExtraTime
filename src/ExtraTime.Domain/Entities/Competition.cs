@@ -1,4 +1,5 @@
 using ExtraTime.Domain.Common;
+using ExtraTime.Domain.Enums;
 
 namespace ExtraTime.Domain.Entities;
 
@@ -8,6 +9,7 @@ public sealed class Competition : BaseEntity
     public string Name { get; private set; } = null!;
     public string Code { get; private set; } = null!;
     public string Country { get; private set; } = null!;
+    public CompetitionType Type { get; private set; }
     public string? LogoUrl { get; private set; }
     public int? CurrentMatchday { get; private set; }
     public DateTime? CurrentSeasonStart { get; private set; }
@@ -25,7 +27,8 @@ public sealed class Competition : BaseEntity
         string name,
         string code,
         string country,
-        string? logoUrl = null)
+        string? logoUrl = null,
+        CompetitionType type = CompetitionType.League)
     {
         if (externalId <= 0)
             throw new ArgumentException("External ID must be positive", nameof(externalId));
@@ -45,6 +48,7 @@ public sealed class Competition : BaseEntity
             Name = name,
             Code = code,
             Country = country,
+            Type = type,
             LogoUrl = logoUrl,
             LastSyncedAt = Clock.UtcNow
         };
@@ -54,7 +58,8 @@ public sealed class Competition : BaseEntity
         string name,
         string code,
         string country,
-        string? logoUrl = null)
+        string? logoUrl = null,
+        CompetitionType type = CompetitionType.League)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required", nameof(name));
@@ -68,6 +73,7 @@ public sealed class Competition : BaseEntity
         Name = name;
         Code = code;
         Country = country;
+        Type = type;
         LogoUrl = logoUrl;
     }
 

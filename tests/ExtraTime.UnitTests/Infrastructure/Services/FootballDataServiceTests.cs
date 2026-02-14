@@ -53,6 +53,7 @@ public sealed class FootballDataServiceTests
             2021,
             "Premier League",
             "PL",
+            "LEAGUE",
             new AreaApiDto("England"),
             new CurrentSeasonApiDto(555, 15, new DateTime(2024, 8, 1), new DateTime(2025, 5, 30)),
             "https://example.com/emblem.png"

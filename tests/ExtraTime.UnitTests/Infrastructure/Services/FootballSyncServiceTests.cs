@@ -54,6 +54,7 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
         Clock.Current = new FakeClock(_now);
         var apiDto = new CompetitionApiDto(
             2021, "Premier League", "PL",
+            "LEAGUE",
             new AreaApiDto("England"),
             new CurrentSeasonApiDto(555, 15, _now, _now.AddMonths(9)),
             "emblem.png"
@@ -85,6 +86,7 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
 
         var apiDto = new CompetitionApiDto(
             2021, "Premier League", "PL",
+            "LEAGUE",
             new AreaApiDto("England"),
             new CurrentSeasonApiDto(555, 15, _now, _now.AddMonths(9)),
             "new-emblem.png"

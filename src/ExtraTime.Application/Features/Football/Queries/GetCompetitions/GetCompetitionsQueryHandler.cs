@@ -20,6 +20,7 @@ public sealed class GetCompetitionsQueryHandler(
                 c.ExternalId,
                 c.Name,
                 c.Code,
+                c.Type,
                 c.Country,
                 c.LogoUrl,
                 c.CurrentMatchday,

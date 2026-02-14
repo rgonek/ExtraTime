@@ -1,3 +1,5 @@
+using ExtraTime.Domain.Enums;
+
 namespace ExtraTime.Application.Features.Football.DTOs;
 
 // DTOs from Football-Data.org API
@@ -5,6 +7,7 @@ public sealed record CompetitionApiDto(
     int Id,
     string Name,
     string Code,
+    string? Type,
     AreaApiDto Area,
     CurrentSeasonApiDto? CurrentSeason,
     string? Emblem);
@@ -23,6 +26,7 @@ public sealed record CompetitionDto(
     int ExternalId,
     string Name,
     string Code,
+    CompetitionType Type,
     string Country,
     string? LogoUrl,
     int? CurrentMatchday,
@@ -34,5 +38,6 @@ public sealed record CompetitionSummaryDto(
     Guid Id,
     string Name,
     string Code,
+    CompetitionType Type,
     string Country,
     string? LogoUrl);

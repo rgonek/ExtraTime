@@ -37,12 +37,14 @@ public sealed class FootballSyncService(
 
             if (competition is null)
             {
+                var competitionType = ParseCompetitionType(apiCompetition.Type);
                 competition = Competition.Create(
                     apiCompetition.Id,
                     apiCompetition.Name,
                     apiCompetition.Code,
                     apiCompetition.Area.Name,
-                    apiCompetition.Emblem);
+                    apiCompetition.Emblem,
+                    competitionType);
                 competition.UpdateCurrentSeason(
                     apiCompetition.CurrentSeason?.CurrentMatchday,
                     apiCompetition.CurrentSeason?.StartDate,
@@ -52,11 +54,13 @@ public sealed class FootballSyncService(
             }
             else
             {
+                var competitionType = ParseCompetitionType(apiCompetition.Type);
                 competition.UpdateDetails(
                     apiCompetition.Name,
                     apiCompetition.Code,
                     apiCompetition.Area.Name,
-                    apiCompetition.Emblem);
+                    apiCompetition.Emblem,
+                    competitionType);
                 competition.UpdateCurrentSeason(
                     apiCompetition.CurrentSeason?.CurrentMatchday,
                     apiCompetition.CurrentSeason?.StartDate,
@@ -561,6 +565,15 @@ public sealed class FootballSyncService(
         "CANCELLED" => MatchStatus.Cancelled,
         "AWARDED" => MatchStatus.Awarded,
         _ => MatchStatus.Scheduled
+    };
+
+    private static CompetitionType ParseCompetitionType(string? type) => type?.ToUpperInvariant() switch
+    {
+        "LEAGUE" => CompetitionType.League,
+        "LEAGUE_CUP" => CompetitionType.LeagueCup,
+        "CUP" => CompetitionType.Cup,
+        "PLAYOFFS" => CompetitionType.Playoffs,
+        _ => CompetitionType.League
     };
 
     private async Task<Season?> GetCurrentSeasonAsync(Guid competitionId, CancellationToken ct)

@@ -258,13 +258,13 @@ await ExecuteInBatchesAsync(
 - [x] **1.4** Build and run tests to verify no regressions
 
 ### Phase 2 Tasks
-- [ ] **2.1** Create `CompetitionType` enum file at `src/ExtraTime.Domain/Enums/CompetitionType.cs` with values `League = 0, LeagueCup = 1, Cup = 2, Playoffs = 3`
-- [ ] **2.2** Add `public CompetitionType Type { get; private set; }` to `Competition` entity; add `CompetitionType type = CompetitionType.League` param to `Create()` and `UpdateDetails()`
-- [ ] **2.3** Add `string? Type` to `CompetitionApiDto`; add `CompetitionType Type` to `CompetitionDto` and `CompetitionSummaryDto`
-- [ ] **2.4** Add `ParseCompetitionType` static method to `FootballSyncService`; wire into `SyncCompetitionsAsync` for both create and update paths
-- [ ] **2.5** Add `Type` property mapping in `CompetitionConfiguration.cs`: `.HasConversion<string>().HasMaxLength(20).HasDefaultValue(CompetitionType.League)`
-- [ ] **2.6** Generate EF migration: `dotnet ef migrations add AddCompetitionType`
-- [ ] **2.7** Build and run tests to verify
+- [x] **2.1** Create `CompetitionType` enum file at `src/ExtraTime.Domain/Enums/CompetitionType.cs` with values `League = 0, LeagueCup = 1, Cup = 2, Playoffs = 3`
+- [x] **2.2** Add `public CompetitionType Type { get; private set; }` to `Competition` entity; add `CompetitionType type = CompetitionType.League` param to `Create()` and `UpdateDetails()`
+- [x] **2.3** Add `string? Type` to `CompetitionApiDto`; add `CompetitionType Type` to `CompetitionDto` and `CompetitionSummaryDto`
+- [x] **2.4** Add `ParseCompetitionType` static method to `FootballSyncService`; wire into `SyncCompetitionsAsync` for both create and update paths
+- [x] **2.5** Add `Type` property mapping in `CompetitionConfiguration.cs`: `.HasConversion<string>().HasMaxLength(20).HasDefaultValue(CompetitionType.League)`
+- [x] **2.6** Generate EF migration: `dotnet ef migrations add AddCompetitionType`
+- [x] **2.7** Build and run tests to verify
 
 ### Phase 3 Tasks
 - [ ] **3.1** Replace Guid overload of `SyncTeamsForCompetitionAsync` (lines 72-141) with delegation to int overload (lookup competition, call `SyncTeamsForCompetitionAsync(competition.ExternalId, ct)`)

@@ -1,4 +1,5 @@
 using ExtraTime.Domain.Entities;
+using ExtraTime.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -27,6 +28,11 @@ public sealed class CompetitionConfiguration : IEntityTypeConfiguration<Competit
         builder.Property(c => c.Country)
             .IsRequired()
             .HasMaxLength(100);
+
+        builder.Property(c => c.Type)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(CompetitionType.League);
 
         builder.Property(c => c.LogoUrl)
             .HasMaxLength(500);
