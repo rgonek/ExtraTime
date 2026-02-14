@@ -211,7 +211,7 @@ public sealed class FootballDataServiceTests
                 "Emirates Stadium"
             )
         ]);
-        _fakeHandler.SetResponse("matches?status=IN_PLAY,PAUSED&competitions=2021,2014", JsonSerializer.Serialize(matchesResponse));
+        _fakeHandler.SetResponse("matches?status=IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT&competitions=2021,2014", JsonSerializer.Serialize(matchesResponse));
 
         // Act
         var result = await _service.GetLiveMatchesAsync(_ct);
@@ -227,7 +227,7 @@ public sealed class FootballDataServiceTests
     public async Task GetLiveMatchesAsync_ApiError_ReturnsEmptyList()
     {
         // Arrange
-        _fakeHandler.SetException("matches?status=IN_PLAY,PAUSED&competitions=2021,2014", new HttpRequestException("API Error"));
+        _fakeHandler.SetException("matches?status=IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT&competitions=2021,2014", new HttpRequestException("API Error"));
 
         // Act
         var result = await _service.GetLiveMatchesAsync(_ct);

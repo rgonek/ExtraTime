@@ -90,7 +90,7 @@ public sealed class FootballDataService(
         try
         {
             var competitionIds = string.Join(",", _settings.SupportedCompetitionIds);
-            var response = await httpClient.GetAsync($"matches?status=IN_PLAY,PAUSED&competitions={competitionIds}", ct);
+            var response = await httpClient.GetAsync($"matches?status=IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT&competitions={competitionIds}", ct);
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<MatchesApiResponse>(ct);
             return result?.Matches ?? [];

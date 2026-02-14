@@ -553,10 +553,13 @@ public sealed class FootballSyncService(
         "TIMED" => MatchStatus.Timed,
         "IN_PLAY" => MatchStatus.InPlay,
         "PAUSED" => MatchStatus.Paused,
+        "EXTRA_TIME" => MatchStatus.ExtraTime,
+        "PENALTY_SHOOTOUT" => MatchStatus.PenaltyShootout,
         "FINISHED" => MatchStatus.Finished,
         "POSTPONED" => MatchStatus.Postponed,
         "SUSPENDED" => MatchStatus.Suspended,
         "CANCELLED" => MatchStatus.Cancelled,
+        "AWARDED" => MatchStatus.Awarded,
         _ => MatchStatus.Scheduled
     };
 

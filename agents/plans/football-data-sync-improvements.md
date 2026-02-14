@@ -252,10 +252,10 @@ await ExecuteInBatchesAsync(
 ## Tasks
 
 ### Phase 1 Tasks
-- [ ] **1.1** Add `ExtraTime = 8`, `PenaltyShootout = 9`, `Awarded = 10` to `MatchStatus` enum in `src/ExtraTime.Domain/Enums/MatchStatus.cs`
-- [ ] **1.2** Add `"EXTRA_TIME"`, `"PENALTY_SHOOTOUT"`, `"AWARDED"` cases to `ParseMatchStatus` switch in `FootballSyncService.cs:550`
-- [ ] **1.3** Change live match status filter in `FootballDataService.cs:93` from `IN_PLAY,PAUSED` to `IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT`
-- [ ] **1.4** Build and run tests to verify no regressions
+- [x] **1.1** Add `ExtraTime = 8`, `PenaltyShootout = 9`, `Awarded = 10` to `MatchStatus` enum in `src/ExtraTime.Domain/Enums/MatchStatus.cs`
+- [x] **1.2** Add `"EXTRA_TIME"`, `"PENALTY_SHOOTOUT"`, `"AWARDED"` cases to `ParseMatchStatus` switch in `FootballSyncService.cs:550`
+- [x] **1.3** Change live match status filter in `FootballDataService.cs:93` from `IN_PLAY,PAUSED` to `IN_PLAY,PAUSED,EXTRA_TIME,PENALTY_SHOOTOUT`
+- [x] **1.4** Build and run tests to verify no regressions
 
 ### Phase 2 Tasks
 - [ ] **2.1** Create `CompetitionType` enum file at `src/ExtraTime.Domain/Enums/CompetitionType.cs` with values `League = 0, LeagueCup = 1, Cup = 2, Playoffs = 3`
