@@ -18,6 +18,8 @@ public sealed class FootballSyncService(
     ILogger<FootballSyncService> logger) : IFootballSyncService
 {
     private readonly FootballDataSettings _settings = settings.Value;
+    private const int IncrementalMatchLookbackDays = 2;
+    private const int IncrementalMatchLookaheadDays = 14;
 
     public async Task SyncCompetitionsAsync(CancellationToken ct = default)
     {
@@ -37,7 +39,7 @@ public sealed class FootballSyncService(
 
             if (competition is null)
             {
-                var competitionType = ParseCompetitionType(apiCompetition.Type);
+                var competitionType = ParseCompetitionType(apiCompetition.Type, apiCompetition.Id);
                 competition = Competition.Create(
                     apiCompetition.Id,
                     apiCompetition.Name,
@@ -54,7 +56,7 @@ public sealed class FootballSyncService(
             }
             else
             {
-                var competitionType = ParseCompetitionType(apiCompetition.Type);
+                var competitionType = ParseCompetitionType(apiCompetition.Type, apiCompetition.Id);
                 competition.UpdateDetails(
                     apiCompetition.Name,
                     apiCompetition.Code,
@@ -205,7 +207,11 @@ public sealed class FootballSyncService(
         }
 
         var apiMatches = await footballDataService.GetMatchesForCompetitionAsync(
-            competitionExternalId, null, null, ct);
+            competitionExternalId,
+            new CompetitionMatchesApiFilter(
+                DateFrom: Clock.UtcNow.Date.AddDays(-IncrementalMatchLookbackDays),
+                DateTo: Clock.UtcNow.Date.AddDays(IncrementalMatchLookaheadDays)),
+            ct);
 
         var finishedExternalIds = apiMatches
             .Where(m => string.Equals(m.Status, "FINISHED", StringComparison.OrdinalIgnoreCase))
@@ -265,16 +271,6 @@ public sealed class FootballSyncService(
                 current.SetAsNotCurrent();
             }
 
-            if (seasonDto.Winner is not null)
-            {
-                var winner = await context.Teams
-                    .FirstOrDefaultAsync(t => t.ExternalId == seasonDto.Winner.Id, ct);
-                if (winner is not null)
-                {
-                    season.SetWinner(winner.Id);
-                }
-            }
-
             context.Seasons.Add(season);
             newSeasonDetected = true;
         }
@@ -282,18 +278,7 @@ public sealed class FootballSyncService(
         {
             season.UpdateMatchday(seasonDto.CurrentMatchday);
             season.UpdateDates(seasonDto.StartDate, seasonDto.EndDate);
-            if (seasonDto.Winner is not null)
-            {
-                var winner = await context.Teams
-                    .FirstOrDefaultAsync(t => t.ExternalId == seasonDto.Winner.Id, ct);
-                if (winner is not null)
-                {
-                    season.SetWinner(winner.Id);
-                }
-            }
         }
-
-        await context.SaveChangesAsync(ct);
 
         var teamDtosByExternalId = standingsResponse.Standings
             .SelectMany(s => s.Table)
@@ -305,7 +290,6 @@ public sealed class FootballSyncService(
         var teamsDict = await context.Teams
             .Where(t => teamExternalIds.Contains(t.ExternalId))
             .ToDictionaryAsync(t => t.ExternalId, ct);
-        var addedTeams = false;
 
         foreach (var teamDto in teamDtosByExternalId.Values)
         {
@@ -324,12 +308,18 @@ public sealed class FootballSyncService(
                 null);
             context.Teams.Add(team);
             teamsDict[teamDto.Id] = team;
-            addedTeams = true;
         }
 
-        if (addedTeams)
+        if (seasonDto.Winner is not null)
         {
-            await context.SaveChangesAsync(ct);
+            teamsDict.TryGetValue(seasonDto.Winner.Id, out var winnerTeam);
+            winnerTeam ??= await context.Teams
+                .FirstOrDefaultAsync(t => t.ExternalId == seasonDto.Winner.Id, ct);
+
+            if (winnerTeam is not null)
+            {
+                season.SetWinner(winnerTeam.Id);
+            }
         }
 
         static string BuildStandingKey(Guid teamId, StandingType type, string? stage, string? group) =>
@@ -344,7 +334,7 @@ public sealed class FootballSyncService(
 
         foreach (var table in standingsResponse.Standings)
         {
-            var type = ParseStandingType(table.Type);
+            var type = ParseStandingType(table.Type, competitionExternalId);
             foreach (var row in table.Table)
             {
                 if (!teamsDict.TryGetValue(row.Team.Id, out var team))
@@ -420,7 +410,7 @@ public sealed class FootballSyncService(
             if (match is not null)
             {
                 var previousStatus = match.Status;
-                var newStatus = ParseMatchStatus(apiMatch.Status);
+                var newStatus = ParseMatchStatus(apiMatch.Status, apiMatch.Id);
 
                 match.UpdateStatus(newStatus);
                 match.UpdateScore(
@@ -492,7 +482,7 @@ public sealed class FootballSyncService(
                     homeTeam.Id,
                     awayTeam.Id,
                     apiMatch.UtcDate,
-                    ParseMatchStatus(apiMatch.Status),
+                    ParseMatchStatus(apiMatch.Status, apiMatch.Id),
                     apiMatch.Matchday,
                     apiMatch.Stage,
                     apiMatch.Group,
@@ -513,7 +503,7 @@ public sealed class FootballSyncService(
             else
             {
                 var previousStatus = match.Status;
-                var newStatus = ParseMatchStatus(apiMatch.Status);
+                var newStatus = ParseMatchStatus(apiMatch.Status, apiMatch.Id);
 
                 match.SyncDetails(
                     apiMatch.UtcDate,
@@ -547,30 +537,60 @@ public sealed class FootballSyncService(
         }
     }
 
-    private static MatchStatus ParseMatchStatus(string status) => status.ToUpperInvariant() switch
+    private MatchStatus ParseMatchStatus(string? status, int matchExternalId)
     {
-        "SCHEDULED" => MatchStatus.Scheduled,
-        "TIMED" => MatchStatus.Timed,
-        "IN_PLAY" => MatchStatus.InPlay,
-        "PAUSED" => MatchStatus.Paused,
-        "EXTRA_TIME" => MatchStatus.ExtraTime,
-        "PENALTY_SHOOTOUT" => MatchStatus.PenaltyShootout,
-        "FINISHED" => MatchStatus.Finished,
-        "POSTPONED" => MatchStatus.Postponed,
-        "SUSPENDED" => MatchStatus.Suspended,
-        "CANCELLED" => MatchStatus.Cancelled,
-        "AWARDED" => MatchStatus.Awarded,
-        _ => MatchStatus.Scheduled
-    };
+        var parsedStatus = status?.ToUpperInvariant() switch
+        {
+            "SCHEDULED" => MatchStatus.Scheduled,
+            "TIMED" => MatchStatus.Timed,
+            "IN_PLAY" => MatchStatus.InPlay,
+            "PAUSED" => MatchStatus.Paused,
+            "EXTRA_TIME" => MatchStatus.ExtraTime,
+            "PENALTY_SHOOTOUT" => MatchStatus.PenaltyShootout,
+            "FINISHED" => MatchStatus.Finished,
+            "POSTPONED" => MatchStatus.Postponed,
+            "SUSPENDED" => MatchStatus.Suspended,
+            "CANCELLED" => MatchStatus.Cancelled,
+            "AWARDED" => MatchStatus.Awarded,
+            _ => (MatchStatus?)null
+        };
 
-    private static CompetitionType ParseCompetitionType(string? type) => type?.ToUpperInvariant() switch
+        if (parsedStatus.HasValue)
+        {
+            return parsedStatus.Value;
+        }
+
+        logger.LogWarning(
+            "Unknown match status {Status} for external match {MatchExternalId}, defaulting to {DefaultStatus}",
+            status,
+            matchExternalId,
+            MatchStatus.Scheduled);
+        return MatchStatus.Scheduled;
+    }
+
+    private CompetitionType ParseCompetitionType(string? type, int competitionExternalId)
     {
-        "LEAGUE" => CompetitionType.League,
-        "LEAGUE_CUP" => CompetitionType.LeagueCup,
-        "CUP" => CompetitionType.Cup,
-        "PLAYOFFS" => CompetitionType.Playoffs,
-        _ => CompetitionType.League
-    };
+        var parsedType = type?.ToUpperInvariant() switch
+        {
+            "LEAGUE" => CompetitionType.League,
+            "LEAGUE_CUP" => CompetitionType.LeagueCup,
+            "CUP" => CompetitionType.Cup,
+            "PLAYOFFS" => CompetitionType.Playoffs,
+            _ => (CompetitionType?)null
+        };
+
+        if (parsedType.HasValue)
+        {
+            return parsedType.Value;
+        }
+
+        logger.LogWarning(
+            "Unknown competition type {Type} for external competition {CompetitionExternalId}, defaulting to {DefaultType}",
+            type,
+            competitionExternalId,
+            CompetitionType.League);
+        return CompetitionType.League;
+    }
 
     private async Task<Season?> GetCurrentSeasonAsync(Guid competitionId, CancellationToken ct)
     {
@@ -591,10 +611,26 @@ public sealed class FootballSyncService(
         }
     }
 
-    private static StandingType ParseStandingType(string type) => type.ToUpperInvariant() switch
+    private StandingType ParseStandingType(string? type, int competitionExternalId)
     {
-        "HOME" => StandingType.Home,
-        "AWAY" => StandingType.Away,
-        _ => StandingType.Total
-    };
+        var parsedType = type?.ToUpperInvariant() switch
+        {
+            "HOME" => StandingType.Home,
+            "AWAY" => StandingType.Away,
+            "TOTAL" => StandingType.Total,
+            _ => (StandingType?)null
+        };
+
+        if (parsedType.HasValue)
+        {
+            return parsedType.Value;
+        }
+
+        logger.LogWarning(
+            "Unknown standing type {Type} for external competition {CompetitionExternalId}, defaulting to {DefaultType}",
+            type,
+            competitionExternalId,
+            StandingType.Total);
+        return StandingType.Total;
+    }
 }
