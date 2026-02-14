@@ -272,11 +272,11 @@ await ExecuteInBatchesAsync(
 - [x] **3.3** Build and run tests
 
 ### Phase 4 Tasks
-- [ ] **4.1** In `ProcessMatchesAsync`: before the loop, collect all team external IDs and pre-fetch into `Dictionary<int, Team>`; also pre-fetch existing matches by external ID into `Dictionary<int, Match>`; replace per-item queries with dict lookups
-- [ ] **4.2** In `SyncStandingsForCompetitionAsync`: before standings loop, collect all team external IDs from all table rows, pre-fetch into `Dictionary<int, Team>`; pre-fetch existing standings for the season; for new teams, add to context + dict, then `SaveChangesAsync` once before processing standings rows
-- [ ] **4.3** In `SyncTeamsForCompetitionAsync(int)`: pre-fetch existing teams by external ID into dict; pre-fetch existing `SeasonTeams` for the season into a `HashSet<(Guid, Guid)>`
-- [ ] **4.4** Remove `SaveChangesAsync` at line 190 inside the foreach loop in int overload (line 210 handles the final save)
-- [ ] **4.5** Build and run tests
+- [x] **4.1** In `ProcessMatchesAsync`: before the loop, collect all team external IDs and pre-fetch into `Dictionary<int, Team>`; also pre-fetch existing matches by external ID into `Dictionary<int, Match>`; replace per-item queries with dict lookups
+- [x] **4.2** In `SyncStandingsForCompetitionAsync`: before standings loop, collect all team external IDs from all table rows, pre-fetch into `Dictionary<int, Team>`; pre-fetch existing standings for the season; for new teams, add to context + dict, then `SaveChangesAsync` once before processing standings rows
+- [x] **4.3** In `SyncTeamsForCompetitionAsync(int)`: pre-fetch existing teams by external ID into dict; pre-fetch existing `SeasonTeams` for the season into a `HashSet<(Guid, Guid)>`
+- [x] **4.4** Remove `SaveChangesAsync` at line 190 inside the foreach loop in int overload (line 210 handles the final save)
+- [x] **4.5** Build and run tests
 
 ### Phase 5 Tasks
 - [ ] **5.1** Add `<PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />` to `Directory.Packages.props` and `<PackageReference Include="Refit.HttpClientFactory" />` to `ExtraTime.Infrastructure.csproj`

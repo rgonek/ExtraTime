@@ -101,13 +101,26 @@ public sealed class FootballSyncService(
 
         var apiTeams = await footballDataService.GetTeamsForCompetitionAsync(competition.ExternalId, ct);
         var season = await GetCurrentSeasonAsync(competition.Id, ct);
+        var teamExternalIds = apiTeams
+            .Select(t => t.Id)
+            .Distinct()
+            .ToList();
+
+        var teamsDict = await context.Teams
+            .Where(t => teamExternalIds.Contains(t.ExternalId))
+            .ToDictionaryAsync(t => t.ExternalId, ct);
+
+        HashSet<Guid> seasonTeamIds = season is null
+            ? []
+            : (await context.SeasonTeams
+                .Where(st => st.SeasonId == season.Id)
+                .Select(st => st.TeamId)
+                .ToListAsync(ct))
+            .ToHashSet();
 
         foreach (var apiTeam in apiTeams)
         {
-            var team = await context.Teams
-                .FirstOrDefaultAsync(t => t.ExternalId == apiTeam.Id, ct);
-
-            if (team is null)
+            if (!teamsDict.TryGetValue(apiTeam.Id, out var team))
             {
                 team = Team.Create(
                     apiTeam.Id,
@@ -118,6 +131,7 @@ public sealed class FootballSyncService(
                     apiTeam.ClubColors,
                     apiTeam.Venue);
                 context.Teams.Add(team);
+                teamsDict[apiTeam.Id] = team;
                 logger.LogInformation("Added new team: {Name}", team.Name);
             }
             else
@@ -132,14 +146,9 @@ public sealed class FootballSyncService(
                 team.RecordSync();
             }
 
-            await context.SaveChangesAsync(ct);
-
             if (season is not null)
             {
-                var existingLink = await context.SeasonTeams
-                    .FirstOrDefaultAsync(st => st.SeasonId == season.Id && st.TeamId == team.Id, ct);
-
-                if (existingLink is null)
+                if (seasonTeamIds.Add(team.Id))
                 {
                     var seasonTeam = SeasonTeam.Create(season.Id, team.Id);
                     context.SeasonTeams.Add(seasonTeam);
@@ -286,34 +295,66 @@ public sealed class FootballSyncService(
 
         await context.SaveChangesAsync(ct);
 
+        var teamDtosByExternalId = standingsResponse.Standings
+            .SelectMany(s => s.Table)
+            .Select(r => r.Team)
+            .GroupBy(t => t.Id)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        var teamExternalIds = teamDtosByExternalId.Keys.ToList();
+        var teamsDict = await context.Teams
+            .Where(t => teamExternalIds.Contains(t.ExternalId))
+            .ToDictionaryAsync(t => t.ExternalId, ct);
+        var addedTeams = false;
+
+        foreach (var teamDto in teamDtosByExternalId.Values)
+        {
+            if (teamsDict.ContainsKey(teamDto.Id))
+            {
+                continue;
+            }
+
+            var team = Team.Create(
+                teamDto.Id,
+                teamDto.Name,
+                teamDto.ShortName,
+                null,
+                teamDto.Crest,
+                null,
+                null);
+            context.Teams.Add(team);
+            teamsDict[teamDto.Id] = team;
+            addedTeams = true;
+        }
+
+        if (addedTeams)
+        {
+            await context.SaveChangesAsync(ct);
+        }
+
+        static string BuildStandingKey(Guid teamId, StandingType type, string? stage, string? group) =>
+            $"{teamId:N}|{type}|{stage ?? string.Empty}|{group ?? string.Empty}";
+
+        var standingsLookup = (await context.FootballStandings
+                .Where(fs => fs.SeasonId == season.Id)
+                .ToListAsync(ct))
+            .ToDictionary(
+                fs => BuildStandingKey(fs.TeamId, fs.Type, fs.Stage, fs.Group),
+                fs => fs);
+
         foreach (var table in standingsResponse.Standings)
         {
             var type = ParseStandingType(table.Type);
             foreach (var row in table.Table)
             {
-                var team = await context.Teams
-                    .FirstOrDefaultAsync(t => t.ExternalId == row.Team.Id, ct);
-
-                if (team is null)
+                if (!teamsDict.TryGetValue(row.Team.Id, out var team))
                 {
-                    team = Team.Create(
-                        row.Team.Id,
-                        row.Team.Name,
-                        row.Team.ShortName,
-                        null,
-                        row.Team.Crest,
-                        null,
-                        null);
-                    context.Teams.Add(team);
-                    await context.SaveChangesAsync(ct);
+                    logger.LogWarning("Team {TeamExternalId} not found when syncing standings", row.Team.Id);
+                    continue;
                 }
 
-                var standing = await context.FootballStandings
-                    .FirstOrDefaultAsync(fs => fs.SeasonId == season.Id
-                                               && fs.TeamId == team.Id
-                                               && fs.Type == type
-                                               && fs.Stage == table.Stage
-                                               && fs.Group == table.Group, ct);
+                var standingKey = BuildStandingKey(team.Id, type, table.Stage, table.Group);
+                standingsLookup.TryGetValue(standingKey, out var standing);
 
                 if (standing is null)
                 {
@@ -331,9 +372,10 @@ public sealed class FootballSyncService(
                         row.GoalsFor,
                         row.GoalsAgainst,
                         row.GoalDifference,
-                        row.Points,
-                        row.Form);
+                         row.Points,
+                         row.Form);
                     context.FootballStandings.Add(standing);
+                    standingsLookup[standingKey] = standing;
                 }
                 else
                 {
@@ -412,13 +454,26 @@ public sealed class FootballSyncService(
         CancellationToken ct)
     {
         var season = await GetCurrentSeasonAsync(competition.Id, ct);
+        var teamExternalIds = apiMatches
+            .SelectMany(m => new[] { m.HomeTeam.Id, m.AwayTeam.Id })
+            .Distinct()
+            .ToList();
+        var matchExternalIds = apiMatches
+            .Select(m => m.Id)
+            .Distinct()
+            .ToList();
+
+        var teamsDict = await context.Teams
+            .Where(t => teamExternalIds.Contains(t.ExternalId))
+            .ToDictionaryAsync(t => t.ExternalId, ct);
+        var matchesDict = await context.Matches
+            .Where(m => matchExternalIds.Contains(m.ExternalId))
+            .ToDictionaryAsync(m => m.ExternalId, ct);
 
         foreach (var apiMatch in apiMatches)
         {
-            var homeTeam = await context.Teams
-                .FirstOrDefaultAsync(t => t.ExternalId == apiMatch.HomeTeam.Id, ct);
-            var awayTeam = await context.Teams
-                .FirstOrDefaultAsync(t => t.ExternalId == apiMatch.AwayTeam.Id, ct);
+            teamsDict.TryGetValue(apiMatch.HomeTeam.Id, out var homeTeam);
+            teamsDict.TryGetValue(apiMatch.AwayTeam.Id, out var awayTeam);
 
             if (homeTeam is null || awayTeam is null)
             {
@@ -427,8 +482,7 @@ public sealed class FootballSyncService(
                 continue;
             }
 
-            var match = await context.Matches
-                .FirstOrDefaultAsync(m => m.ExternalId == apiMatch.Id, ct);
+            matchesDict.TryGetValue(apiMatch.Id, out var match);
 
             if (match is null)
             {
@@ -452,6 +506,7 @@ public sealed class FootballSyncService(
                     apiMatch.Score.HalfTime.Away);
 
                 context.Matches.Add(match);
+                matchesDict[apiMatch.Id] = match;
                 logger.LogInformation("Added new match: {Home} vs {Away} on {Date}",
                     homeTeam.Name, awayTeam.Name, match.MatchDateUtc);
             }
