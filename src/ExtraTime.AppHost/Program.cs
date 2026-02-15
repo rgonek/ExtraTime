@@ -10,13 +10,16 @@ var footballDataKey = builder.AddParameter("FootballDataApiKey", secret: true);
 // SQL Server database
 var sqlServer = builder.AddSqlServer("sql")
     .WithLifetime(ContainerLifetime.Persistent)
+    .WithContainerName("extratime-sql")
     .WithContainerRuntimeArgs("--label", "com.docker.compose.project=extratime");
 
 var database = sqlServer.AddDatabase("extratime");
 
 // Azure Storage emulator for Functions
 var functionsStorage = builder.AddAzureStorage("functions-storage")
-    .RunAsEmulator(config => config.WithContainerRuntimeArgs("--label", "com.docker.compose.project=extratime"));
+    .RunAsEmulator(config => config
+        .WithContainerName("extratime-storage")
+        .WithContainerRuntimeArgs("--label", "com.docker.compose.project=extratime"));
 
 // 1. External Football Data API Resource (Feature 3)
 // Visualizing the external dependency in the dashboard
