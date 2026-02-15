@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.Azure.Functions" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" />
     <PackageReference Include="Aspire.Hosting.SqlServer" />
     <PackageReference Include="Aspire.Hosting.JavaScript" />
   </ItemGroup>
@@ -21,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ExtraTime.API\ExtraTime.API.csproj" />
     <ProjectReference Include="..\ExtraTime.DevTriggers\ExtraTime.DevTriggers.csproj" />
+    <ProjectReference Include="..\ExtraTime.Functions\ExtraTime.Functions.csproj" />
     <ProjectReference Include="..\ExtraTime.MigrationService\ExtraTime.MigrationService.csproj" />
   </ItemGroup>
 

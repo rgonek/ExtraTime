@@ -26,7 +26,8 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddSingleton<ICurrentUserService, BackgroundUserService>();
 
 // Build the host
-var host = builder.Build();
+using var host = builder.Build();
+await host.StartAsync();
 
 // Get the command from args
 var command = args.Length > 0 ? args[0] : "";
@@ -96,6 +97,7 @@ catch (Exception ex)
 finally
 {
     scope.Dispose();
+    await host.StopAsync();
 }
 
 static async Task RunSyncCompetitionsAsync(IServiceProvider services, ILogger logger)

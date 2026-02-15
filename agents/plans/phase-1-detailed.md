@@ -47,7 +47,6 @@ D:\Dev\ExtraTime\
 │   └── ExtraTime.API.Tests/
 │
 ├── web/                            # Next.js frontend
-├── docker-compose.yml
 ├── global.json
 └── ExtraTime.sln
 ```
@@ -517,57 +516,11 @@ export const useAuthStore = create<AuthState>()(
 
 ---
 
-## Part 3: Docker Compose
+## Part 3: Local Development (Aspire)
 
-**docker-compose.yml** (root):
-```yaml
-services:
-  db:
-    image: postgres:16-alpine
-    container_name: extratime-db
-    environment:
-      POSTGRES_USER: extratime
-      POSTGRES_PASSWORD: extratime_dev
-      POSTGRES_DB: extratime
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U extratime -d extratime"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  api:
-    build:
-      context: .
-      dockerfile: src/ExtraTime.API/Dockerfile
-    container_name: extratime-api
-    ports:
-      - "5000:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=extratime;Username=extratime;Password=extratime_dev
-    depends_on:
-      db:
-        condition: service_healthy
-
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    container_name: extratime-web
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
-    depends_on:
-      - api
-
-volumes:
-  postgres_data:
-```
+> **Note:** Docker Compose was removed in favor of .NET Aspire orchestration.
+> See `src/ExtraTime.AppHost/Program.cs` for the current development setup.
+> Run with: `dotnet run --project src/ExtraTime.AppHost`
 
 ---
 
@@ -646,10 +599,10 @@ jobs:
 - [ ] Verify: `npm run build`
 
 ### Phase 1C: DevOps
-- [ ] Create docker-compose.yml
+- [x] Configure .NET Aspire AppHost (replaces Docker Compose)
 - [ ] Create .github/workflows/ci.yml
 - [ ] Create .gitignore
-- [ ] Test: `docker-compose up --build`
-- [ ] Verify health: `curl http://localhost:5000/api/health`
+- [ ] Test: `dotnet run --project src/ExtraTime.AppHost`
+- [ ] Verify health: `curl http://localhost:5001/api/health`
 - [ ] Verify frontend: `http://localhost:3000`
 - [ ] Commit and push - verify CI passes

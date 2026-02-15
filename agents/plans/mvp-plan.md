@@ -88,7 +88,7 @@ A social betting app (no real money) where friends create leagues, bet on footba
 - [x] Create base API client (`api-client.ts`)
 
 ### DevOps
-- [x] Configure Docker Compose for local development
+- [x] Configure .NET Aspire for local development orchestration
 - [x] Set up GitHub Actions for CI (build + lint)
 
 ---
