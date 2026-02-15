@@ -27,7 +27,7 @@ ExtraTime has progressed significantly beyond its initial MVP scope. The core be
 ## Tech Stack Update
 - **Backend:** .NET 10, EF Core 10, SQL Server, Azure Functions, Mediator (Source Gen)
 - **Frontend:** Next.js 16 (App Router, React 19), Tailwind CSS 4, shadcn/ui, Framer Motion
-- **Infrastructure:** .NET Aspire, Docker Compose, Azure (Planned)
+- **Infrastructure:** .NET Aspire, Azure (Planned)
 
 ## Outdated Components (Superseded)
 - **Hangfire**: Replaced by Azure Functions for better Aspire integration and scalability.

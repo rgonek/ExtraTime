@@ -44,8 +44,6 @@
       "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129190235_InitialCreate.Designer.cs\" -Force)",
       "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129194948_RenameTablesToSqlServerStyle.cs\" -Force)",
       "Bash(Remove-Item \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Infrastructure\\\\Migrations\\\\20260129194948_RenameTablesToSqlServerStyle.Designer.cs\" -Force)",
-      "Bash(docker-compose up:*)",
-      "Bash(docker-compose ps:*)",
       "Bash(Test-Path \"D:\\\\Dev\\\\ExtraTime\\\\web\")",
       "Skill(frontend-design)",
       "Skill(playground:playground)",

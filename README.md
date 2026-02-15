@@ -46,7 +46,6 @@ A social betting app where friends create leagues, predict football match outcom
 
 ### Infrastructure
 - **.NET Aspire** for local orchestration and observability
-- **Docker Compose** for containerized development
 - **SQL Server** database (Azure SQL for production)
 - **Azure Static Web Apps** for frontend hosting
 - **Azure App Service** for backend API
@@ -88,35 +87,13 @@ For background jobs in development, use the Aspire dashboard in hybrid mode:
 - Start **`functions-runtime`** when you want production-path Azure Functions behavior (timers/durable orchestration).
 - Start a **DevTrigger** resource when you want deterministic one-shot execution from the dashboard.
 
-### Alternative: Docker Compose
-
-```bash
-# Start all services in containers
-docker-compose up --build
-```
-
-Services will be available at:
-- **Frontend**: http://localhost:3000
-- **API**: http://localhost:5200
-- **Swagger**: http://localhost:5200/swagger
-
 ### Manual Setup
 
 #### Backend
 
 ```bash
-# Option 1: Use Aspire (handles SQL Server automatically)
+# Use Aspire (handles SQL Server automatically)
 dotnet run --project src/ExtraTime.AppHost
-
-# Option 2: Run API standalone
-# Start SQL Server first
-docker-compose up db -d
-
-# Apply migrations
-dotnet ef database update --project src/ExtraTime.Infrastructure --startup-project src/ExtraTime.API
-
-# Run the API
-dotnet run --project src/ExtraTime.API
 ```
 
 #### Database Management
@@ -173,7 +150,6 @@ ExtraTime/
 │   │   ├── stores/                # Zustand stores
 │   │   └── types/                 # TypeScript types
 │   └── public/                    # Static assets
-├── docker-compose.yml             # Containerized development
 └── ExtraTime.sln                  # Solution file
 ```
 

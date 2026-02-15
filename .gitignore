@@ -46,9 +46,6 @@ web/yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Docker
-docker-compose.override.yml
-
 # IDE
 .idea/
 *.swp
