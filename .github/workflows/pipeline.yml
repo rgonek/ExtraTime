@@ -149,6 +149,16 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish/backend
 
+      - name: Publish Functions
+        run: dotnet publish src/ExtraTime.Functions/ExtraTime.Functions.csproj -c Release -o ./publish/functions
+
+      - name: Deploy Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_FUNCTIONS_NAME }}
+          package: ./publish/functions
+          publish-profile: ${{ secrets.AZURE_FUNCTIONS_PUBLISH_PROFILE }}
+
       - name: Deploy Frontend to Azure
         uses: Azure/static-web-apps-deploy@v1
         with:
