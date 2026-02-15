@@ -124,6 +124,40 @@ public sealed class FootballSyncServiceTests : HandlerTestBase
     }
 
     [Test]
+    public async Task SyncCompetitionsAsync_DuplicateIdInSettings_OnlyAddsOnce()
+    {
+        // Arrange - settings with duplicate competition ID
+        Clock.Current = new FakeClock(_now);
+        var settingsWithDupe = Options.Create(new FootballDataSettings
+        {
+            ApiKey = "test-key",
+            SupportedCompetitionIds = [2015, 2015] // Duplicate!
+        });
+        var serviceWithDupe = new FootballSyncService(Context, _footballDataService, _jobDispatcher, settingsWithDupe, _logger);
+
+        var apiDto = new CompetitionApiDto(
+            2015, "Ligue 1", "FL1",
+            "LEAGUE",
+            new AreaApiDto("France"),
+            new CurrentSeasonApiDto(556, 20, _now, _now.AddMonths(9)),
+            "ligue1.png"
+        );
+        _footballDataService.GetCompetitionAsync(2015, CancellationToken).Returns(apiDto);
+
+        var competitions = new List<Competition>();
+        var mockCompetitions = CreateMockDbSet(competitions.AsQueryable());
+        mockCompetitions.When(x => x.Add(Arg.Any<Competition>())).Do(c => competitions.Add(c.Arg<Competition>()));
+        Context.Competitions.Returns(mockCompetitions);
+        Context.SaveChangesAsync(CancellationToken).Returns(1);
+
+        // Act
+        await serviceWithDupe.SyncCompetitionsAsync(CancellationToken);
+
+        // Assert - Should only add once, not twice
+        mockCompetitions.Received(1).Add(Arg.Is<Competition>(c => c.ExternalId == 2015));
+    }
+
+    [Test]
     public async Task SyncTeamsForCompetitionAsync_NewTeams_AddsToDatabase()
     {
         // Arrange

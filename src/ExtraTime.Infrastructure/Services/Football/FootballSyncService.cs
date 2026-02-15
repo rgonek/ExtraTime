@@ -23,9 +23,12 @@ public sealed class FootballSyncService(
 
     public async Task SyncCompetitionsAsync(CancellationToken ct = default)
     {
-        logger.LogInformation("Starting competition sync for {Count} competitions", _settings.SupportedCompetitionIds.Length);
+        var competitionIds = _settings.SupportedCompetitionIds.Distinct().ToArray();
+        logger.LogInformation("Starting competition sync for {Count} competitions: [{Ids}]",
+            competitionIds.Length,
+            string.Join(", ", competitionIds));
 
-        foreach (var externalId in _settings.SupportedCompetitionIds)
+        foreach (var externalId in competitionIds)
         {
             var apiCompetition = await footballDataService.GetCompetitionAsync(externalId, ct);
             if (apiCompetition is null)
