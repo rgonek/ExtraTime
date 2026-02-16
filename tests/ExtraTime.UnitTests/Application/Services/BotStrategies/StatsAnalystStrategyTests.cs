@@ -302,8 +302,59 @@ public sealed class StatsAnalystStrategyTests
         await _oddsDataService.Received(1).GetOddsForMatchAsOfAsync(match.Id, match.MatchDateUtc, Arg.Any<CancellationToken>());
         await _injuryService.Received(2).GetTeamInjuriesAsOfAsync(Arg.Any<Guid>(), match.MatchDateUtc, Arg.Any<CancellationToken>());
         await _eloRatingService.Received(2).GetTeamEloAtDateAsync(Arg.Any<Guid>(), match.MatchDateUtc, Arg.Any<CancellationToken>());
+        await _understatService.DidNotReceive().GetTeamXgAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<Guid>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+        await _oddsDataService.DidNotReceive().GetOddsForMatchAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _injuryService.DidNotReceive().GetTeamInjuriesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _eloRatingService.DidNotReceive().GetTeamEloAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         await Assert.That(homeScore).IsGreaterThanOrEqualTo(0);
         await Assert.That(awayScore).IsGreaterThanOrEqualTo(0);
+    }
+
+    [Test]
+    public async Task GeneratePredictionAsync_WhenOneExternalSourceIsMissing_ReturnsValidScores()
+    {
+        // Arrange
+        var match = CreateTestMatch();
+        var config = StatsAnalystConfig.FullAnalysis with { RandomVariance = 0 };
+        var homeForm = CreateTeamForm(62.0, goalsPerMatch: 1.9);
+        var awayForm = CreateTeamForm(47.0, goalsPerMatch: 1.2);
+
+        _integrationHealthService.GetDataAvailabilityAsync(Arg.Any<CancellationToken>())
+            .Returns(new DataAvailability
+            {
+                XgDataAvailable = true,
+                OddsDataAvailable = true,
+                InjuryDataAvailable = true,
+                EloDataAvailable = true
+            });
+
+        _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(ci =>
+            {
+                var teamId = ci.ArgAt<Guid>(0);
+                return teamId == match.HomeTeamId ? homeForm : awayForm;
+            });
+        _understatService.GetTeamXgAsOfAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns((TeamXgStats?)null);
+        _oddsDataService.GetOddsForMatchAsOfAsync(match.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(CreateOdds(MatchOutcome.HomeWin, 0.57));
+        _injuryService.GetTeamInjuriesAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(CreateInjuries(8), CreateInjuries(11));
+        _eloRatingService.GetTeamEloAtDateAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(CreateElo(1675), CreateElo(1610));
+
+        // Act
+        var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, config.ToJson());
+
+        // Assert
+        await Assert.That(homeScore).IsGreaterThanOrEqualTo(config.MinGoals);
+        await Assert.That(homeScore).IsLessThanOrEqualTo(config.MaxGoals);
+        await Assert.That(awayScore).IsGreaterThanOrEqualTo(config.MinGoals);
+        await Assert.That(awayScore).IsLessThanOrEqualTo(config.MaxGoals);
     }
 
     [Test]
@@ -385,6 +436,60 @@ public sealed class StatsAnalystStrategyTests
         await Assert.That(
             xgPrediction.HomeScore != marketPrediction.HomeScore ||
             xgPrediction.AwayScore != marketPrediction.AwayScore).IsTrue();
+    }
+
+    [Test]
+    public async Task GeneratePredictionAsync_WithRandomVarianceDisabled_IsDeterministicAcrossRuns()
+    {
+        // Arrange
+        var match = CreateTestMatch();
+        var config = StatsAnalystConfig.FullAnalysis with { RandomVariance = 0 };
+        var homeForm = CreateTeamForm(64.0, goalsPerMatch: 1.8);
+        var awayForm = CreateTeamForm(52.0, goalsPerMatch: 1.3);
+
+        _integrationHealthService.GetDataAvailabilityAsync(Arg.Any<CancellationToken>())
+            .Returns(new DataAvailability
+            {
+                XgDataAvailable = true,
+                OddsDataAvailable = true,
+                InjuryDataAvailable = true,
+                EloDataAvailable = true
+            });
+
+        _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(ci =>
+            {
+                var teamId = ci.ArgAt<Guid>(0);
+                return teamId == match.HomeTeamId ? homeForm : awayForm;
+            });
+        _understatService.GetTeamXgAsOfAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(ci =>
+            {
+                var teamId = ci.ArgAt<Guid>(0);
+                return teamId == match.HomeTeamId ? CreateXgStats(1.9, 1.0) : CreateXgStats(1.2, 1.4);
+            });
+        _oddsDataService.GetOddsForMatchAsOfAsync(match.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(CreateOdds(MatchOutcome.HomeWin, 0.61));
+        _injuryService.GetTeamInjuriesAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(ci =>
+            {
+                var teamId = ci.ArgAt<Guid>(0);
+                return teamId == match.HomeTeamId ? CreateInjuries(9) : CreateInjuries(12);
+            });
+        _eloRatingService.GetTeamEloAtDateAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(ci =>
+            {
+                var teamId = ci.ArgAt<Guid>(0);
+                return teamId == match.HomeTeamId ? CreateElo(1690) : CreateElo(1605);
+            });
+
+        // Act
+        var first = await _strategy.GeneratePredictionAsync(match, config.ToJson());
+        var second = await _strategy.GeneratePredictionAsync(match, config.ToJson());
+
+        // Assert
+        await Assert.That(first.HomeScore).IsEqualTo(second.HomeScore);
+        await Assert.That(first.AwayScore).IsEqualTo(second.AwayScore);
     }
 
     private static Match CreateTestMatch(int externalId = 12345, int? matchday = null)
