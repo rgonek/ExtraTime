@@ -442,11 +442,11 @@ public async Task SyncAllLeaguesAsync(CancellationToken cancellationToken = defa
 - [x] Create `IntegrationHealth` enum
 - [x] Create `IntegrationType` enum (with `ClubElo = 4`)
 - [x] Create `IntegrationTypeExtensions` (with ClubElo mapping)
-- [ ] Create `IntegrationStatusConfiguration`
+- [x] Create `IntegrationStatusConfiguration`
 - [x] Create `IIntegrationHealthService` interface
 - [x] Create `DataAvailability` record
-- [ ] Implement `IntegrationHealthService`
-- [ ] Add `IntegrationStatuses` DbSet to context
+- [x] Implement `IntegrationHealthService`
+- [x] Add `IntegrationStatuses` DbSet to context
 - [ ] Create database migration
 - [ ] Register services in DI
 
