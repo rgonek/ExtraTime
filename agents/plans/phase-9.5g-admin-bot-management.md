@@ -1208,16 +1208,16 @@ export function useToggleIntegration() {
 ## Implementation Checklist
 
 ### Phase 9.5G: Admin Bot Management
-- [ ] Create `CreateBotCommand` + Handler
-- [ ] Create `UpdateBotCommand` + Handler
-- [ ] Create `DeleteBotCommand` + Handler
-- [ ] Create `GetBotsQuery` + Handler (with stats)
-- [ ] Create `GetBotConfigurationPresetsQuery` + Handler
+- [x] Create `CreateBotCommand` + Handler
+- [x] Create `UpdateBotCommand` + Handler
+- [x] Create `DeleteBotCommand` + Handler
+- [x] Create `GetBotsQuery` + Handler (with stats)
+- [x] Create `GetBotConfigurationPresetsQuery` + Handler
 - [ ] Create `AdminBotsEndpoints`
 - [ ] Create `AdminIntegrationEndpoints` (with ClubElo sync trigger)
 - [ ] Create `AdminExternalDataEndpoints`
 - [ ] Register endpoints in Program.cs
-- [ ] Test bot CRUD operations
+- [x] Test bot CRUD operations
 
 ### Phase 9.5H: Admin Frontend
 - [ ] Create `app/(admin)/admin/bots/page.tsx`

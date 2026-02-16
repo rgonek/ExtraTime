@@ -73,6 +73,11 @@ public sealed class Bot : BaseEntity
         Configuration = configuration;
     }
 
+    public void UpdateStrategy(BotStrategy strategy)
+    {
+        Strategy = strategy;
+    }
+
     public void UpdateDetails(string name, string? avatarUrl = null)
     {
         if (string.IsNullOrWhiteSpace(name))

@@ -20,7 +20,13 @@ public sealed class CreateBotCommandHandler(
         if (existingBot != null)
             return Result<BotDto>.Failure("A bot with this name already exists");
 
-        var email = $"bot_{request.Name.ToLower().Replace(" ", "_")}@extratime.local";
+        var email = $"bot_{request.Name.ToLowerInvariant().Replace(" ", "_")}@extratime.local";
+        var existingUser = await context.Users
+            .FirstOrDefaultAsync(u => u.Email == email, ct);
+
+        if (existingUser != null)
+            return Result<BotDto>.Failure("A bot user account already exists");
+
         var passwordHash = passwordHasher.Hash(Guid.NewGuid().ToString());
 
         var user = User.Register(email, request.Name, passwordHash, UserRole.User);
@@ -44,7 +50,8 @@ public sealed class CreateBotCommandHandler(
             bot.Strategy.ToString(),
             bot.IsActive,
             bot.CreatedAt,
-            bot.LastBetPlacedAt);
+            bot.LastBetPlacedAt,
+            bot.Configuration);
 
         return Result<BotDto>.Success(dto);
     }
