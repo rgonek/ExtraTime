@@ -106,6 +106,7 @@ public static class DependencyInjection
         services.AddScoped<IExternalDataBackfillService, ExternalDataBackfillService>();
         services.AddScoped<IEloRatingService, EloRatingService>();
         services.AddScoped<IInjuryService, InjuryService>();
+        services.AddScoped<ISuspensionService, SuspensionService>();
         services.AddScoped<ILineupDataProvider, ApiLineupDataProvider>();
         services.AddScoped<ILineupSyncService, LineupSyncService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));

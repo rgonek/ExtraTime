@@ -67,7 +67,7 @@ public sealed class InjuryServiceTests
 
         // Assert
         await Assert.That(requestCount()).IsEqualTo(3);
-        await Assert.That(context.PlayerInjuries.Count()).IsEqualTo(2);
+        await Assert.That(context.PlayerInjuries.Count()).IsEqualTo(4);
         await Assert.That(context.TeamInjuries.Count()).IsEqualTo(2);
         await Assert.That(context.TeamInjurySnapshots.Count()).IsEqualTo(2);
 

@@ -54,7 +54,7 @@ public sealed class InjuryService(
 
         var now = DateTime.UtcNow;
         var cutoff = now.AddDays(daysAhead);
-        var quotaPolicy = settings.Value.QuotaPolicy ?? new ExternalDataQuotaPolicy();
+        var quotaPolicy = apiSettings.QuotaPolicy ?? new ExternalDataQuotaPolicy();
         var reservedForLineups = await GetReservedLineupBudgetAsync(
             apiSettings.EnableEplOnlyInjurySync,
             quotaPolicy.SafetyReserve,
@@ -281,13 +281,16 @@ public sealed class InjuryService(
             .ToListAsync(cancellationToken);
         context.PlayerInjuries.RemoveRange(existingPlayerInjuries);
 
-        var activeInjuries = sourceInjuries
+        var mappedInjuries = sourceInjuries
             .Where(i => i.Player is not null)
-            .Where(i => !IsSuspensionRelated(i.Player!.Reason))
             .Select(i => CreatePlayerInjury(teamId, i, now))
             .ToList();
 
-        context.PlayerInjuries.AddRange(activeInjuries);
+        context.PlayerInjuries.AddRange(mappedInjuries);
+
+        var activeInjuries = mappedInjuries
+            .Where(i => !IsSuspensionRelated(i.InjuryType))
+            .ToList();
 
         var teamInjuries = await context.TeamInjuries
             .FirstOrDefaultAsync(t => t.TeamId == teamId, cancellationToken);

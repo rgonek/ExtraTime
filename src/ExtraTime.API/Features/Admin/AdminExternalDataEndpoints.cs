@@ -29,6 +29,12 @@ public static class AdminExternalDataEndpoints
         group.MapGet("/injuries/{teamId:guid}", GetTeamInjuries)
             .WithName("GetTeamInjuries");
 
+        group.MapPost("/suspensions/sync", SyncSuspensions)
+            .WithName("SyncSuspensions");
+
+        group.MapGet("/suspensions/{teamId:guid}", GetTeamSuspensions)
+            .WithName("GetTeamSuspensions");
+
         group.MapPost("/backfill/league", BackfillLeagueData)
             .WithName("BackfillLeagueData");
 
@@ -96,6 +102,25 @@ public static class AdminExternalDataEndpoints
         var injuries = await service.GetTeamInjuriesAsync(teamId, cancellationToken);
         return injuries is not null
             ? Results.Ok(injuries)
+            : Results.NotFound();
+    }
+
+    private static async Task<IResult> SyncSuspensions(
+        ISuspensionService service,
+        CancellationToken cancellationToken)
+    {
+        await service.SyncSuspensionsForUpcomingMatchesAsync(3, cancellationToken);
+        return Results.Accepted(value: new { message = "Suspensions sync started" });
+    }
+
+    private static async Task<IResult> GetTeamSuspensions(
+        Guid teamId,
+        ISuspensionService service,
+        CancellationToken cancellationToken)
+    {
+        var suspensions = await service.GetTeamSuspensionsAsOfAsync(teamId, DateTime.UtcNow, cancellationToken);
+        return suspensions is not null
+            ? Results.Ok(suspensions)
             : Results.NotFound();
     }
 

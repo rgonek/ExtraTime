@@ -13,6 +13,7 @@ public sealed class ExternalDataBackfillService(
     IOddsDataService oddsDataService,
     IEloRatingService eloRatingService,
     IInjuryService injuryService,
+    ISuspensionService suspensionService,
     ILogger<ExternalDataBackfillService> logger) : IExternalDataBackfillService
 {
     private static readonly JsonSerializerOptions JsonOptions = new();
@@ -20,6 +21,7 @@ public sealed class ExternalDataBackfillService(
     private const string OddsCheckpointPrefix = "Backfill:Odds:";
     private const string EloCheckpointKey = "Backfill:Elo:Global";
     private const string InjuriesCheckpointKey = "Backfill:Injuries";
+    private const string SuspensionsCheckpointKey = "Backfill:Suspensions";
 
     public async Task BackfillForLeagueAsync(
         string leagueCode,
@@ -65,6 +67,7 @@ public sealed class ExternalDataBackfillService(
             reports,
             cancellationToken);
         await CaptureInjurySnapshotsAsync(reports, cancellationToken);
+        await CaptureSuspensionSnapshotsAsync(reports, cancellationToken);
 
         LogDataQualityReports("league", normalizedLeagueCode, reports);
     }
@@ -227,6 +230,26 @@ public sealed class ExternalDataBackfillService(
             .CountAsync(cancellationToken);
         var expectedSnapshots = await context.TeamInjuries.CountAsync(cancellationToken);
         reports.Add(BuildReport("API-Football", $"{today:yyyy-MM-dd}", expectedSnapshots, availableSnapshots));
+    }
+
+    private async Task CaptureSuspensionSnapshotsAsync(
+        ICollection<DataQualityReport> reports,
+        CancellationToken cancellationToken)
+    {
+        var today = DateTime.UtcNow.Date;
+        var lastCompletedDate = await GetLastCompletedDateAsync(SuspensionsCheckpointKey, cancellationToken);
+        if (lastCompletedDate.HasValue && lastCompletedDate.Value >= today)
+        {
+            logger.LogInformation("Suspension snapshot backfill already completed for {Date}", today);
+            return;
+        }
+
+        await suspensionService.SyncSuspensionsForUpcomingMatchesAsync(3, cancellationToken);
+        await SaveCheckpointDateAsync(SuspensionsCheckpointKey, today, cancellationToken);
+
+        var availableSnapshots = await context.TeamSuspensions.CountAsync(cancellationToken);
+        var expectedSnapshots = await context.TeamInjuries.CountAsync(cancellationToken);
+        reports.Add(BuildReport("Suspensions", $"{today:yyyy-MM-dd}", expectedSnapshots, availableSnapshots));
     }
 
     private void LogDataQualityReports(string runType, string scope, IReadOnlyCollection<DataQualityReport> reports)

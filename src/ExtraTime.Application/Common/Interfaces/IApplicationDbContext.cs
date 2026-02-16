@@ -35,6 +35,8 @@ public interface IApplicationDbContext
     DbSet<TeamXgSnapshot> TeamXgSnapshots { get; }
     DbSet<TeamInjurySnapshot> TeamInjurySnapshots { get; }
     DbSet<PlayerInjury> PlayerInjuries { get; }
+    DbSet<TeamSuspensions> TeamSuspensions { get; }
+    DbSet<PlayerSuspension> PlayerSuspensions { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(

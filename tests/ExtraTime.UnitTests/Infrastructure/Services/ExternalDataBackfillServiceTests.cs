@@ -25,6 +25,7 @@ public sealed class ExternalDataBackfillServiceTests
         var oddsDataService = Substitute.For<IOddsDataService>();
         var eloRatingService = Substitute.For<IEloRatingService>();
         var injuryService = Substitute.For<IInjuryService>();
+        var suspensionService = Substitute.For<ISuspensionService>();
         var logger = Substitute.For<ILogger<ExternalDataBackfillService>>();
 
         var failOn2023Once = true;
@@ -54,6 +55,8 @@ public sealed class ExternalDataBackfillServiceTests
             .Returns(Task.CompletedTask);
         injuryService.SyncInjuriesForUpcomingMatchesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
+        suspensionService.SyncSuspensionsForUpcomingMatchesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
 
         var service = new ExternalDataBackfillService(
             context,
@@ -61,6 +64,7 @@ public sealed class ExternalDataBackfillServiceTests
             oddsDataService,
             eloRatingService,
             injuryService,
+            suspensionService,
             logger);
 
         // Act

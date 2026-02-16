@@ -200,14 +200,14 @@ Recommended rollout:
 - [x] Add configurable `ExternalDataQuotaPolicy` options (limit, reserve, injury cap)
 - [x] Add `LineupProvider`/`SuspensionProvider` to `IntegrationType`
 - [x] Update integration health mapping for `LineupDataAvailable`
-- [ ] Create `TeamSuspensions` and `PlayerSuspension` entities + configurations
-- [ ] Create `ISuspensionService` and implementation
+- [x] Create `TeamSuspensions` and `PlayerSuspension` entities + configurations
+- [x] Create `ISuspensionService` and implementation
 - [ ] Add optional EPL-only `FplInjuryStatusProvider` adapter for free injury status
-- [ ] Add league-scoped behavior: EPL injury sync on, non-EPL injury sync off by default
-- [ ] Add suspension sync trigger (timer or orchestrator phase)
+- [x] Add league-scoped behavior: EPL injury sync on, non-EPL injury sync off by default
+- [x] Add suspension sync trigger (timer or orchestrator phase)
 - [ ] Add optional weather/referee enrichment service interfaces
 - [ ] Expose new availability flags in bot prediction context
-- [ ] Add migration(s) for suspension tables
+- [x] Add migration(s) for suspension tables
 - [ ] Add coverage metrics and quality-gate checks before enabling injury sync
 
 ---

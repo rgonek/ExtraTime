@@ -148,6 +148,12 @@ public static class AdminIntegrationEndpoints
                 await lineups.SyncLineupsForUpcomingMatchesAsync(TimeSpan.FromHours(24), cancellationToken);
                 break;
             }
+            case IntegrationType.SuspensionProvider:
+            {
+                var suspensions = serviceProvider.GetRequiredService<ISuspensionService>();
+                await suspensions.SyncSuspensionsForUpcomingMatchesAsync(3, cancellationToken);
+                break;
+            }
             default:
                 return Results.BadRequest(new { error = "Invalid integration type" });
         }
