@@ -448,17 +448,17 @@ services.AddScoped<IInjuryService, InjuryService>();
 
 ## Implementation Checklist
 
-- [ ] Create `TeamInjuries` entity
-- [ ] Create `PlayerInjury` entity
-- [ ] Create `TeamInjuriesConfiguration`
+- [x] Create `TeamInjuries` entity
+- [x] Create `PlayerInjury` entity
+- [x] Create `TeamInjuriesConfiguration`
 - [ ] Create `IInjuryService` interface
 - [ ] Implement `InjuryService` (with daily rate limit tracking)
 - [ ] Add quota guard: do not consume requests needed for lineup sync
 - [ ] Add `GetTeamInjuriesAsOfAsync` (returns null when no historical snapshot exists)
 - [ ] Document leakage-safe fallback for historical ML training (Phase 9.6 integration)
 - [ ] Add API key configuration
-- [ ] Add `TeamInjuries` and `PlayerInjuries` DbSets to context
-- [ ] Add database migration
+- [x] Add `TeamInjuries` and `PlayerInjuries` DbSets to context
+- [x] Add database migration
 - [ ] Register services in DI
 - [ ] Test injury sync (with rate limits)
 
