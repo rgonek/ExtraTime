@@ -28,6 +28,8 @@ public interface IApplicationDbContext
     DbSet<IntegrationStatus> IntegrationStatuses { get; }
     DbSet<TeamXgStats> TeamXgStats { get; }
     DbSet<MatchXgStats> MatchXgStats { get; }
+    DbSet<MatchOdds> MatchOdds { get; }
+    DbSet<MatchStats> MatchStats { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(

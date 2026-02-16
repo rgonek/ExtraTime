@@ -723,11 +723,11 @@ services.AddHttpClient("FootballDataUk", client =>
 
 ## Implementation Checklist
 
-- [ ] Create `MatchOdds` entity
-- [ ] Create `MatchOutcome` enum
-- [ ] Create `MatchStats` entity (NEW - shots/HT/referee/cards/corners/fouls)
-- [ ] Create `MatchOddsConfiguration`
-- [ ] Create `MatchStatsConfiguration` (NEW)
+- [x] Create `MatchOdds` entity
+- [x] Create `MatchOutcome` enum
+- [x] Create `MatchStats` entity (NEW - shots/HT/referee/cards/corners/fouls)
+- [x] Create `MatchOddsConfiguration`
+- [x] Create `MatchStatsConfiguration` (NEW)
 - [ ] Create `IOddsDataService` interface
 - [ ] Implement `OddsDataService` (CSV parsing with extended fields)
 - [ ] Add `ImportHistoricalSeasonsAsync` for multi-season ML backfill (Phase 9.6)
@@ -735,8 +735,8 @@ services.AddHttpClient("FootballDataUk", client =>
 - [ ] Extend `OddsCsvRow` with match stats fields (HTHG, HTAG, HS, HST, AS, AST, HC, AC, HF, AF, HY, AY, HR, AR, Referee)
 - [ ] Update `SaveOddsAsync` to also save `MatchStats`
 - [ ] Create `OddsSyncBackgroundService`
-- [ ] Add `MatchOdds` and `MatchStats` DbSets to context
-- [ ] Add database migration
+- [x] Add `MatchOdds` and `MatchStats` DbSets to context
+- [x] Add database migration
 - [ ] Register services in DI
 - [ ] Configure HTTP client
 - [ ] Test odds + match stats import

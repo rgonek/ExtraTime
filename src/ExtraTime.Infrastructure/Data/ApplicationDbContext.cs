@@ -35,6 +35,8 @@ public sealed class ApplicationDbContext(
     public DbSet<IntegrationStatus> IntegrationStatuses => Set<IntegrationStatus>();
     public DbSet<TeamXgStats> TeamXgStats => Set<TeamXgStats>();
     public DbSet<MatchXgStats> MatchXgStats => Set<MatchXgStats>();
+    public DbSet<MatchOdds> MatchOdds => Set<MatchOdds>();
+    public DbSet<MatchStats> MatchStats => Set<MatchStats>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
