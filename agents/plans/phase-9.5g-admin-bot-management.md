@@ -1232,9 +1232,9 @@ export function useToggleIntegration() {
 - [x] Add admin navigation links
 
 ### Phase 9.5I: New Bots
-- [ ] Update `BotSeeder` with 4 new bots
-- [ ] Test new bot predictions
-- [ ] Compare bot performance
+- [x] Update `BotSeeder` with 4 new bots
+- [x] Test new bot predictions
+- [x] Compare bot performance
 
 ---
 

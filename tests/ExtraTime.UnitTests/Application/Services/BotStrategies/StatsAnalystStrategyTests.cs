@@ -306,6 +306,87 @@ public sealed class StatsAnalystStrategyTests
         await Assert.That(awayScore).IsGreaterThanOrEqualTo(0);
     }
 
+    [Test]
+    public async Task GeneratePredictionAsync_WithPhase95Configs_ReturnsValidScores()
+    {
+        // Arrange
+        var match = CreateTestMatch();
+        var configs = new[]
+        {
+            StatsAnalystConfig.FullAnalysis,
+            StatsAnalystConfig.XgFocused,
+            StatsAnalystConfig.MarketFollower,
+            StatsAnalystConfig.InjuryAware
+        };
+
+        _integrationHealthService.GetDataAvailabilityAsync(Arg.Any<CancellationToken>())
+            .Returns(new DataAvailability
+            {
+                XgDataAvailable = true,
+                OddsDataAvailable = true,
+                InjuryDataAvailable = true,
+                EloDataAvailable = true
+            });
+
+        _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(CreateTeamForm(60.0), CreateTeamForm(45.0));
+        _understatService.GetTeamXgAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(CreateXgStats(1.9, 1.0), CreateXgStats(1.2, 1.4));
+        _oddsDataService.GetOddsForMatchAsync(match.Id, Arg.Any<CancellationToken>())
+            .Returns(CreateOdds(MatchOutcome.HomeWin, 0.58));
+        _injuryService.GetTeamInjuriesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(CreateInjuries(10), CreateInjuries(18));
+        _eloRatingService.GetTeamEloAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(CreateElo(1680), CreateElo(1590));
+
+        foreach (var config in configs)
+        {
+            // Act
+            var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, config.ToJson());
+
+            // Assert
+            await Assert.That(homeScore).IsGreaterThanOrEqualTo(config.MinGoals);
+            await Assert.That(homeScore).IsLessThanOrEqualTo(config.MaxGoals);
+            await Assert.That(awayScore).IsGreaterThanOrEqualTo(config.MinGoals);
+            await Assert.That(awayScore).IsLessThanOrEqualTo(config.MaxGoals);
+        }
+    }
+
+    [Test]
+    public async Task GeneratePredictionAsync_XgFocusedAndMarketFollower_CanProduceDifferentPredictions()
+    {
+        // Arrange
+        var match = CreateTestMatch();
+        var xgConfig = StatsAnalystConfig.XgFocused with { RandomVariance = 0 };
+        var marketConfig = StatsAnalystConfig.MarketFollower with { RandomVariance = 0 };
+
+        _integrationHealthService.GetDataAvailabilityAsync(Arg.Any<CancellationToken>())
+            .Returns(new DataAvailability
+            {
+                XgDataAvailable = true,
+                OddsDataAvailable = true,
+                InjuryDataAvailable = true
+            });
+
+        _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(CreateTeamForm(50.0), CreateTeamForm(50.0));
+        _understatService.GetTeamXgAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(CreateXgStats(2.4, 0.8), CreateXgStats(0.7, 2.0));
+        _oddsDataService.GetOddsForMatchAsync(match.Id, Arg.Any<CancellationToken>())
+            .Returns(CreateOdds(MatchOutcome.AwayWin, 0.88));
+        _injuryService.GetTeamInjuriesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(CreateInjuries(5), CreateInjuries(5));
+
+        // Act
+        var xgPrediction = await _strategy.GeneratePredictionAsync(match, xgConfig.ToJson());
+        var marketPrediction = await _strategy.GeneratePredictionAsync(match, marketConfig.ToJson());
+
+        // Assert
+        await Assert.That(
+            xgPrediction.HomeScore != marketPrediction.HomeScore ||
+            xgPrediction.AwayScore != marketPrediction.AwayScore).IsTrue();
+    }
+
     private static Match CreateTestMatch(int externalId = 12345, int? matchday = null)
     {
         return Match.Create(
