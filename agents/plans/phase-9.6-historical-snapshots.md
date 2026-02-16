@@ -177,15 +177,15 @@ Acceptance criteria:
 
 ## Implementation Checklist
 
-- [ ] Create `TeamXgSnapshot` entity + EF configuration
-- [ ] Create `TeamInjurySnapshot` entity + EF configuration
-- [ ] Add snapshot DbSets to `IApplicationDbContext` and `ApplicationDbContext`
+- [x] Create `TeamXgSnapshot` entity + EF configuration
+- [x] Create `TeamInjurySnapshot` entity + EF configuration
+- [x] Add snapshot DbSets to `IApplicationDbContext` and `ApplicationDbContext`
 - [ ] Create `IExternalDataBackfillService`
 - [ ] Implement `ExternalDataBackfillService`
 - [ ] Wire Understat/Odds/Elo/Injury historical backfill entrypoints
 - [ ] Implement checkpointed backfill execution (resume from last successful chunk)
 - [ ] Update ML feature extraction to use as-of retrieval for training rows
-- [ ] Add migration(s) for snapshot tables
+- [x] Add migration(s) for snapshot tables
 - [ ] Add tests for leakage-safe retrieval and deterministic training data
 - [ ] Add data-quality report output for each backfill run
 

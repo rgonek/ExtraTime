@@ -32,6 +32,8 @@ public interface IApplicationDbContext
     DbSet<MatchStats> MatchStats { get; }
     DbSet<TeamEloRating> TeamEloRatings { get; }
     DbSet<TeamInjuries> TeamInjuries { get; }
+    DbSet<TeamXgSnapshot> TeamXgSnapshots { get; }
+    DbSet<TeamInjurySnapshot> TeamInjurySnapshots { get; }
     DbSet<PlayerInjury> PlayerInjuries { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
