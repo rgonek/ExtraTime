@@ -103,8 +103,10 @@ public static class DependencyInjection
         services.AddScoped<IBetResultsService, BetResultsService>();
         services.AddScoped<IIntegrationHealthService, IntegrationHealthService>();
         services.AddScoped<IUnderstatService, UnderstatService>();
+        services.AddScoped<IEloRatingService, EloRatingService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
         services.Configure<FootballDataUkSettings>(configuration.GetSection(FootballDataUkSettings.SectionName));
+        services.Configure<ClubEloSettings>(configuration.GetSection(ClubEloSettings.SectionName));
         services.AddHttpClient("Understat", client =>
         {
             client.BaseAddress = new Uri("https://understat.com");
@@ -113,6 +115,11 @@ public static class DependencyInjection
         services.AddHttpClient("FootballDataUk", client =>
         {
             client.BaseAddress = new Uri("https://www.football-data.co.uk");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddHttpClient("ClubElo", client =>
+        {
+            client.BaseAddress = new Uri("http://api.clubelo.com");
             client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
         });
         services.AddScoped<IOddsDataService, OddsDataService>();
