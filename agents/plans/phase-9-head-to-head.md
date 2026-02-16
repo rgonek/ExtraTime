@@ -521,7 +521,7 @@ public static class HeadToHeadEndpoints
 - [x] **1.4** Generate migration: `dotnet ef migrations add AddHeadToHead`
 - [x] **2.1** Create `IHeadToHeadService` interface at `src/ExtraTime.Application/Common/Interfaces/IHeadToHeadService.cs`
 - [x] **2.2** Create `HeadToHeadDtos.cs` at `src/ExtraTime.Application/Features/Football/DTOs/HeadToHeadDtos.cs`
-- [ ] **2.3** Create `HeadToHeadService` at `src/ExtraTime.Infrastructure/Services/Football/HeadToHeadService.cs`
+- [x] **2.3** Create `HeadToHeadService` at `src/ExtraTime.Infrastructure/Services/Football/HeadToHeadService.cs`
 - [ ] **2.4** Register `IHeadToHeadService` in `DependencyInjection.cs`
 - [ ] **3.1** (Optional) Create `HeadToHeadEndpoints.cs` and register in API
 - [ ] **4.1** Build and run tests
