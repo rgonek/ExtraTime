@@ -184,7 +184,7 @@ Acceptance criteria:
 - [x] Implement `ExternalDataBackfillService`
 - [x] Wire Understat/Odds/Elo/Injury historical backfill entrypoints
 - [x] Implement checkpointed backfill execution (resume from last successful chunk)
-- [ ] Update ML feature extraction to use as-of retrieval for training rows
+- [x] Update ML feature extraction to use as-of retrieval for training rows
 - [x] Add migration(s) for snapshot tables
 - [ ] Add tests for leakage-safe retrieval and deterministic training data
 - [x] Add data-quality report output for each backfill run

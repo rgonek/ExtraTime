@@ -58,6 +58,7 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
             config,
             dataAvailability,
             cancellationToken);
+        LogSourceQuality(match, config, predictionContext);
 
         var warning = predictionContext.GetDegradationWarning();
         if (warning is not null)
@@ -109,34 +110,46 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
 
         if (config.UseXgData && dataAvailability.XgDataAvailable && _understatService is not null)
         {
-            var season = ResolveSeason(match.MatchDateUtc);
-            context.HomeXg = await _understatService.GetTeamXgAsync(
+            var asOfUtc = match.MatchDateUtc;
+            context.HomeXg = await _understatService.GetTeamXgAsOfAsync(
                 match.HomeTeamId,
                 match.CompetitionId,
-                season,
+                asOfUtc,
                 cancellationToken);
-            context.AwayXg = await _understatService.GetTeamXgAsync(
+            context.AwayXg = await _understatService.GetTeamXgAsOfAsync(
                 match.AwayTeamId,
                 match.CompetitionId,
-                season,
+                asOfUtc,
                 cancellationToken);
         }
 
         if (config.UseOddsData && dataAvailability.OddsDataAvailable && _oddsService is not null)
         {
-            context.Odds = await _oddsService.GetOddsForMatchAsync(match.Id, cancellationToken);
+            context.Odds = await _oddsService.GetOddsForMatchAsOfAsync(match.Id, match.MatchDateUtc, cancellationToken);
         }
 
         if (config.UseInjuryData && dataAvailability.InjuryDataAvailable && _injuryService is not null)
         {
-            context.HomeInjuries = await _injuryService.GetTeamInjuriesAsync(match.HomeTeamId, cancellationToken);
-            context.AwayInjuries = await _injuryService.GetTeamInjuriesAsync(match.AwayTeamId, cancellationToken);
+            context.HomeInjuries = await _injuryService.GetTeamInjuriesAsOfAsync(
+                match.HomeTeamId,
+                match.MatchDateUtc,
+                cancellationToken);
+            context.AwayInjuries = await _injuryService.GetTeamInjuriesAsOfAsync(
+                match.AwayTeamId,
+                match.MatchDateUtc,
+                cancellationToken);
         }
 
         if (config.UseEloData && dataAvailability.EloDataAvailable && _eloService is not null)
         {
-            context.HomeElo = await _eloService.GetTeamEloAsync(match.HomeTeamId, cancellationToken);
-            context.AwayElo = await _eloService.GetTeamEloAsync(match.AwayTeamId, cancellationToken);
+            context.HomeElo = await _eloService.GetTeamEloAtDateAsync(
+                match.HomeTeamId,
+                match.MatchDateUtc,
+                cancellationToken);
+            context.AwayElo = await _eloService.GetTeamEloAtDateAsync(
+                match.AwayTeamId,
+                match.MatchDateUtc,
+                cancellationToken);
         }
 
         return context;
@@ -284,10 +297,34 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
         return (homeScore, awayScore);
     }
 
-    private static string ResolveSeason(DateTime matchDateUtc)
+    private void LogSourceQuality(
+        Match match,
+        StatsAnalystConfig config,
+        PredictionContext predictionContext)
     {
-        return matchDateUtc.Month < 8
-            ? (matchDateUtc.Year - 1).ToString()
-            : matchDateUtc.Year.ToString();
+        var trackedSources = new List<(string Name, bool Enabled, bool Available)>
+        {
+            ("xg", config.UseXgData, predictionContext.HomeXg is not null && predictionContext.AwayXg is not null),
+            ("odds", config.UseOddsData, predictionContext.Odds is not null),
+            ("injuries", config.UseInjuryData, predictionContext.HomeInjuries is not null || predictionContext.AwayInjuries is not null),
+            ("elo", config.UseEloData, predictionContext.HomeElo is not null && predictionContext.AwayElo is not null)
+        };
+
+        var enabledSources = trackedSources.Where(x => x.Enabled).ToList();
+        if (enabledSources.Count == 0)
+        {
+            return;
+        }
+
+        var missingSources = enabledSources.Where(x => !x.Available).Select(x => x.Name).ToArray();
+        var missingRate = (double)missingSources.Length / enabledSources.Count * 100;
+
+        _logger?.LogInformation(
+            "StatsAnalyst source quality for match {MatchId}: missing rate {MissingRate:F1}% ({Missing}/{Enabled}) [{MissingSources}]",
+            match.Id,
+            missingRate,
+            missingSources.Length,
+            enabledSources.Count,
+            missingSources.Length > 0 ? string.Join(", ", missingSources) : "none");
     }
 }

@@ -281,27 +281,27 @@ public sealed class StatsAnalystStrategyTests
 
         _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(CreateTeamForm(65.0), CreateTeamForm(45.0));
-        _understatService.GetTeamXgAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _understatService.GetTeamXgAsOfAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateXgStats(1.8, 1.1), CreateXgStats(1.2, 1.4));
-        _oddsDataService.GetOddsForMatchAsync(match.Id, Arg.Any<CancellationToken>())
+        _oddsDataService.GetOddsForMatchAsOfAsync(match.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateOdds(MatchOutcome.HomeWin, 0.62));
-        _injuryService.GetTeamInjuriesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        _injuryService.GetTeamInjuriesAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateInjuries(15), CreateInjuries(10));
-        _eloRatingService.GetTeamEloAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        _eloRatingService.GetTeamEloAtDateAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateElo(1700), CreateElo(1600));
 
         // Act
         var (homeScore, awayScore) = await _strategy.GeneratePredictionAsync(match, config.ToJson());
 
         // Assert
-        await _understatService.Received(2).GetTeamXgAsync(
+        await _understatService.Received(2).GetTeamXgAsOfAsync(
             Arg.Any<Guid>(),
             match.CompetitionId,
-            Arg.Any<string>(),
+            match.MatchDateUtc,
             Arg.Any<CancellationToken>());
-        await _oddsDataService.Received(1).GetOddsForMatchAsync(match.Id, Arg.Any<CancellationToken>());
-        await _injuryService.Received(2).GetTeamInjuriesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-        await _eloRatingService.Received(2).GetTeamEloAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _oddsDataService.Received(1).GetOddsForMatchAsOfAsync(match.Id, match.MatchDateUtc, Arg.Any<CancellationToken>());
+        await _injuryService.Received(2).GetTeamInjuriesAsOfAsync(Arg.Any<Guid>(), match.MatchDateUtc, Arg.Any<CancellationToken>());
+        await _eloRatingService.Received(2).GetTeamEloAtDateAsync(Arg.Any<Guid>(), match.MatchDateUtc, Arg.Any<CancellationToken>());
         await Assert.That(homeScore).IsGreaterThanOrEqualTo(0);
         await Assert.That(awayScore).IsGreaterThanOrEqualTo(0);
     }
@@ -330,13 +330,13 @@ public sealed class StatsAnalystStrategyTests
 
         _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(CreateTeamForm(60.0), CreateTeamForm(45.0));
-        _understatService.GetTeamXgAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _understatService.GetTeamXgAsOfAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateXgStats(1.9, 1.0), CreateXgStats(1.2, 1.4));
-        _oddsDataService.GetOddsForMatchAsync(match.Id, Arg.Any<CancellationToken>())
+        _oddsDataService.GetOddsForMatchAsOfAsync(match.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateOdds(MatchOutcome.HomeWin, 0.58));
-        _injuryService.GetTeamInjuriesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        _injuryService.GetTeamInjuriesAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateInjuries(10), CreateInjuries(18));
-        _eloRatingService.GetTeamEloAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        _eloRatingService.GetTeamEloAtDateAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateElo(1680), CreateElo(1590));
 
         foreach (var config in configs)
@@ -370,11 +370,11 @@ public sealed class StatsAnalystStrategyTests
 
         _formCalculator.CalculateFormAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(CreateTeamForm(50.0), CreateTeamForm(50.0));
-        _understatService.GetTeamXgAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _understatService.GetTeamXgAsOfAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateXgStats(2.4, 0.8), CreateXgStats(0.7, 2.0));
-        _oddsDataService.GetOddsForMatchAsync(match.Id, Arg.Any<CancellationToken>())
+        _oddsDataService.GetOddsForMatchAsOfAsync(match.Id, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateOdds(MatchOutcome.AwayWin, 0.88));
-        _injuryService.GetTeamInjuriesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        _injuryService.GetTeamInjuriesAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(CreateInjuries(5), CreateInjuries(5));
 
         // Act
