@@ -45,21 +45,28 @@ public sealed class InjuryServiceTests
             {
                 Enabled = true,
                 ApiKey = "test-key",
-                MaxDailyRequests = 1000,
-                SharedQuotaWithLineups = true,
-                ReservedForLineupRequests = 0
+                EnableEplOnlyInjurySync = true,
+                QuotaPolicy = new ExternalDataQuotaPolicy
+                {
+                    HardDailyLimit = 100,
+                    OperationalCap = 95,
+                    SafetyReserve = 0,
+                    MaxInjuryCallsPerDay = 15
+                }
             }),
-            _ => new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            },
+            request => request.RequestUri!.AbsolutePath.Contains("/v3/status", StringComparison.Ordinal)
+                ? CreateStatusResponse(limitDay: 100, current: 0)
+                : new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                },
             out var requestCount);
 
         // Act
         await service.SyncInjuriesForUpcomingMatchesAsync(daysAhead: 3);
 
         // Assert
-        await Assert.That(requestCount()).IsEqualTo(2);
+        await Assert.That(requestCount()).IsEqualTo(3);
         await Assert.That(context.PlayerInjuries.Count()).IsEqualTo(2);
         await Assert.That(context.TeamInjuries.Count()).IsEqualTo(2);
         await Assert.That(context.TeamInjurySnapshots.Count()).IsEqualTo(2);
@@ -85,21 +92,29 @@ public sealed class InjuryServiceTests
             {
                 Enabled = true,
                 ApiKey = "test-key",
-                MaxDailyRequests = 50,
-                SharedQuotaWithLineups = true,
-                ReservedForLineupRequests = 50
+                EnableEplOnlyInjurySync = true,
+                QuotaPolicy = new ExternalDataQuotaPolicy
+                {
+                    HardDailyLimit = 10,
+                    OperationalCap = 10,
+                    SafetyReserve = 10,
+                    MaxInjuryCallsPerDay = 5
+                }
             }),
-            _ => new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("""{ "response": [] }""", Encoding.UTF8, "application/json")
-            },
+            request => request.RequestUri!.AbsolutePath.Contains("/v3/status", StringComparison.Ordinal)
+                ? CreateStatusResponse(limitDay: 10, current: 0)
+                : new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""{ "response": [] }""", Encoding.UTF8, "application/json")
+                },
             out var requestCount);
 
         // Act
         await service.SyncInjuriesForUpcomingMatchesAsync(daysAhead: 3);
 
         // Assert
-        await Assert.That(requestCount()).IsEqualTo(0);
+        await Assert.That(requestCount()).IsEqualTo(1);
+        await Assert.That(context.PlayerInjuries.Any()).IsFalse();
         await Assert.That(context.TeamInjuries.Any()).IsFalse();
     }
 
@@ -125,8 +140,14 @@ public sealed class InjuryServiceTests
             {
                 Enabled = true,
                 ApiKey = "test-key",
-                MaxDailyRequests = 1000,
-                SharedQuotaWithLineups = false
+                EnableEplOnlyInjurySync = true,
+                QuotaPolicy = new ExternalDataQuotaPolicy
+                {
+                    HardDailyLimit = 100,
+                    OperationalCap = 95,
+                    SafetyReserve = 10,
+                    MaxInjuryCallsPerDay = 15
+                }
             }),
             _ => new HttpResponseMessage(HttpStatusCode.OK),
             out _);
@@ -138,6 +159,45 @@ public sealed class InjuryServiceTests
 
         // Assert
         await Assert.That(asOf).IsNull();
+    }
+
+    [Test]
+    public async Task SyncInjuriesForUpcomingMatchesAsync_WhenEplOnlyEnabled_ShouldIgnoreNonEplMatches()
+    {
+        // Arrange
+        ResetQuotaCounter();
+        await using var context = CreateContext();
+        await SeedUpcomingMatchAsync(context, competitionCode: "SA");
+
+        var service = CreateService(
+            context,
+            Options.Create(new ApiFootballSettings
+            {
+                Enabled = true,
+                ApiKey = "test-key",
+                EnableEplOnlyInjurySync = true,
+                QuotaPolicy = new ExternalDataQuotaPolicy
+                {
+                    HardDailyLimit = 100,
+                    OperationalCap = 95,
+                    SafetyReserve = 10,
+                    MaxInjuryCallsPerDay = 15
+                }
+            }),
+            request => request.RequestUri!.AbsolutePath.Contains("/v3/status", StringComparison.Ordinal)
+                ? CreateStatusResponse(limitDay: 100, current: 0)
+                : new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""{ "response": [] }""", Encoding.UTF8, "application/json")
+                },
+            out var requestCount);
+
+        // Act
+        await service.SyncInjuriesForUpcomingMatchesAsync(daysAhead: 3);
+
+        // Assert
+        await Assert.That(requestCount()).IsEqualTo(1);
+        await Assert.That(context.TeamInjuries.Any()).IsFalse();
     }
 
     private static InjuryService CreateService(
@@ -165,9 +225,11 @@ public sealed class InjuryServiceTests
         return new InjuryService(clientFactory, context, options, logger);
     }
 
-    private static async Task SeedUpcomingMatchAsync(ApplicationDbContext context)
+    private static async Task SeedUpcomingMatchAsync(
+        ApplicationDbContext context,
+        string competitionCode = "PL")
     {
-        var competition = Competition.Create(2021, "Premier League", "PL", "England", type: CompetitionType.League);
+        var competition = Competition.Create(2021, "Test League", competitionCode, "England", type: CompetitionType.League);
         var home = Team.Create(10, "Arsenal", "Arsenal");
         var away = Team.Create(20, "Chelsea", "Chelsea");
         var kickoff = DateTime.UtcNow.AddDays(1);
@@ -183,6 +245,27 @@ public sealed class InjuryServiceTests
         context.Teams.AddRange(home, away);
         context.Matches.Add(match);
         await context.SaveChangesAsync();
+    }
+
+    private static HttpResponseMessage CreateStatusResponse(int limitDay, int current)
+    {
+        var statusJson = $$"""
+            {
+              "response": {
+                "subscription": {
+                  "requests": {
+                    "current": {{current}},
+                    "limit_day": {{limitDay}}
+                  }
+                }
+              }
+            }
+            """;
+
+        return new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(statusJson, Encoding.UTF8, "application/json")
+        };
     }
 
     private static ApplicationDbContext CreateContext()

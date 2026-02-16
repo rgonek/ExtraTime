@@ -130,6 +130,12 @@ public sealed class IntegrationHealthServiceTests : HandlerTestBase
                 IntegrationName = IntegrationType.ClubElo.ToString(),
                 Health = IntegrationHealth.Healthy,
                 DataFreshAsOf = now
+            },
+            new()
+            {
+                IntegrationName = IntegrationType.LineupProvider.ToString(),
+                Health = IntegrationHealth.Healthy,
+                DataFreshAsOf = now
             }
         };
         var mockSet = CreateMockDbSet(statuses.AsQueryable());

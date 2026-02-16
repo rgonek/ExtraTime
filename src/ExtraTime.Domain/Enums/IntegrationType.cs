@@ -6,7 +6,9 @@ public enum IntegrationType
     Understat = 1,
     FootballDataUk = 2,
     ApiFootball = 3,
-    ClubElo = 4
+    ClubElo = 4,
+    LineupProvider = 5,
+    SuspensionProvider = 6
 }
 
 public static class IntegrationTypeExtensions
@@ -18,6 +20,8 @@ public static class IntegrationTypeExtensions
         IntegrationType.FootballDataUk => "Football-Data.co.uk",
         IntegrationType.ApiFootball => "API-Football",
         IntegrationType.ClubElo => "ClubElo.com",
+        IntegrationType.LineupProvider => "Lineup Provider",
+        IntegrationType.SuspensionProvider => "Suspension Provider",
         _ => type.ToString()
     };
 
@@ -28,6 +32,8 @@ public static class IntegrationTypeExtensions
         IntegrationType.FootballDataUk => TimeSpan.FromDays(7),
         IntegrationType.ApiFootball => TimeSpan.FromHours(48),
         IntegrationType.ClubElo => TimeSpan.FromHours(48),
+        IntegrationType.LineupProvider => TimeSpan.FromHours(24),
+        IntegrationType.SuspensionProvider => TimeSpan.FromHours(24),
         _ => TimeSpan.FromHours(24)
     };
 }

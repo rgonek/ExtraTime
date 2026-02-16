@@ -106,6 +106,8 @@ public static class DependencyInjection
         services.AddScoped<IExternalDataBackfillService, ExternalDataBackfillService>();
         services.AddScoped<IEloRatingService, EloRatingService>();
         services.AddScoped<IInjuryService, InjuryService>();
+        services.AddScoped<ILineupDataProvider, ApiLineupDataProvider>();
+        services.AddScoped<ILineupSyncService, LineupSyncService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
         services.Configure<FootballDataUkSettings>(configuration.GetSection(FootballDataUkSettings.SectionName));
         services.Configure<ClubEloSettings>(configuration.GetSection(ClubEloSettings.SectionName));

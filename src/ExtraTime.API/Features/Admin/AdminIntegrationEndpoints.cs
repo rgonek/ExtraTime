@@ -142,6 +142,12 @@ public static class AdminIntegrationEndpoints
                 await elo.SyncEloRatingsAsync(cancellationToken);
                 break;
             }
+            case IntegrationType.LineupProvider:
+            {
+                var lineups = serviceProvider.GetRequiredService<ILineupSyncService>();
+                await lineups.SyncLineupsForUpcomingMatchesAsync(TimeSpan.FromHours(24), cancellationToken);
+                break;
+            }
             default:
                 return Results.BadRequest(new { error = "Invalid integration type" });
         }

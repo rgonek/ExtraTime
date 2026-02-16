@@ -24,6 +24,7 @@ public sealed class InjuryService(
     {
         PropertyNameCaseInsensitive = true
     };
+    private const string PremierLeagueCode = "PL";
 
     private static readonly object DailyQuotaLock = new();
     private static DateTime _requestCounterDateUtc = DateTime.UtcNow.Date;
@@ -53,10 +54,41 @@ public sealed class InjuryService(
 
         var now = DateTime.UtcNow;
         var cutoff = now.AddDays(daysAhead);
+        var quotaPolicy = settings.Value.QuotaPolicy ?? new ExternalDataQuotaPolicy();
+        var reservedForLineups = await GetReservedLineupBudgetAsync(
+            apiSettings.EnableEplOnlyInjurySync,
+            quotaPolicy.SafetyReserve,
+            cancellationToken);
+        var remainingRequests = await GetRemainingRequestsAsync(apiSettings, quotaPolicy, cancellationToken);
+        var operationalStopRemaining = GetOperationalStopRemaining(quotaPolicy);
+        var maxInjuryCalls = GetMaxInjuryCalls(quotaPolicy);
 
-        var matches = await context.Matches
+        if (maxInjuryCalls <= 0)
+        {
+            logger.LogInformation("Injury sync skipped because MaxInjuryCallsPerDay is set to 0.");
+            return;
+        }
+
+        if (remainingRequests <= reservedForLineups || remainingRequests <= operationalStopRemaining)
+        {
+            logger.LogInformation(
+                "Injury sync skipped due to lineups-first quota policy. Remaining={Remaining}, ReservedForLineups={Reserved}, OperationalStopRemaining={OperationalStopRemaining}",
+                remainingRequests,
+                reservedForLineups,
+                operationalStopRemaining);
+            return;
+        }
+
+        var matchesQuery = context.Matches
             .Where(m => m.MatchDateUtc >= now && m.MatchDateUtc <= cutoff)
-            .Where(m => m.Status == MatchStatus.Scheduled || m.Status == MatchStatus.Timed)
+            .Where(m => m.Status == MatchStatus.Scheduled || m.Status == MatchStatus.Timed);
+
+        if (apiSettings.EnableEplOnlyInjurySync)
+        {
+            matchesQuery = matchesQuery.Where(m => m.Competition.Code == PremierLeagueCode);
+        }
+
+        var matches = await matchesQuery
             .Select(m => new { m.HomeTeamId, m.AwayTeamId })
             .ToListAsync(cancellationToken);
 
@@ -88,21 +120,29 @@ public sealed class InjuryService(
             return;
         }
 
-        var remainingBudget = GetRemainingRequestBudget(apiSettings);
         logger.LogInformation(
-            "Injury sync queued for {TeamCount} teams with {RemainingBudget} quota slots available.",
+            "Injury sync queued for {TeamCount} teams with {RemainingRequests} requests remaining and {ReservedForLineups} reserved for lineups.",
             teamsToSync.Count,
-            remainingBudget);
+            remainingRequests,
+            reservedForLineups);
 
         foreach (var teamId in teamsToSync)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!TryConsumeRequestSlot(apiSettings, out var remainingAfterConsume))
+            if (remainingRequests <= reservedForLineups || remainingRequests <= operationalStopRemaining)
             {
                 logger.LogInformation(
-                    "Injury sync stopped early due to quota reservation for lineups. Remaining teams skipped: {RemainingTeams}",
+                    "Injury sync stopped early due to lineups-first quota policy. Remaining teams skipped: {RemainingTeams}",
                     teamsToSync.Count - teamsToSync.IndexOf(teamId));
+                break;
+            }
+
+            if (!TryConsumeRequestSlot(maxInjuryCalls, out var remainingInjuryCalls))
+            {
+                logger.LogInformation(
+                    "Injury sync stopped after reaching MaxInjuryCallsPerDay={MaxInjuryCalls}.",
+                    maxInjuryCalls);
                 break;
             }
 
@@ -116,9 +156,9 @@ public sealed class InjuryService(
                 else
                 {
                     logger.LogDebug(
-                        "Injury sync completed for team {TeamId}; remaining quota slots: {Remaining}",
+                        "Injury sync completed for team {TeamId}; remaining injury-call budget: {Remaining}",
                         teamId,
-                        remainingAfterConsume);
+                        remainingInjuryCalls);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -132,6 +172,10 @@ public sealed class InjuryService(
             catch (JsonException ex)
             {
                 logger.LogWarning(ex, "Failed to parse API-Football injury response for team {TeamId}", teamId);
+            }
+            finally
+            {
+                remainingRequests = Math.Max(0, remainingRequests - 1);
             }
         }
     }
@@ -341,31 +385,30 @@ public sealed class InjuryService(
         };
     }
 
-    private static bool TryConsumeRequestSlot(ApiFootballSettings settings, out int remainingAfterConsume)
+    private static bool TryConsumeRequestSlot(int maxInjuryCallsPerDay, out int remainingAfterConsume)
     {
         lock (DailyQuotaLock)
         {
             ResetDailyCounterIfNeeded();
-            var maxRequests = GetInjuryQuotaLimit(settings);
-            if (_dailyRequestCount >= maxRequests)
+            var maxCalls = Math.Max(0, maxInjuryCallsPerDay);
+            if (_dailyRequestCount >= maxCalls)
             {
                 remainingAfterConsume = 0;
                 return false;
             }
 
             _dailyRequestCount++;
-            remainingAfterConsume = Math.Max(0, maxRequests - _dailyRequestCount);
+            remainingAfterConsume = Math.Max(0, maxCalls - _dailyRequestCount);
             return true;
         }
     }
 
-    private static int GetRemainingRequestBudget(ApiFootballSettings settings)
+    private static int GetConsumedInjuryCallsToday()
     {
         lock (DailyQuotaLock)
         {
             ResetDailyCounterIfNeeded();
-            var maxRequests = GetInjuryQuotaLimit(settings);
-            return Math.Max(0, maxRequests - _dailyRequestCount);
+            return _dailyRequestCount;
         }
     }
 
@@ -381,16 +424,83 @@ public sealed class InjuryService(
         _dailyRequestCount = 0;
     }
 
-    private static int GetInjuryQuotaLimit(ApiFootballSettings settings)
+    private static int GetMaxInjuryCalls(ExternalDataQuotaPolicy policy)
     {
-        var maxDailyRequests = Math.Max(0, settings.MaxDailyRequests);
-        if (!settings.SharedQuotaWithLineups)
+        var hardLimit = Math.Max(0, policy.HardDailyLimit);
+        var operationalCap = Math.Clamp(policy.OperationalCap, 0, hardLimit);
+        return Math.Clamp(policy.MaxInjuryCallsPerDay, 0, operationalCap);
+    }
+
+    private static int GetOperationalStopRemaining(ExternalDataQuotaPolicy policy)
+    {
+        var hardLimit = Math.Max(0, policy.HardDailyLimit);
+        var operationalCap = Math.Clamp(policy.OperationalCap, 0, hardLimit);
+        return Math.Max(0, hardLimit - operationalCap);
+    }
+
+    private async Task<int> GetRemainingRequestsAsync(
+        ApiFootballSettings apiSettings,
+        ExternalDataQuotaPolicy policy,
+        CancellationToken cancellationToken)
+    {
+        var hardLimit = Math.Max(0, policy.HardDailyLimit);
+        var fallbackRemaining = Math.Max(0, hardLimit - GetConsumedInjuryCallsToday());
+
+        var client = httpClientFactory.CreateClient("ApiFootball");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/v3/status");
+        request.Headers.TryAddWithoutValidation("X-RapidAPI-Key", apiSettings.ApiKey);
+
+        try
         {
-            return maxDailyRequests;
+            using var response = await client.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return fallbackRemaining;
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<ApiFootballStatusResponse>(JsonOptions, cancellationToken);
+            var requests = payload?.Response?.Subscription?.Requests;
+            if (requests is null)
+            {
+                return fallbackRemaining;
+            }
+
+            var limit = requests.LimitDay ?? hardLimit;
+            var current = requests.Current ?? Math.Max(0, limit - (requests.Remaining ?? limit));
+            var remaining = requests.Remaining ?? Math.Max(0, limit - current);
+            return Math.Max(0, remaining);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogDebug(ex, "Unable to query API-Football status endpoint. Using fallback quota estimate.");
+            return fallbackRemaining;
+        }
+        catch (JsonException ex)
+        {
+            logger.LogDebug(ex, "Unable to parse API-Football status response. Using fallback quota estimate.");
+            return fallbackRemaining;
+        }
+    }
+
+    private async Task<int> GetReservedLineupBudgetAsync(
+        bool eplOnly,
+        int safetyReserve,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        var cutoff = now.AddHours(24);
+
+        var matchesQuery = context.Matches
+            .Where(m => m.MatchDateUtc >= now && m.MatchDateUtc <= cutoff)
+            .Where(m => m.Status == MatchStatus.Scheduled || m.Status == MatchStatus.Timed);
+
+        if (eplOnly)
+        {
+            matchesQuery = matchesQuery.Where(m => m.Competition.Code == PremierLeagueCode);
         }
 
-        var reservedForLineups = Math.Max(0, settings.ReservedForLineupRequests);
-        return Math.Max(0, maxDailyRequests - reservedForLineups);
+        var neededLineupCalls24h = await matchesQuery.CountAsync(cancellationToken);
+        return neededLineupCalls24h + Math.Max(0, safetyReserve);
     }
 
     private static int GetCurrentSeasonYear(DateTime utcNow)
@@ -485,5 +595,35 @@ public sealed class InjuryService(
     {
         [JsonPropertyName("timestamp")]
         public long? Timestamp { get; set; }
+    }
+
+    internal sealed class ApiFootballStatusResponse
+    {
+        [JsonPropertyName("response")]
+        public ApiFootballStatusPayload? Response { get; set; }
+    }
+
+    internal sealed class ApiFootballStatusPayload
+    {
+        [JsonPropertyName("subscription")]
+        public ApiFootballSubscription? Subscription { get; set; }
+    }
+
+    internal sealed class ApiFootballSubscription
+    {
+        [JsonPropertyName("requests")]
+        public ApiFootballRequests? Requests { get; set; }
+    }
+
+    internal sealed class ApiFootballRequests
+    {
+        [JsonPropertyName("current")]
+        public int? Current { get; set; }
+
+        [JsonPropertyName("limit_day")]
+        public int? LimitDay { get; set; }
+
+        [JsonPropertyName("remaining")]
+        public int? Remaining { get; set; }
     }
 }

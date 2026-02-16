@@ -150,6 +150,7 @@ public sealed class IntegrationHealthService(
         var oddsStatus = statusByName.GetValueOrDefault(IntegrationType.FootballDataUk.ToString());
         var injuriesStatus = statusByName.GetValueOrDefault(IntegrationType.ApiFootball.ToString());
         var eloStatus = statusByName.GetValueOrDefault(IntegrationType.ClubElo.ToString());
+        var lineupStatus = statusByName.GetValueOrDefault(IntegrationType.LineupProvider.ToString());
         var footballDataStatus = statusByName.GetValueOrDefault(IntegrationType.FootballDataOrg.ToString());
 
         return new DataAvailability
@@ -157,7 +158,7 @@ public sealed class IntegrationHealthService(
             XgDataAvailable = IsFreshAndOperational(xgStatus),
             OddsDataAvailable = IsFreshAndOperational(oddsStatus),
             InjuryDataAvailable = IsOperational(injuriesStatus),
-            LineupDataAvailable = IsOperational(footballDataStatus),
+            LineupDataAvailable = IsOperational(lineupStatus),
             EloDataAvailable = IsFreshAndOperational(eloStatus),
             StandingsDataAvailable = IsOperational(footballDataStatus)
         };

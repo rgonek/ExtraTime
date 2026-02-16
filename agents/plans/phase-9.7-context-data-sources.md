@@ -195,11 +195,11 @@ Recommended rollout:
 
 ## Implementation Checklist
 
-- [ ] Implement real `ILineupDataProvider` and replace `NullLineupDataProvider` in DI
-- [ ] Implement lineup quota reservation (lineups first, injuries second)
-- [ ] Add configurable `ExternalDataQuotaPolicy` options (limit, reserve, injury cap)
-- [ ] Add `LineupProvider`/`SuspensionProvider` to `IntegrationType`
-- [ ] Update integration health mapping for `LineupDataAvailable`
+- [x] Implement real `ILineupDataProvider` and replace `NullLineupDataProvider` in DI
+- [x] Implement lineup quota reservation (lineups first, injuries second)
+- [x] Add configurable `ExternalDataQuotaPolicy` options (limit, reserve, injury cap)
+- [x] Add `LineupProvider`/`SuspensionProvider` to `IntegrationType`
+- [x] Update integration health mapping for `LineupDataAvailable`
 - [ ] Create `TeamSuspensions` and `PlayerSuspension` entities + configurations
 - [ ] Create `ISuspensionService` and implementation
 - [ ] Add optional EPL-only `FplInjuryStatusProvider` adapter for free injury status
