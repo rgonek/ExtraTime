@@ -130,6 +130,7 @@ app.MapHealthEndpoints();
 app.MapAuthEndpoints();
 app.MapAdminEndpoints();
 app.MapFootballEndpoints();
+app.MapHeadToHeadEndpoints();
 app.MapFootballSyncEndpoints();
 app.MapLeagueEndpoints();
 app.MapBotEndpoints();
