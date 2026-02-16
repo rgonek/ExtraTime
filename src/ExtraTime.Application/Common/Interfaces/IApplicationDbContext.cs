@@ -24,6 +24,7 @@ public interface IApplicationDbContext
     DbSet<LeagueStanding> LeagueStandings { get; }
     DbSet<FootballStanding> FootballStandings { get; }
     DbSet<TeamFormCache> TeamFormCaches { get; }
+    DbSet<HeadToHead> HeadToHeads { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(
