@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Trophy, LayoutDashboard, Menu, X, LogOut } from 'lucide-react';
+import { Trophy, LayoutDashboard, Menu, X, LogOut, Bot, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-const navItems = [
+const baseNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/leagues', label: 'Leagues', icon: Trophy },
 ];
@@ -26,6 +26,13 @@ export function AppShell({ children }: AppShellProps) {
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navItems = user?.role === 'Admin'
+    ? [
+        ...baseNavItems,
+        { href: '/admin/bots', label: 'Bots', icon: Bot },
+        { href: '/admin/integrations', label: 'Integrations', icon: ShieldCheck },
+      ]
+    : baseNavItems;
 
   const userInitials = user?.username
     ?.split(' ')

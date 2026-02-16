@@ -12,11 +12,30 @@ export interface StatsAnalystConfig {
   homeAdvantageWeight: number;
   goalTrendWeight: number;
   streakWeight: number;
+  xgWeight?: number;
+  xgDefensiveWeight?: number;
+  oddsWeight?: number;
+  injuryWeight?: number;
+  lineupAnalysisWeight?: number;
+  eloWeight?: number;
   matchesAnalyzed: number;
   highStakesBoost: boolean;
   lateSeasonMatchday: number;
   style: 'Conservative' | 'Moderate' | 'Bold';
   randomVariance: number;
+  useXgData?: boolean;
+  useOddsData?: boolean;
+  useInjuryData?: boolean;
+  useLineupData?: boolean;
+  useEloData?: boolean;
+}
+
+export interface BotStats {
+  totalBetsPlaced: number;
+  leaguesJoined: number;
+  averagePointsPerBet: number;
+  exactPredictions: number;
+  correctResults: number;
 }
 
 export interface BotDto {
@@ -28,6 +47,7 @@ export interface BotDto {
   isActive: boolean;
   createdAt: string;
   lastBetPlacedAt: string | null;
+  stats?: BotStats | null;
 }
 
 export interface BotSummaryDto {
@@ -47,8 +67,17 @@ export interface LeagueBotDto {
 
 export interface CreateBotRequest {
   name: string;
-  avatarUrl: string | null;
+  avatarUrl?: string | null;
   strategy: BotStrategy;
+  configuration?: Record<string, unknown> | null;
+}
+
+export interface UpdateBotRequest {
+  name?: string;
+  avatarUrl?: string | null;
+  strategy?: BotStrategy;
+  configuration?: Record<string, unknown> | null;
+  isActive?: boolean;
 }
 
 export interface CreateStatsAnalystBotRequest {
@@ -66,4 +95,31 @@ export interface CreateStatsAnalystBotRequest {
 
 export interface AddBotToLeagueRequest {
   botId: string;
+}
+
+export interface BotConfigurationDto {
+  formWeight: number;
+  homeAdvantageWeight: number;
+  goalTrendWeight: number;
+  streakWeight: number;
+  xgWeight: number;
+  xgDefensiveWeight: number;
+  oddsWeight: number;
+  injuryWeight: number;
+  lineupAnalysisWeight: number;
+  matchesAnalyzed: number;
+  highStakesBoost: boolean;
+  style: string;
+  randomVariance: number;
+  useXgData: boolean;
+  useOddsData: boolean;
+  useInjuryData: boolean;
+  useLineupData: boolean;
+  useEloData: boolean;
+}
+
+export interface ConfigurationPreset {
+  name: string;
+  description: string;
+  configuration: BotConfigurationDto;
 }

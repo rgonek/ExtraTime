@@ -1220,16 +1220,16 @@ export function useToggleIntegration() {
 - [x] Test bot CRUD operations
 
 ### Phase 9.5H: Admin Frontend
-- [ ] Create `app/(admin)/admin/bots/page.tsx`
-- [ ] Create `BotCard` component
-- [ ] Create `CreateBotModal` component
-- [ ] Create `EditBotModal` component
-- [ ] Create `app/(admin)/admin/integrations/page.tsx`
-- [ ] Create `IntegrationCard` component
-- [ ] Create `DataAvailabilityCard` component
-- [ ] Create `use-admin-bots.ts` hooks
-- [ ] Create `use-admin-integrations.ts` hooks
-- [ ] Add admin navigation links
+- [x] Create `app/(admin)/admin/bots/page.tsx`
+- [x] Create `BotCard` component
+- [x] Create `CreateBotModal` component
+- [x] Create `EditBotModal` component
+- [x] Create `app/(admin)/admin/integrations/page.tsx`
+- [x] Create `IntegrationCard` component
+- [x] Create `DataAvailabilityCard` component
+- [x] Create `use-admin-bots.ts` hooks
+- [x] Create `use-admin-integrations.ts` hooks
+- [x] Add admin navigation links
 
 ### Phase 9.5I: New Bots
 - [ ] Update `BotSeeder` with 4 new bots

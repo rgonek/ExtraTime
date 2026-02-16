@@ -59,10 +59,21 @@ export type {
 export type {
   BotStrategy,
   StatsAnalystConfig,
+  BotStats,
   BotDto,
   BotSummaryDto,
   LeagueBotDto,
   CreateBotRequest,
+  UpdateBotRequest,
   CreateStatsAnalystBotRequest,
   AddBotToLeagueRequest,
+  BotConfigurationDto,
+  ConfigurationPreset,
 } from './bot';
+
+// Integration types
+export type {
+  IntegrationHealth,
+  IntegrationStatus,
+  DataAvailability,
+} from './integration';
