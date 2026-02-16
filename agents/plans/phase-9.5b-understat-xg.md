@@ -587,16 +587,16 @@ services.AddHttpClient("Understat", client =>
 - [x] Create `TeamXgStats` entity
 - [x] Create `MatchXgStats` entity
 - [x] Create `TeamXgStatsConfiguration`
-- [ ] Create `IUnderstatService` interface
-- [ ] Implement `UnderstatService` (HTML scraping + JSON parsing)
-- [ ] Add date-effective lookup `GetTeamXgAsOfAsync` for leakage-safe ML training
-- [ ] Add seasonal range backfill entrypoint `SyncLeagueSeasonRangeAsync` (used by Phase 9.6)
+- [x] Create `IUnderstatService` interface
+- [x] Implement `UnderstatService` (HTML scraping + JSON parsing)
+- [x] Add date-effective lookup `GetTeamXgAsOfAsync` for leakage-safe ML training
+- [x] Add seasonal range backfill entrypoint `SyncLeagueSeasonRangeAsync` (used by Phase 9.6)
 - [ ] Create `UnderstatSyncBackgroundService`
 - [x] Add `TeamXgStats` and `MatchXgStats` DbSets to context
 - [x] Add database migration
 - [ ] Register services in DI
 - [ ] Configure HTTP client
-- [ ] Test xG data sync
+- [x] Test xG data sync
 
 ---
 
