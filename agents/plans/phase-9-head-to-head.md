@@ -515,7 +515,7 @@ public static class HeadToHeadEndpoints
 
 ## Implementation Tasks
 
-- [ ] **1.1** Create `HeadToHead` entity at `src/ExtraTime.Domain/Entities/HeadToHead.cs` with `HeadToHeadStats` record (includes BothTeamsScoredCount, Over25Count, BttsRate, Over25Rate, and recent 3-match counters)
+- [x] **1.1** Create `HeadToHead` entity at `src/ExtraTime.Domain/Entities/HeadToHead.cs` with `HeadToHeadStats` record (includes BothTeamsScoredCount, Over25Count, BttsRate, Over25Rate, and recent 3-match counters)
 - [ ] **1.2** Create `HeadToHeadConfiguration` at `src/ExtraTime.Infrastructure/Data/Configurations/HeadToHeadConfiguration.cs`
 - [ ] **1.3** Add `DbSet<HeadToHead> HeadToHeads` to `IApplicationDbContext` and `ApplicationDbContext`
 - [ ] **1.4** Generate migration: `dotnet ef migrations add AddHeadToHead`
