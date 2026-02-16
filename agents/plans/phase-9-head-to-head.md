@@ -3,6 +3,7 @@
 ## Overview
 
 Calculate and cache historical matchup records between teams from existing Match data in the database. No external API calls needed - purely local computation with on-demand caching.
+Includes aggregate metrics and recent 3-meeting counters required by Phase 7.8 ML features.
 
 **Design**: On-demand calculation with DB cache. Computed when requested (match preview, bot prediction). Cached in `HeadToHeads` table with 7-day expiry. No background functions.
 
@@ -58,6 +59,12 @@ public sealed class HeadToHead : BaseEntity
     public DateTime? LastMatchDate { get; private set; }
     public Guid? LastMatchId { get; private set; }
 
+    // Recent form (last 3 meetings)
+    public int RecentMatchesCount { get; private set; }
+    public int RecentTeam1Wins { get; private set; }
+    public int RecentTeam2Wins { get; private set; }
+    public int RecentDraws { get; private set; }
+
     // Metadata
     public int MatchesAnalyzed { get; private set; }
     public DateTime CalculatedAt { get; private set; }
@@ -89,6 +96,7 @@ public sealed class HeadToHead : BaseEntity
         int team1HomeGoals, int team1HomeConceded,
         int bothTeamsScoredCount, int over25Count,
         DateTime? lastMatchDate, Guid? lastMatchId,
+        int recentMatchesCount, int recentTeam1Wins, int recentTeam2Wins, int recentDraws,
         int matchesAnalyzed)
     {
         TotalMatches = totalMatches;
@@ -105,6 +113,10 @@ public sealed class HeadToHead : BaseEntity
         Over25Count = over25Count;
         LastMatchDate = lastMatchDate;
         LastMatchId = lastMatchId;
+        RecentMatchesCount = recentMatchesCount;
+        RecentTeam1Wins = recentTeam1Wins;
+        RecentTeam2Wins = recentTeam2Wins;
+        RecentDraws = recentDraws;
         MatchesAnalyzed = matchesAnalyzed;
         CalculatedAt = Clock.UtcNow;
     }
@@ -123,6 +135,8 @@ public sealed class HeadToHead : BaseEntity
                 TotalMatches: TotalMatches,
                 HomeMatches: Team1HomeMatches,
                 HomeWins: Team1HomeWins,
+                RecentWins: RecentTeam1Wins,
+                RecentMatchesCount: RecentMatchesCount,
                 BttsRate: BttsRate,
                 Over25Rate: Over25Rate);
         }
@@ -138,6 +152,8 @@ public sealed class HeadToHead : BaseEntity
                 TotalMatches: TotalMatches,
                 HomeMatches: TotalMatches - Team1HomeMatches,
                 HomeWins: Team2Wins - (Team1HomeMatches - Team1HomeWins - Draws), // approximate
+                RecentWins: RecentTeam2Wins,
+                RecentMatchesCount: RecentMatchesCount,
                 BttsRate: BttsRate,
                 Over25Rate: Over25Rate);
         }
@@ -155,6 +171,8 @@ public sealed record HeadToHeadStats(
     int TotalMatches,
     int HomeMatches,
     int HomeWins,
+    int RecentWins,
+    int RecentMatchesCount,
     double BttsRate,
     double Over25Rate)
 {
@@ -267,6 +285,9 @@ public sealed record HeadToHeadDto(
     int Team2Goals,
     double BttsRate,
     double Over25Rate,
+    int RecentTeam1Wins,
+    int RecentTeam2Wins,
+    int RecentDraws,
     DateTime? LastMatchDate,
     DateTime CalculatedAt);
 ```
@@ -361,6 +382,7 @@ public sealed class HeadToHeadService(
         int team1HomeMatches = 0, team1HomeWins = 0;
         int team1HomeGoals = 0, team1HomeConceded = 0;
         int bothTeamsScoredCount = 0, over25Count = 0;
+        int recentMatchesCount = 0, recentTeam1Wins = 0, recentTeam2Wins = 0, recentDraws = 0;
 
         foreach (var match in matches)
         {
@@ -394,6 +416,23 @@ public sealed class HeadToHeadService(
             if (t1Score + t2Score > 2) over25Count++;
         }
 
+        var recentMatches = matches
+            .Where(m => m.HomeScore.HasValue && m.AwayScore.HasValue)
+            .Take(3)
+            .ToList();
+
+        recentMatchesCount = recentMatches.Count;
+        foreach (var recent in recentMatches)
+        {
+            bool team1IsHome = recent.HomeTeamId == team1Id;
+            int t1Score = team1IsHome ? recent.HomeScore!.Value : recent.AwayScore!.Value;
+            int t2Score = team1IsHome ? recent.AwayScore!.Value : recent.HomeScore!.Value;
+
+            if (t1Score > t2Score) recentTeam1Wins++;
+            else if (t2Score > t1Score) recentTeam2Wins++;
+            else recentDraws++;
+        }
+
         h2h.UpdateStats(
             totalMatches, team1Wins, team2Wins, draws,
             team1Goals, team2Goals,
@@ -402,6 +441,7 @@ public sealed class HeadToHeadService(
             bothTeamsScoredCount, over25Count,
             matches.FirstOrDefault()?.MatchDateUtc,
             matches.FirstOrDefault()?.Id,
+            recentMatchesCount, recentTeam1Wins, recentTeam2Wins, recentDraws,
             totalMatches);
 
         if (existing == null)
@@ -464,6 +504,7 @@ public static class HeadToHeadEndpoints
             h2h.Team1Wins, h2h.Team2Wins, h2h.Draws,
             h2h.Team1Goals, h2h.Team2Goals,
             h2h.BttsRate, h2h.Over25Rate,
+            h2h.RecentTeam1Wins, h2h.RecentTeam2Wins, h2h.RecentDraws,
             h2h.LastMatchDate,
             h2h.CalculatedAt));
     }
@@ -474,7 +515,7 @@ public static class HeadToHeadEndpoints
 
 ## Implementation Tasks
 
-- [ ] **1.1** Create `HeadToHead` entity at `src/ExtraTime.Domain/Entities/HeadToHead.cs` with `HeadToHeadStats` record (includes BothTeamsScoredCount, Over25Count, BttsRate, Over25Rate)
+- [ ] **1.1** Create `HeadToHead` entity at `src/ExtraTime.Domain/Entities/HeadToHead.cs` with `HeadToHeadStats` record (includes BothTeamsScoredCount, Over25Count, BttsRate, Over25Rate, and recent 3-match counters)
 - [ ] **1.2** Create `HeadToHeadConfiguration` at `src/ExtraTime.Infrastructure/Data/Configurations/HeadToHeadConfiguration.cs`
 - [ ] **1.3** Add `DbSet<HeadToHead> HeadToHeads` to `IApplicationDbContext` and `ApplicationDbContext`
 - [ ] **1.4** Generate migration: `dotnet ef migrations add AddHeadToHead`

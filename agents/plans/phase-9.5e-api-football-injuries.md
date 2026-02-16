@@ -7,8 +7,11 @@ Integrate injury data from API-Football to track squad availability and provide 
 > **Sync Strategy**: On-demand for upcoming matches (within 3 days). Limited by free tier rate limits.
 > **Rate Limit**: 100 requests/day strict limit on free tier - prioritize upcoming matches only
 > **Priority**: Optional/Limited
+> **Quota Priority Rule**: if API-Football quota is shared with lineup sync, lineup calls win and injury sync is skipped.
+> **Default in zero-cost mode**: keep injury sync disabled unless spare quota exists or an alternative free injury source is configured.
 
 > **Prerequisite**: Phase 9.5A (Integration Health) must be complete
+> **Phase 7.8 Contract**: expose `asOfUtc` injury reads from stored snapshots; if unavailable, return `null` so ML can gracefully fall back.
 
 ---
 
@@ -146,6 +149,11 @@ public interface IInjuryService
 
     Task<TeamInjuries?> GetTeamInjuriesAsync(
         Guid teamId,
+        CancellationToken cancellationToken = default);
+
+    Task<TeamInjuries?> GetTeamInjuriesAsOfAsync(
+        Guid teamId,
+        DateTime asOfUtc,
         CancellationToken cancellationToken = default);
 
     double CalculateInjuryImpact(TeamInjuries injuries);
@@ -445,6 +453,9 @@ services.AddScoped<IInjuryService, InjuryService>();
 - [ ] Create `TeamInjuriesConfiguration`
 - [ ] Create `IInjuryService` interface
 - [ ] Implement `InjuryService` (with daily rate limit tracking)
+- [ ] Add quota guard: do not consume requests needed for lineup sync
+- [ ] Add `GetTeamInjuriesAsOfAsync` (returns null when no historical snapshot exists)
+- [ ] Document leakage-safe fallback for historical ML training (Phase 9.6 integration)
 - [ ] Add API key configuration
 - [ ] Add `TeamInjuries` and `PlayerInjuries` DbSets to context
 - [ ] Add database migration

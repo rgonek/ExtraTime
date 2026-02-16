@@ -9,6 +9,7 @@ Integrate expected goals (xG) data from Understat.com to provide advanced statis
 > **Rate Limit**: None official, use 2s delay between requests
 
 > **Prerequisite**: Phase 9.5A (Integration Health) must be complete
+> **Phase 7.8 Contract**: support date-effective xG retrieval (`asOfUtc`) so ML training never uses future xG state.
 
 ---
 
@@ -170,6 +171,24 @@ public interface IUnderstatService
     Task<List<TeamXgStats>> SyncLeagueXgStatsAsync(
         string leagueCode,
         string season,
+        CancellationToken cancellationToken = default);
+
+    Task SyncLeagueSeasonRangeAsync(
+        string leagueCode,
+        int fromSeason,
+        int toSeason,
+        CancellationToken cancellationToken = default);
+
+    Task<TeamXgStats?> GetTeamXgAsync(
+        Guid teamId,
+        Guid competitionId,
+        string season,
+        CancellationToken cancellationToken = default);
+
+    Task<TeamXgStats?> GetTeamXgAsOfAsync(
+        Guid teamId,
+        Guid competitionId,
+        DateTime asOfUtc,
         CancellationToken cancellationToken = default);
 
     Task<MatchXgStats?> GetMatchXgAsync(
@@ -570,6 +589,8 @@ services.AddHttpClient("Understat", client =>
 - [ ] Create `TeamXgStatsConfiguration`
 - [ ] Create `IUnderstatService` interface
 - [ ] Implement `UnderstatService` (HTML scraping + JSON parsing)
+- [ ] Add date-effective lookup `GetTeamXgAsOfAsync` for leakage-safe ML training
+- [ ] Add seasonal range backfill entrypoint `SyncLeagueSeasonRangeAsync` (used by Phase 9.6)
 - [ ] Create `UnderstatSyncBackgroundService`
 - [ ] Add `TeamXgStats` and `MatchXgStats` DbSets to context
 - [ ] Add database migration

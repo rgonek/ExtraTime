@@ -8,6 +8,7 @@ Integrate Elo ratings from ClubElo.com to provide team quality indicators for ML
 > **Rate Limit**: None (public CSV)
 
 > **Prerequisite**: Phase 9.5A (Integration Health) must be complete
+> **Phase 7.8 Contract**: use date-effective Elo retrieval (`GetTeamEloAtDateAsync`) and support historical backfill for training datasets.
 
 ---
 
@@ -89,6 +90,8 @@ namespace ExtraTime.Application.Common.Interfaces;
 public interface IEloRatingService
 {
     Task SyncEloRatingsAsync(CancellationToken cancellationToken = default);
+    Task SyncEloRatingsForDateAsync(DateTime dateUtc, CancellationToken cancellationToken = default);
+    Task BackfillEloRatingsAsync(DateTime fromDateUtc, DateTime toDateUtc, CancellationToken cancellationToken = default);
     Task<TeamEloRating?> GetTeamEloAsync(Guid teamId, CancellationToken cancellationToken = default);
     Task<TeamEloRating?> GetTeamEloAtDateAsync(Guid teamId, DateTime date, CancellationToken cancellationToken = default);
 }
@@ -369,6 +372,8 @@ services.AddHttpClient("ClubElo", client =>
 - [ ] Add `TeamEloRatings` DbSet to context
 - [ ] Create `IEloRatingService` interface
 - [ ] Implement `EloRatingService` (CSV parse from clubelo.com)
+- [ ] Implement `SyncEloRatingsForDateAsync` and `BackfillEloRatingsAsync` for historical training windows
+- [ ] Ensure ML training paths use `GetTeamEloAtDateAsync` (not latest-only lookup)
 - [ ] Create `EloSyncBackgroundService`
 - [ ] Add `ClubElo` to `IntegrationType` enum
 - [ ] Add team name mapping for ClubElo names

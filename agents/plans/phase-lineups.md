@@ -4,7 +4,11 @@
 
 Sync match lineup data (formation, starting XI, bench) from an external API and calculate team usual lineups from historical data. The data source is abstracted behind `ILineupDataProvider` so the specific API can be decided and swapped later.
 
-> **Note**: football-data.org free tier does not include lineup data. This phase requires a different free API (TBD). The `ILineupDataProvider` interface decouples lineup fetching from any specific provider.
+> **Note**: football-data.org free tier does not include lineup data. This phase requires a different free API. The `ILineupDataProvider` interface decouples lineup fetching from any specific provider.
+> **Recommended free providers**:
+> - API-Football `fixtures/lineups` (free plan supports 100 requests/day; preferred reliability)
+> - TheSportsDB `lookuplineup.php?id={eventId}` (free fallback with variable coverage)
+> **Priority rule**: lineup sync has higher priority than injury sync when request quotas are constrained.
 
 ---
 

@@ -9,6 +9,7 @@ Integrate historical betting odds **and extended match statistics** from Footbal
 > **Rate Limit**: None (static files)
 
 > **Prerequisite**: Phase 9.5A (Integration Health) must be complete
+> **Phase 7.8 Contract**: expose historical/backfill and `asOfUtc` odds retrieval so ML training uses only pre-kickoff-available data.
 
 ---
 
@@ -226,8 +227,19 @@ public interface IOddsDataService
 
     Task ImportAllLeaguesAsync(CancellationToken cancellationToken = default);
 
+    Task ImportHistoricalSeasonsAsync(
+        string leagueCode,
+        int fromSeason,
+        int toSeason,
+        CancellationToken cancellationToken = default);
+
     Task<MatchOdds?> GetOddsForMatchAsync(
         Guid matchId,
+        CancellationToken cancellationToken = default);
+
+    Task<MatchOdds?> GetOddsForMatchAsOfAsync(
+        Guid matchId,
+        DateTime asOfUtc,
         CancellationToken cancellationToken = default);
 }
 ```
@@ -718,6 +730,8 @@ services.AddHttpClient("FootballDataUk", client =>
 - [ ] Create `MatchStatsConfiguration` (NEW)
 - [ ] Create `IOddsDataService` interface
 - [ ] Implement `OddsDataService` (CSV parsing with extended fields)
+- [ ] Add `ImportHistoricalSeasonsAsync` for multi-season ML backfill (Phase 9.6)
+- [ ] Add `GetOddsForMatchAsOfAsync` for leakage-safe historical feature extraction
 - [ ] Extend `OddsCsvRow` with match stats fields (HTHG, HTAG, HS, HST, AS, AST, HC, AC, HF, AF, HY, AY, HR, AR, Referee)
 - [ ] Update `SaveOddsAsync` to also save `MatchStats`
 - [ ] Create `OddsSyncBackgroundService`
