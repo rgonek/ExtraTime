@@ -460,7 +460,7 @@ services.AddScoped<IInjuryService, InjuryService>();
 - [x] Add `TeamInjuries` and `PlayerInjuries` DbSets to context
 - [x] Add database migration
 - [x] Register services in DI
-- [ ] Test injury sync (with rate limits)
+- [x] Test injury sync (with rate limits)
 
 ---
 
