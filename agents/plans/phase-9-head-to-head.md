@@ -524,7 +524,7 @@ public static class HeadToHeadEndpoints
 - [x] **2.3** Create `HeadToHeadService` at `src/ExtraTime.Infrastructure/Services/Football/HeadToHeadService.cs`
 - [x] **2.4** Register `IHeadToHeadService` in `DependencyInjection.cs`
 - [x] **3.1** (Optional) Create `HeadToHeadEndpoints.cs` and register in API
-- [ ] **4.1** Build and run tests
+- [x] **4.1** Build and run tests
 
 ---
 
