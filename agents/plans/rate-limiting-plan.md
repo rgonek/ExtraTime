@@ -14,7 +14,7 @@ The ExtraTime API currently has no end-user rate limiting. Any authenticated or 
 - [x] Step 1: Create `RateLimitingSettings` configuration class
 - [x] Step 2: Add configuration to `appsettings.json`
 - [x] Step 3: Register rate limiter in `DependencyInjection.cs`
-- [ ] Step 4: Add middleware to `Program.cs`
+- [x] Step 4: Add middleware to `Program.cs`
 
 ---
 
@@ -85,7 +85,7 @@ Extract partition key directly from `HttpContext.User` claims (same claim names 
 
 ---
 
-## Step 4: Add middleware to `Program.cs`
+## Step 4: Add middleware to `Program.cs` ✅
 
 **File:** `src/ExtraTime.API/Program.cs` — insert `app.UseRateLimiter();` between lines 122 and 123:
 
