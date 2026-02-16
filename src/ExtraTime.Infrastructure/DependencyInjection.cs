@@ -7,6 +7,7 @@ using ExtraTime.Infrastructure.Configuration;
 using ExtraTime.Infrastructure.Data;
 using ExtraTime.Infrastructure.Services;
 using ExtraTime.Infrastructure.Services.Bots;
+using ExtraTime.Infrastructure.Services.ExternalData;
 using ExtraTime.Infrastructure.Services.Football;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -101,6 +102,14 @@ public static class DependencyInjection
         services.AddScoped<IStandingsCalculator, StandingsCalculator>();
         services.AddScoped<IBetResultsService, BetResultsService>();
         services.AddScoped<IIntegrationHealthService, IntegrationHealthService>();
+        services.AddScoped<IUnderstatService, UnderstatService>();
+        services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
+        services.AddHttpClient("Understat", client =>
+        {
+            client.BaseAddress = new Uri("https://understat.com");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddHostedService<UnderstatSyncBackgroundService>();
 
         // Bot Services
         services.AddScoped<BotSeeder>();
