@@ -125,6 +125,7 @@ public static class DependencyInjection
         services.AddScoped<IOddsDataService, OddsDataService>();
         services.AddHostedService<UnderstatSyncBackgroundService>();
         services.AddHostedService<OddsSyncBackgroundService>();
+        services.AddHostedService<EloSyncBackgroundService>();
 
         // Bot Services
         services.AddScoped<BotSeeder>();
