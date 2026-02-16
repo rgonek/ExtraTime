@@ -605,17 +605,17 @@ internal sealed class MatchAnalysisData
 ## Implementation Checklist
 
 ### Phase 9.5F: Graceful Degradation
-- [ ] Create `PredictionContext` class (with `CanUseElo` check)
-- [ ] Create `EffectiveWeights` record (with `EloWeight`)
-- [ ] Implement weight redistribution logic
-- [ ] Create `FallbackStrategy` class
+- [x] Create `PredictionContext` class (with `CanUseElo` check)
+- [x] Create `EffectiveWeights` record (with `EloWeight`)
+- [x] Implement weight redistribution logic
+- [x] Create `FallbackStrategy` class
 - [ ] Update `StatsAnalystStrategy` to check data availability
 - [ ] Add degradation warnings to predictions
 - [ ] Test bot behavior with missing data sources
 
 ### Phase 9.5D: Enhanced StatsAnalyst Strategy
-- [ ] Update `StatsAnalystConfig` with new weights (`EloWeight`)
-- [ ] Add preset configurations
+- [x] Update `StatsAnalystConfig` with new weights (`EloWeight`)
+- [x] Add preset configurations
 - [ ] Update `StatsAnalystStrategy` with Elo + all external data sources
 - [ ] Update `BotStrategyFactory` with new dependencies
 - [ ] Test prediction accuracy

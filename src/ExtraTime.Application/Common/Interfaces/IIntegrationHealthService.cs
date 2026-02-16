@@ -55,14 +55,15 @@ public sealed record DataAvailability
     public bool OddsDataAvailable { get; init; }
     public bool InjuryDataAvailable { get; init; }
     public bool LineupDataAvailable { get; init; }
+    public bool EloDataAvailable { get; init; }
     public bool StandingsDataAvailable { get; init; }
 
     public bool HasAnyExternalData => XgDataAvailable || OddsDataAvailable ||
-                                       InjuryDataAvailable || LineupDataAvailable;
+                                       InjuryDataAvailable || LineupDataAvailable || EloDataAvailable;
 
     public int AvailableSourceCount => new[]
     {
         FormDataAvailable, XgDataAvailable, OddsDataAvailable,
-        InjuryDataAvailable, LineupDataAvailable, StandingsDataAvailable
+        InjuryDataAvailable, LineupDataAvailable, EloDataAvailable, StandingsDataAvailable
     }.Count(x => x);
 }
