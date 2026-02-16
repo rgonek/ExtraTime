@@ -12,7 +12,7 @@ The ExtraTime API currently has no end-user rate limiting. Any authenticated or 
 ## Progress
 
 - [x] Step 1: Create `RateLimitingSettings` configuration class
-- [ ] Step 2: Add configuration to `appsettings.json`
+- [x] Step 2: Add configuration to `appsettings.json`
 - [ ] Step 3: Register rate limiter in `DependencyInjection.cs`
 - [ ] Step 4: Add middleware to `Program.cs`
 
@@ -44,7 +44,7 @@ Defaults: 100-request burst capacity, refills at 10 tokens/second, no queuing (i
 
 ---
 
-## Step 2: Add configuration to `appsettings.json`
+## Step 2: Add configuration to `appsettings.json` ✅
 
 **File:** `src/ExtraTime.API/appsettings.json` — add after the `Jwt` section (after line 18):
 
