@@ -728,12 +728,12 @@ services.AddHttpClient("FootballDataUk", client =>
 - [x] Create `MatchStats` entity (NEW - shots/HT/referee/cards/corners/fouls)
 - [x] Create `MatchOddsConfiguration`
 - [x] Create `MatchStatsConfiguration` (NEW)
-- [ ] Create `IOddsDataService` interface
-- [ ] Implement `OddsDataService` (CSV parsing with extended fields)
-- [ ] Add `ImportHistoricalSeasonsAsync` for multi-season ML backfill (Phase 9.6)
-- [ ] Add `GetOddsForMatchAsOfAsync` for leakage-safe historical feature extraction
-- [ ] Extend `OddsCsvRow` with match stats fields (HTHG, HTAG, HS, HST, AS, AST, HC, AC, HF, AF, HY, AY, HR, AR, Referee)
-- [ ] Update `SaveOddsAsync` to also save `MatchStats`
+- [x] Create `IOddsDataService` interface
+- [x] Implement `OddsDataService` (CSV parsing with extended fields)
+- [x] Add `ImportHistoricalSeasonsAsync` for multi-season ML backfill (Phase 9.6)
+- [x] Add `GetOddsForMatchAsOfAsync` for leakage-safe historical feature extraction
+- [x] Extend `OddsCsvRow` with match stats fields (HTHG, HTAG, HS, HST, AS, AST, HC, AC, HF, AF, HY, AY, HR, AR, Referee)
+- [x] Update `SaveOddsAsync` to also save `MatchStats`
 - [ ] Create `OddsSyncBackgroundService`
 - [x] Add `MatchOdds` and `MatchStats` DbSets to context
 - [x] Add database migration
