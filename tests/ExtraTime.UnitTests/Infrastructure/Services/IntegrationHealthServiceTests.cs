@@ -128,7 +128,8 @@ public sealed class IntegrationHealthServiceTests : HandlerTestBase
             new()
             {
                 IntegrationName = IntegrationType.ClubElo.ToString(),
-                Health = IntegrationHealth.Unknown
+                Health = IntegrationHealth.Healthy,
+                DataFreshAsOf = now
             }
         };
         var mockSet = CreateMockDbSet(statuses.AsQueryable());
@@ -142,8 +143,9 @@ public sealed class IntegrationHealthServiceTests : HandlerTestBase
         await Assert.That(availability.OddsDataAvailable).IsFalse();
         await Assert.That(availability.InjuryDataAvailable).IsTrue();
         await Assert.That(availability.LineupDataAvailable).IsTrue();
+        await Assert.That(availability.EloDataAvailable).IsTrue();
         await Assert.That(availability.StandingsDataAvailable).IsTrue();
-        await Assert.That(availability.AvailableSourceCount).IsEqualTo(5);
+        await Assert.That(availability.AvailableSourceCount).IsEqualTo(6);
         await Assert.That(availability.HasAnyExternalData).IsTrue();
     }
 

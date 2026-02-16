@@ -620,6 +620,9 @@ internal sealed class MatchAnalysisData
 - [x] Update `BotStrategyFactory` with new dependencies
 - [x] Test prediction accuracy
 
+### Additional wiring
+- [x] Expose `EloDataAvailable` in integration health availability and cover with tests
+
 ---
 
 ## Files Summary
