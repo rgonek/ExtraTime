@@ -104,6 +104,7 @@ public static class DependencyInjection
         // Bot Services
         services.AddScoped<BotSeeder>();
         services.AddScoped<ITeamFormCalculator, TeamFormCalculator>();
+        services.AddScoped<IHeadToHeadService, HeadToHeadService>();
         services.AddScoped<BotStrategyFactory>();
         services.AddScoped<IBotBettingService, BotBettingService>();
         // Background services removed - Hangfire handles recurring jobs in production
