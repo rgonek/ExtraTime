@@ -129,6 +129,8 @@ app.MapDefaultEndpoints();
 app.MapHealthEndpoints();
 app.MapAuthEndpoints();
 app.MapAdminEndpoints();
+app.MapAdminIntegrationEndpoints();
+app.MapAdminExternalDataEndpoints();
 app.MapFootballEndpoints();
 app.MapHeadToHeadEndpoints();
 app.MapFootballSyncEndpoints();

@@ -1213,10 +1213,10 @@ export function useToggleIntegration() {
 - [x] Create `DeleteBotCommand` + Handler
 - [x] Create `GetBotsQuery` + Handler (with stats)
 - [x] Create `GetBotConfigurationPresetsQuery` + Handler
-- [ ] Create `AdminBotsEndpoints`
-- [ ] Create `AdminIntegrationEndpoints` (with ClubElo sync trigger)
-- [ ] Create `AdminExternalDataEndpoints`
-- [ ] Register endpoints in Program.cs
+- [x] Create `AdminBotsEndpoints`
+- [x] Create `AdminIntegrationEndpoints` (with ClubElo sync trigger)
+- [x] Create `AdminExternalDataEndpoints`
+- [x] Register endpoints in Program.cs
 - [x] Test bot CRUD operations
 
 ### Phase 9.5H: Admin Frontend
