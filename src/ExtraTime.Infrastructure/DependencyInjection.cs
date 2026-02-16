@@ -107,6 +107,7 @@ public static class DependencyInjection
         services.AddScoped<IEloRatingService, EloRatingService>();
         services.AddScoped<IInjuryService, InjuryService>();
         services.AddScoped<ISuspensionService, SuspensionService>();
+        services.AddScoped<IFplInjuryStatusProvider, FplInjuryStatusProvider>();
         services.AddScoped<ILineupDataProvider, ApiLineupDataProvider>();
         services.AddScoped<ILineupSyncService, LineupSyncService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
@@ -133,6 +134,11 @@ public static class DependencyInjection
             client.BaseAddress = new Uri("https://api-football-v1.p.rapidapi.com");
             client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
             client.DefaultRequestHeaders.Add("X-RapidAPI-Host", "api-football-v1.p.rapidapi.com");
+        });
+        services.AddHttpClient("Fpl", client =>
+        {
+            client.BaseAddress = new Uri("https://fantasy.premierleague.com");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
         });
         services.AddScoped<IOddsDataService, OddsDataService>();
         services.AddHostedService<UnderstatSyncBackgroundService>();

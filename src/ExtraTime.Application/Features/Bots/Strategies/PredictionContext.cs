@@ -20,6 +20,10 @@ public sealed class PredictionContext
     public MatchOdds? Odds { get; set; }
     public TeamInjuries? HomeInjuries { get; set; }
     public TeamInjuries? AwayInjuries { get; set; }
+    public TeamSuspensions? HomeSuspensions { get; set; }
+    public TeamSuspensions? AwaySuspensions { get; set; }
+    public WeatherContextData? WeatherContext { get; set; }
+    public RefereeProfileData? RefereeProfile { get; set; }
     public bool HasLineupAnalysis { get; set; }
     public TeamEloRating? HomeElo { get; set; }
     public TeamEloRating? AwayElo { get; set; }
@@ -31,6 +35,15 @@ public sealed class PredictionContext
         Config.UseInjuryData &&
         DataAvailability.InjuryDataAvailable &&
         (HomeInjuries is not null || AwayInjuries is not null);
+    public bool HasSuspensionContext =>
+        DataAvailability.SuspensionDataAvailable &&
+        (HomeSuspensions is not null || AwaySuspensions is not null);
+    public bool HasWeatherContext =>
+        DataAvailability.WeatherDataAvailable &&
+        WeatherContext is not null;
+    public bool HasRefereeContext =>
+        DataAvailability.RefereeDataAvailable &&
+        RefereeProfile is not null;
     public bool CanUseLineups => Config.UseLineupData && DataAvailability.LineupDataAvailable && HasLineupAnalysis;
     public bool CanUseElo =>
         Config.UseEloData &&

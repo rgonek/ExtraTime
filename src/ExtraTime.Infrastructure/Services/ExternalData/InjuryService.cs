@@ -55,6 +55,25 @@ public sealed class InjuryService(
         var now = DateTime.UtcNow;
         var cutoff = now.AddDays(daysAhead);
         var quotaPolicy = apiSettings.QuotaPolicy ?? new ExternalDataQuotaPolicy();
+        var qualityGate = apiSettings.LineupQualityGate ?? new LineupQualityGatePolicy();
+        var lineupMetrics = await GetLineupQualityMetricsAsync(cancellationToken);
+        logger.LogInformation(
+            "Lineup quality metrics before injury sync: operational={Operational}, upcomingCoverage={UpcomingCoverage:F1}%, playedCoverage={PlayedCoverage:F1}%, parseFailureRate={ParseFailureRate:F1}%",
+            lineupMetrics.IsLineupProviderOperational,
+            lineupMetrics.UpcomingCoveragePercent,
+            lineupMetrics.PlayedCoveragePercent,
+            lineupMetrics.ParseFailureRatePercent);
+        if (qualityGate.EnforceBeforeInjurySync &&
+            (!lineupMetrics.IsLineupProviderOperational ||
+             lineupMetrics.UpcomingCoveragePercent < qualityGate.MinLineupCoverageUpcoming24hPercent ||
+             lineupMetrics.PlayedCoveragePercent < qualityGate.MinLineupCoveragePlayedMatchesPercent ||
+             lineupMetrics.ParseFailureRatePercent > qualityGate.MaxLineupParseFailureRatePercent))
+        {
+            logger.LogInformation(
+                "Injury sync skipped because lineup quality gate is not met.");
+            return;
+        }
+
         var reservedForLineups = await GetReservedLineupBudgetAsync(
             apiSettings.EnableEplOnlyInjurySync,
             quotaPolicy.SafetyReserve,
@@ -506,6 +525,39 @@ public sealed class InjuryService(
         return neededLineupCalls24h + Math.Max(0, safetyReserve);
     }
 
+    private async Task<LineupQualityMetrics> GetLineupQualityMetricsAsync(CancellationToken cancellationToken)
+    {
+        var lineupStatus = await context.IntegrationStatuses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                s => s.IntegrationName == IntegrationType.LineupProvider.ToString(),
+                cancellationToken);
+
+        if (lineupStatus is null)
+        {
+            return new LineupQualityMetrics(
+                UpcomingCoveragePercent: 0,
+                PlayedCoveragePercent: 0,
+                ParseFailureRatePercent: 100,
+                IsLineupProviderOperational: false);
+        }
+
+        var attempts = lineupStatus.SuccessfulSyncs24h + lineupStatus.TotalFailures24h;
+        var coverage = attempts > 0
+            ? (double)lineupStatus.SuccessfulSyncs24h / attempts * 100
+            : 0;
+        var parseFailureRate = attempts > 0
+            ? (double)lineupStatus.TotalFailures24h / attempts * 100
+            : 0;
+        var isOperational = lineupStatus is { IsManuallyDisabled: false } && lineupStatus.IsOperational;
+
+        return new LineupQualityMetrics(
+            UpcomingCoveragePercent: coverage,
+            PlayedCoveragePercent: coverage,
+            ParseFailureRatePercent: parseFailureRate,
+            IsLineupProviderOperational: isOperational);
+    }
+
     private static int GetCurrentSeasonYear(DateTime utcNow)
     {
         return utcNow.Month >= 7 ? utcNow.Year : utcNow.Year - 1;
@@ -629,4 +681,10 @@ public sealed class InjuryService(
         [JsonPropertyName("remaining")]
         public int? Remaining { get; set; }
     }
+
+    private sealed record LineupQualityMetrics(
+        double UpcomingCoveragePercent,
+        double PlayedCoveragePercent,
+        double ParseFailureRatePercent,
+        bool IsLineupProviderOperational);
 }

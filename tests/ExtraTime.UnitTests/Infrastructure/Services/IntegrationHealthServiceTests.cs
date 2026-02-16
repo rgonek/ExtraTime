@@ -136,6 +136,12 @@ public sealed class IntegrationHealthServiceTests : HandlerTestBase
                 IntegrationName = IntegrationType.LineupProvider.ToString(),
                 Health = IntegrationHealth.Healthy,
                 DataFreshAsOf = now
+            },
+            new()
+            {
+                IntegrationName = IntegrationType.SuspensionProvider.ToString(),
+                Health = IntegrationHealth.Healthy,
+                DataFreshAsOf = now
             }
         };
         var mockSet = CreateMockDbSet(statuses.AsQueryable());
@@ -148,10 +154,11 @@ public sealed class IntegrationHealthServiceTests : HandlerTestBase
         await Assert.That(availability.XgDataAvailable).IsTrue();
         await Assert.That(availability.OddsDataAvailable).IsFalse();
         await Assert.That(availability.InjuryDataAvailable).IsTrue();
+        await Assert.That(availability.SuspensionDataAvailable).IsTrue();
         await Assert.That(availability.LineupDataAvailable).IsTrue();
         await Assert.That(availability.EloDataAvailable).IsTrue();
         await Assert.That(availability.StandingsDataAvailable).IsTrue();
-        await Assert.That(availability.AvailableSourceCount).IsEqualTo(6);
+        await Assert.That(availability.AvailableSourceCount).IsEqualTo(7);
         await Assert.That(availability.HasAnyExternalData).IsTrue();
     }
 

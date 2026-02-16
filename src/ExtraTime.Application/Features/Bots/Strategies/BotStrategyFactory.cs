@@ -26,6 +26,9 @@ public sealed class BotStrategyFactory
                 understatService: _serviceProvider.GetService<IUnderstatService>(),
                 oddsService: _serviceProvider.GetService<IOddsDataService>(),
                 injuryService: _serviceProvider.GetService<IInjuryService>(),
+                suspensionService: _serviceProvider.GetService<ISuspensionService>(),
+                weatherContextService: _serviceProvider.GetService<IWeatherContextService>(),
+                refereeProfileService: _serviceProvider.GetService<IRefereeProfileService>(),
                 eloService: _serviceProvider.GetService<IEloRatingService>(),
                 logger: _serviceProvider.GetService<ILogger<StatsAnalystStrategy>>()) }
         };

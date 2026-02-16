@@ -121,6 +121,33 @@ public sealed class PredictionContextTests
         await Assert.That(context.CanUseElo).IsTrue();
     }
 
+    [Test]
+    public async Task HasContextFlags_WhenOptionalDataIsPresent_ReturnsTrue()
+    {
+        // Arrange
+        var context = new PredictionContext
+        {
+            Match = CreateTestMatch(),
+            Config = new StatsAnalystConfig(),
+            DataAvailability = new DataAvailability
+            {
+                SuspensionDataAvailable = true,
+                WeatherDataAvailable = true,
+                RefereeDataAvailable = true
+            },
+            HomeForm = CreateForm(),
+            AwayForm = CreateForm(),
+            HomeSuspensions = new TeamSuspensions { TeamId = Guid.NewGuid() },
+            WeatherContext = new WeatherContextData(12, 30, 85, "Rain", true),
+            RefereeProfile = new RefereeProfileData("Referee", 4.2, 25, 0.4)
+        };
+
+        // Assert
+        await Assert.That(context.HasSuspensionContext).IsTrue();
+        await Assert.That(context.HasWeatherContext).IsTrue();
+        await Assert.That(context.HasRefereeContext).IsTrue();
+    }
+
     private static Match CreateTestMatch()
     {
         return Match.Create(

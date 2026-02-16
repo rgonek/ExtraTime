@@ -13,6 +13,9 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
     private readonly IUnderstatService? _understatService;
     private readonly IOddsDataService? _oddsService;
     private readonly IInjuryService? _injuryService;
+    private readonly ISuspensionService? _suspensionService;
+    private readonly IWeatherContextService? _weatherContextService;
+    private readonly IRefereeProfileService? _refereeProfileService;
     private readonly IEloRatingService? _eloService;
     private readonly ILogger<StatsAnalystStrategy>? _logger;
     private readonly FallbackStrategy _fallbackStrategy;
@@ -27,6 +30,9 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
         IUnderstatService? understatService = null,
         IOddsDataService? oddsService = null,
         IInjuryService? injuryService = null,
+        ISuspensionService? suspensionService = null,
+        IWeatherContextService? weatherContextService = null,
+        IRefereeProfileService? refereeProfileService = null,
         IEloRatingService? eloService = null,
         ILogger<StatsAnalystStrategy>? logger = null,
         FallbackStrategy? fallbackStrategy = null)
@@ -36,6 +42,9 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
         _understatService = understatService;
         _oddsService = oddsService;
         _injuryService = injuryService;
+        _suspensionService = suspensionService;
+        _weatherContextService = weatherContextService;
+        _refereeProfileService = refereeProfileService;
         _eloService = eloService;
         _logger = logger;
         _fallbackStrategy = fallbackStrategy ?? new FallbackStrategy();
@@ -140,6 +149,18 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
                 cancellationToken);
         }
 
+        if (dataAvailability.SuspensionDataAvailable && _suspensionService is not null)
+        {
+            context.HomeSuspensions = await _suspensionService.GetTeamSuspensionsAsOfAsync(
+                match.HomeTeamId,
+                match.MatchDateUtc,
+                cancellationToken);
+            context.AwaySuspensions = await _suspensionService.GetTeamSuspensionsAsOfAsync(
+                match.AwayTeamId,
+                match.MatchDateUtc,
+                cancellationToken);
+        }
+
         if (config.UseEloData && dataAvailability.EloDataAvailable && _eloService is not null)
         {
             context.HomeElo = await _eloService.GetTeamEloAtDateAsync(
@@ -148,6 +169,22 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
                 cancellationToken);
             context.AwayElo = await _eloService.GetTeamEloAtDateAsync(
                 match.AwayTeamId,
+                match.MatchDateUtc,
+                cancellationToken);
+        }
+
+        if (dataAvailability.WeatherDataAvailable && _weatherContextService is not null)
+        {
+            context.WeatherContext = await _weatherContextService.GetWeatherContextAsync(
+                match.Id,
+                match.MatchDateUtc,
+                cancellationToken);
+        }
+
+        if (dataAvailability.RefereeDataAvailable && _refereeProfileService is not null)
+        {
+            context.RefereeProfile = await _refereeProfileService.GetRefereeProfileAsync(
+                match.Id,
                 match.MatchDateUtc,
                 cancellationToken);
         }
@@ -168,8 +205,11 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
             XgDataAvailable = _understatService is not null,
             OddsDataAvailable = _oddsService is not null,
             InjuryDataAvailable = _injuryService is not null,
+            SuspensionDataAvailable = _suspensionService is not null,
             LineupDataAvailable = false,
             EloDataAvailable = _eloService is not null,
+            WeatherDataAvailable = _weatherContextService is not null,
+            RefereeDataAvailable = _refereeProfileService is not null,
             StandingsDataAvailable = true
         };
     }
@@ -307,7 +347,10 @@ public sealed class StatsAnalystStrategy : IBotBettingStrategy
             ("xg", config.UseXgData, predictionContext.HomeXg is not null && predictionContext.AwayXg is not null),
             ("odds", config.UseOddsData, predictionContext.Odds is not null),
             ("injuries", config.UseInjuryData, predictionContext.HomeInjuries is not null || predictionContext.AwayInjuries is not null),
-            ("elo", config.UseEloData, predictionContext.HomeElo is not null && predictionContext.AwayElo is not null)
+            ("suspensions", predictionContext.DataAvailability.SuspensionDataAvailable, predictionContext.HasSuspensionContext),
+            ("elo", config.UseEloData, predictionContext.HomeElo is not null && predictionContext.AwayElo is not null),
+            ("weather", predictionContext.DataAvailability.WeatherDataAvailable, predictionContext.HasWeatherContext),
+            ("referee", predictionContext.DataAvailability.RefereeDataAvailable, predictionContext.HasRefereeContext)
         };
 
         var enabledSources = trackedSources.Where(x => x.Enabled).ToList();

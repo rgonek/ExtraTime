@@ -149,6 +149,7 @@ public sealed class IntegrationHealthService(
         var xgStatus = statusByName.GetValueOrDefault(IntegrationType.Understat.ToString());
         var oddsStatus = statusByName.GetValueOrDefault(IntegrationType.FootballDataUk.ToString());
         var injuriesStatus = statusByName.GetValueOrDefault(IntegrationType.ApiFootball.ToString());
+        var suspensionStatus = statusByName.GetValueOrDefault(IntegrationType.SuspensionProvider.ToString());
         var eloStatus = statusByName.GetValueOrDefault(IntegrationType.ClubElo.ToString());
         var lineupStatus = statusByName.GetValueOrDefault(IntegrationType.LineupProvider.ToString());
         var footballDataStatus = statusByName.GetValueOrDefault(IntegrationType.FootballDataOrg.ToString());
@@ -158,8 +159,11 @@ public sealed class IntegrationHealthService(
             XgDataAvailable = IsFreshAndOperational(xgStatus),
             OddsDataAvailable = IsFreshAndOperational(oddsStatus),
             InjuryDataAvailable = IsOperational(injuriesStatus),
+            SuspensionDataAvailable = IsOperational(suspensionStatus),
             LineupDataAvailable = IsOperational(lineupStatus),
             EloDataAvailable = IsFreshAndOperational(eloStatus),
+            WeatherDataAvailable = false,
+            RefereeDataAvailable = false,
             StandingsDataAvailable = IsOperational(footballDataStatus)
         };
     }

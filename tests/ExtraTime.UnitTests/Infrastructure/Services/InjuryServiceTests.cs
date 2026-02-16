@@ -200,6 +200,47 @@ public sealed class InjuryServiceTests
         await Assert.That(context.TeamInjuries.Any()).IsFalse();
     }
 
+    [Test]
+    public async Task SyncInjuriesForUpcomingMatchesAsync_WhenLineupQualityGateEnabledAndNoLineupStatus_ShouldSkip()
+    {
+        // Arrange
+        ResetQuotaCounter();
+        await using var context = CreateContext();
+        await SeedUpcomingMatchAsync(context);
+
+        var service = CreateService(
+            context,
+            Options.Create(new ApiFootballSettings
+            {
+                Enabled = true,
+                ApiKey = "test-key",
+                EnableEplOnlyInjurySync = true,
+                QuotaPolicy = new ExternalDataQuotaPolicy
+                {
+                    HardDailyLimit = 100,
+                    OperationalCap = 95,
+                    SafetyReserve = 10,
+                    MaxInjuryCallsPerDay = 15
+                },
+                LineupQualityGate = new LineupQualityGatePolicy
+                {
+                    EnforceBeforeInjurySync = true
+                }
+            }),
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{ "response": [] }""", Encoding.UTF8, "application/json")
+            },
+            out var requestCount);
+
+        // Act
+        await service.SyncInjuriesForUpcomingMatchesAsync(daysAhead: 3);
+
+        // Assert
+        await Assert.That(requestCount()).IsEqualTo(0);
+        await Assert.That(context.TeamInjuries.Any()).IsFalse();
+    }
+
     private static InjuryService CreateService(
         ApplicationDbContext context,
         IOptions<ApiFootballSettings> options,
