@@ -100,6 +100,7 @@ public static class DependencyInjection
         services.AddScoped<IBetCalculator, BetCalculator>();
         services.AddScoped<IStandingsCalculator, StandingsCalculator>();
         services.AddScoped<IBetResultsService, BetResultsService>();
+        services.AddScoped<IIntegrationHealthService, IntegrationHealthService>();
 
         // Bot Services
         services.AddScoped<BotSeeder>();

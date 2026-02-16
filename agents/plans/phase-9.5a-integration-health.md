@@ -447,8 +447,8 @@ public async Task SyncAllLeaguesAsync(CancellationToken cancellationToken = defa
 - [x] Create `DataAvailability` record
 - [x] Implement `IntegrationHealthService`
 - [x] Add `IntegrationStatuses` DbSet to context
-- [ ] Create database migration
-- [ ] Register services in DI
+- [x] Create database migration
+- [x] Register services in DI
 
 ---
 
