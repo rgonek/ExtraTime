@@ -1,5 +1,6 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ExtraTime.Application.Features.Bots.Strategies;
@@ -20,7 +21,13 @@ public sealed class BotStrategyFactory
             { BotStrategy.DrawPredictor, () => new DrawPredictorStrategy() },
             { BotStrategy.HighScorer, () => new HighScorerStrategy() },
             { BotStrategy.StatsAnalyst, () => new StatsAnalystStrategy(
-                _serviceProvider.GetRequiredService<ITeamFormCalculator>()) }
+                _serviceProvider.GetRequiredService<ITeamFormCalculator>(),
+                integrationHealthService: _serviceProvider.GetService<IIntegrationHealthService>(),
+                understatService: _serviceProvider.GetService<IUnderstatService>(),
+                oddsService: _serviceProvider.GetService<IOddsDataService>(),
+                injuryService: _serviceProvider.GetService<IInjuryService>(),
+                eloService: _serviceProvider.GetService<IEloRatingService>(),
+                logger: _serviceProvider.GetService<ILogger<StatsAnalystStrategy>>()) }
         };
     }
 

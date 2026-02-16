@@ -609,16 +609,16 @@ internal sealed class MatchAnalysisData
 - [x] Create `EffectiveWeights` record (with `EloWeight`)
 - [x] Implement weight redistribution logic
 - [x] Create `FallbackStrategy` class
-- [ ] Update `StatsAnalystStrategy` to check data availability
-- [ ] Add degradation warnings to predictions
-- [ ] Test bot behavior with missing data sources
+- [x] Update `StatsAnalystStrategy` to check data availability
+- [x] Add degradation warnings to predictions
+- [x] Test bot behavior with missing data sources
 
 ### Phase 9.5D: Enhanced StatsAnalyst Strategy
 - [x] Update `StatsAnalystConfig` with new weights (`EloWeight`)
 - [x] Add preset configurations
-- [ ] Update `StatsAnalystStrategy` with Elo + all external data sources
-- [ ] Update `BotStrategyFactory` with new dependencies
-- [ ] Test prediction accuracy
+- [x] Update `StatsAnalystStrategy` with Elo + all external data sources
+- [x] Update `BotStrategyFactory` with new dependencies
+- [x] Test prediction accuracy
 
 ---
 
