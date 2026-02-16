@@ -7,6 +7,7 @@ public interface IUnderstatService
     Task<List<TeamXgStats>> SyncLeagueXgStatsAsync(
         string leagueCode,
         string season,
+        DateTime? snapshotDateUtc = null,
         CancellationToken cancellationToken = default);
 
     Task SyncLeagueSeasonRangeAsync(

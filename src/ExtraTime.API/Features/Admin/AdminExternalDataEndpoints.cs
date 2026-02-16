@@ -29,6 +29,12 @@ public static class AdminExternalDataEndpoints
         group.MapGet("/injuries/{teamId:guid}", GetTeamInjuries)
             .WithName("GetTeamInjuries");
 
+        group.MapPost("/backfill/league", BackfillLeagueData)
+            .WithName("BackfillLeagueData");
+
+        group.MapPost("/backfill/elo", BackfillGlobalElo)
+            .WithName("BackfillGlobalElo");
+
         return group;
     }
 
@@ -92,4 +98,41 @@ public static class AdminExternalDataEndpoints
             ? Results.Ok(injuries)
             : Results.NotFound();
     }
+
+    private static async Task<IResult> BackfillLeagueData(
+        LeagueBackfillRequest request,
+        IExternalDataBackfillService service,
+        CancellationToken cancellationToken)
+    {
+        await service.BackfillForLeagueAsync(
+            request.LeagueCode,
+            request.FromSeason,
+            request.ToSeason,
+            cancellationToken);
+
+        return Results.Accepted(value: new
+        {
+            message = "League backfill completed",
+            request.LeagueCode,
+            request.FromSeason,
+            request.ToSeason
+        });
+    }
+
+    private static async Task<IResult> BackfillGlobalElo(
+        EloBackfillRequest request,
+        IExternalDataBackfillService service,
+        CancellationToken cancellationToken)
+    {
+        await service.BackfillGlobalEloAsync(request.FromDateUtc, request.ToDateUtc, cancellationToken);
+        return Results.Accepted(value: new
+        {
+            message = "Global Elo backfill completed",
+            request.FromDateUtc,
+            request.ToDateUtc
+        });
+    }
+
+    public sealed record LeagueBackfillRequest(string LeagueCode, int FromSeason, int ToSeason);
+    public sealed record EloBackfillRequest(DateTime FromDateUtc, DateTime ToDateUtc);
 }

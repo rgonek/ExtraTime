@@ -31,6 +31,7 @@ public sealed class OddsDataService(
     public async Task ImportSeasonOddsAsync(
         string leagueCode,
         string season,
+        DateTime? importedAtUtc = null,
         CancellationToken cancellationToken = default)
     {
         if (!LeagueFiles.TryGetValue(leagueCode, out var leagueFile))
@@ -47,7 +48,7 @@ public sealed class OddsDataService(
             var csvContent = await client.GetStringAsync($"/mmz4281/{seasonCode}/{leagueFile}.csv", cancellationToken);
             var rows = ParseCsv(csvContent);
 
-            await SaveOddsAsync(rows, cancellationToken);
+            await SaveOddsAsync(rows, importedAtUtc, cancellationToken);
 
             logger.LogInformation(
                 "Imported {RowCount} odds rows for league {LeagueCode} season {Season}",
@@ -76,7 +77,7 @@ public sealed class OddsDataService(
 
         for (var i = 0; i < leagueCodes.Length; i++)
         {
-            await ImportSeasonOddsAsync(leagueCodes[i], season, cancellationToken);
+            await ImportSeasonOddsAsync(leagueCodes[i], season, cancellationToken: cancellationToken);
             if (i < leagueCodes.Length - 1)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
@@ -88,6 +89,7 @@ public sealed class OddsDataService(
         string leagueCode,
         int fromSeason,
         int toSeason,
+        DateTime? importedAtUtc = null,
         CancellationToken cancellationToken = default)
     {
         if (fromSeason > toSeason)
@@ -99,7 +101,11 @@ public sealed class OddsDataService(
 
         for (var season = fromSeason; season <= toSeason; season++)
         {
-            await ImportSeasonOddsAsync(leagueCode, season.ToString(CultureInfo.InvariantCulture), cancellationToken);
+            await ImportSeasonOddsAsync(
+                leagueCode,
+                season.ToString(CultureInfo.InvariantCulture),
+                importedAtUtc,
+                cancellationToken);
         }
     }
 
@@ -214,10 +220,9 @@ public sealed class OddsDataService(
 
     private async Task SaveOddsAsync(
         IReadOnlyList<OddsCsvRow> rows,
+        DateTime? importedAtUtc,
         CancellationToken cancellationToken)
     {
-        var importedAt = DateTime.UtcNow;
-
         foreach (var row in rows)
         {
             if (!row.Date.HasValue)
@@ -252,7 +257,7 @@ public sealed class OddsDataService(
             odds.BttsYesOdds = row.BttsYes;
             odds.BttsNoOdds = row.BttsNo;
             odds.DataSource = "football-data.co.uk";
-            odds.ImportedAt = importedAt;
+            odds.ImportedAt = importedAtUtc ?? row.Date.Value.Date;
             odds.CalculateProbabilities();
 
             if (!HasAnyStats(row))
@@ -288,7 +293,7 @@ public sealed class OddsDataService(
             stats.AwayRedCards = row.AwayRedCards;
             stats.Referee = row.Referee;
             stats.DataSource = "football-data.co.uk";
-            stats.ImportedAt = importedAt;
+            stats.ImportedAt = importedAtUtc ?? row.Date.Value.Date;
         }
 
         await context.SaveChangesAsync(cancellationToken);

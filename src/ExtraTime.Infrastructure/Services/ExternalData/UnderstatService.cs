@@ -36,6 +36,7 @@ public sealed partial class UnderstatService(
     public async Task<List<TeamXgStats>> SyncLeagueXgStatsAsync(
         string leagueCode,
         string season,
+        DateTime? snapshotDateUtc = null,
         CancellationToken cancellationToken = default)
     {
         if (!LeagueMapping.TryGetValue(leagueCode, out var understatLeague))
@@ -68,7 +69,7 @@ public sealed partial class UnderstatService(
             .ToListAsync(cancellationToken);
 
         var syncedAt = DateTime.UtcNow;
-        var snapshotDate = syncedAt.Date;
+        var snapshotDate = (snapshotDateUtc ?? syncedAt).Date;
         var syncedStats = new List<TeamXgStats>();
 
         foreach (var understatTeam in teamsData)
@@ -135,7 +136,10 @@ public sealed partial class UnderstatService(
 
         for (var season = fromSeason; season <= toSeason; season++)
         {
-            await SyncLeagueXgStatsAsync(leagueCode, season.ToString(CultureInfo.InvariantCulture), cancellationToken);
+            await SyncLeagueXgStatsAsync(
+                leagueCode,
+                season.ToString(CultureInfo.InvariantCulture),
+                cancellationToken: cancellationToken);
             if (season < toSeason)
             {
                 await Task.Delay(RequestDelay, cancellationToken);
@@ -199,7 +203,7 @@ public sealed partial class UnderstatService(
 
         for (var i = 0; i < leagueCodes.Length; i++)
         {
-            await SyncLeagueXgStatsAsync(leagueCodes[i], season, cancellationToken);
+            await SyncLeagueXgStatsAsync(leagueCodes[i], season, cancellationToken: cancellationToken);
             if (i < leagueCodes.Length - 1)
             {
                 await Task.Delay(RequestDelay, cancellationToken);

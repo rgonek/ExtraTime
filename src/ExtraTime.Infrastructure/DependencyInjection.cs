@@ -103,6 +103,7 @@ public static class DependencyInjection
         services.AddScoped<IBetResultsService, BetResultsService>();
         services.AddScoped<IIntegrationHealthService, IntegrationHealthService>();
         services.AddScoped<IUnderstatService, UnderstatService>();
+        services.AddScoped<IExternalDataBackfillService, ExternalDataBackfillService>();
         services.AddScoped<IEloRatingService, EloRatingService>();
         services.AddScoped<IInjuryService, InjuryService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
