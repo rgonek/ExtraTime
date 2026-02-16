@@ -597,6 +597,7 @@ services.AddHttpClient("Understat", client =>
 - [x] Register services in DI
 - [x] Configure HTTP client
 - [x] Test xG data sync
+- [x] Final validation run (`dotnet build ExtraTime.slnx` + `dotnet test ExtraTime.slnx --no-build`)
 
 ---
 
