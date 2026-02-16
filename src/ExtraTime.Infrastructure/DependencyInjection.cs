@@ -104,9 +104,11 @@ public static class DependencyInjection
         services.AddScoped<IIntegrationHealthService, IntegrationHealthService>();
         services.AddScoped<IUnderstatService, UnderstatService>();
         services.AddScoped<IEloRatingService, EloRatingService>();
+        services.AddScoped<IInjuryService, InjuryService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
         services.Configure<FootballDataUkSettings>(configuration.GetSection(FootballDataUkSettings.SectionName));
         services.Configure<ClubEloSettings>(configuration.GetSection(ClubEloSettings.SectionName));
+        services.Configure<ApiFootballSettings>(configuration.GetSection(ApiFootballSettings.SectionName));
         services.AddHttpClient("Understat", client =>
         {
             client.BaseAddress = new Uri("https://understat.com");
@@ -121,6 +123,12 @@ public static class DependencyInjection
         {
             client.BaseAddress = new Uri("http://api.clubelo.com");
             client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddHttpClient("ApiFootball", client =>
+        {
+            client.BaseAddress = new Uri("https://api-football-v1.p.rapidapi.com");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+            client.DefaultRequestHeaders.Add("X-RapidAPI-Host", "api-football-v1.p.rapidapi.com");
         });
         services.AddScoped<IOddsDataService, OddsDataService>();
         services.AddHostedService<UnderstatSyncBackgroundService>();
