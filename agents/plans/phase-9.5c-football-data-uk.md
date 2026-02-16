@@ -734,12 +734,12 @@ services.AddHttpClient("FootballDataUk", client =>
 - [x] Add `GetOddsForMatchAsOfAsync` for leakage-safe historical feature extraction
 - [x] Extend `OddsCsvRow` with match stats fields (HTHG, HTAG, HS, HST, AS, AST, HC, AC, HF, AF, HY, AY, HR, AR, Referee)
 - [x] Update `SaveOddsAsync` to also save `MatchStats`
-- [ ] Create `OddsSyncBackgroundService`
+- [x] Create `OddsSyncBackgroundService`
 - [x] Add `MatchOdds` and `MatchStats` DbSets to context
 - [x] Add database migration
-- [ ] Register services in DI
-- [ ] Configure HTTP client
-- [ ] Test odds + match stats import
+- [x] Register services in DI
+- [x] Configure HTTP client
+- [x] Test odds + match stats import
 
 ---
 

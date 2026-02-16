@@ -104,12 +104,20 @@ public static class DependencyInjection
         services.AddScoped<IIntegrationHealthService, IntegrationHealthService>();
         services.AddScoped<IUnderstatService, UnderstatService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
+        services.Configure<FootballDataUkSettings>(configuration.GetSection(FootballDataUkSettings.SectionName));
         services.AddHttpClient("Understat", client =>
         {
             client.BaseAddress = new Uri("https://understat.com");
             client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
         });
+        services.AddHttpClient("FootballDataUk", client =>
+        {
+            client.BaseAddress = new Uri("https://www.football-data.co.uk");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddScoped<IOddsDataService, OddsDataService>();
         services.AddHostedService<UnderstatSyncBackgroundService>();
+        services.AddHostedService<OddsSyncBackgroundService>();
 
         // Bot Services
         services.AddScoped<BotSeeder>();
