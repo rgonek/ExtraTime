@@ -68,6 +68,7 @@ public sealed partial class UnderstatService(
             .ToListAsync(cancellationToken);
 
         var syncedAt = DateTime.UtcNow;
+        var snapshotDate = syncedAt.Date;
         var syncedStats = new List<TeamXgStats>();
 
         foreach (var understatTeam in teamsData)
@@ -98,6 +99,13 @@ public sealed partial class UnderstatService(
             }
 
             UpdateTeamStats(existing, understatTeam, syncedAt);
+            await UpsertTeamSnapshotAsync(
+                team.Id,
+                competition.Id,
+                season,
+                understatTeam,
+                snapshotDate,
+                cancellationToken);
             syncedStats.Add(existing);
         }
 
@@ -155,19 +163,25 @@ public sealed partial class UnderstatService(
         DateTime asOfUtc,
         CancellationToken cancellationToken = default)
     {
-        var maxSeason = GetSeasonYear(asOfUtc).ToString(CultureInfo.InvariantCulture);
-
-        var candidates = await context.TeamXgStats
+        var asOfDate = asOfUtc.Date;
+        return await context.TeamXgSnapshots
+            .AsNoTracking()
             .Where(x => x.TeamId == teamId &&
                         x.CompetitionId == competitionId &&
-                        x.LastSyncedAt <= asOfUtc)
-            .ToListAsync(cancellationToken);
-
-        return candidates
-            .Where(x => string.CompareOrdinal(x.Season, maxSeason) <= 0)
-            .OrderByDescending(x => x.Season)
-            .ThenByDescending(x => x.LastSyncedAt)
-            .FirstOrDefault();
+                        x.SnapshotDateUtc <= asOfDate)
+            .OrderByDescending(x => x.SnapshotDateUtc)
+            .Select(x => new TeamXgStats
+            {
+                TeamId = x.TeamId,
+                CompetitionId = x.CompetitionId,
+                Season = x.Season,
+                XgPerMatch = x.XgPerMatch,
+                XgAgainstPerMatch = x.XgAgainstPerMatch,
+                XgOverperformance = x.XgOverperformance,
+                RecentXgPerMatch = x.RecentXgPerMatch,
+                LastSyncedAt = x.SnapshotDateUtc
+            })
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<MatchXgStats?> GetMatchXgAsync(
@@ -281,6 +295,42 @@ public sealed partial class UnderstatService(
             : 0;
         entity.MatchesPlayed = data.MatchesPlayed;
         entity.LastSyncedAt = syncedAt;
+    }
+
+    private async Task UpsertTeamSnapshotAsync(
+        Guid teamId,
+        Guid competitionId,
+        string season,
+        UnderstatTeamData data,
+        DateTime snapshotDateUtc,
+        CancellationToken cancellationToken)
+    {
+        var snapshot = await context.TeamXgSnapshots
+            .FirstOrDefaultAsync(
+                x => x.TeamId == teamId &&
+                     x.CompetitionId == competitionId &&
+                     x.Season == season &&
+                     x.SnapshotDateUtc == snapshotDateUtc,
+                cancellationToken);
+
+        if (snapshot is null)
+        {
+            snapshot = new TeamXgSnapshot
+            {
+                TeamId = teamId,
+                CompetitionId = competitionId,
+                Season = season,
+                SnapshotDateUtc = snapshotDateUtc
+            };
+            context.TeamXgSnapshots.Add(snapshot);
+        }
+
+        snapshot.XgPerMatch = data.MatchesPlayed > 0 ? data.XgFor / data.MatchesPlayed : 0;
+        snapshot.XgAgainstPerMatch = data.MatchesPlayed > 0 ? data.XgAgainst / data.MatchesPlayed : 0;
+        snapshot.XgOverperformance = data.GoalsScored - data.XgFor;
+        snapshot.RecentXgPerMatch = data.RecentMatches.Count > 0
+            ? data.RecentMatches.Average(m => m.Xg)
+            : 0;
     }
 
     private static int GetSeasonYear(DateTime utcDate)

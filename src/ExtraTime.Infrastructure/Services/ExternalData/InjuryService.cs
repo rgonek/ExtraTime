@@ -150,10 +150,20 @@ public sealed class InjuryService(
         DateTime asOfUtc,
         CancellationToken cancellationToken = default)
     {
-        return await context.TeamInjuries
+        var asOfDate = asOfUtc.Date;
+        return await context.TeamInjurySnapshots
             .AsNoTracking()
-            .Where(t => t.TeamId == teamId && t.LastSyncedAt <= asOfUtc)
-            .OrderByDescending(t => t.LastSyncedAt)
+            .Where(t => t.TeamId == teamId && t.SnapshotDateUtc <= asOfDate)
+            .OrderByDescending(t => t.SnapshotDateUtc)
+            .Select(t => new TeamInjuries
+            {
+                TeamId = t.TeamId,
+                TotalInjured = t.TotalInjured,
+                KeyPlayersInjured = t.KeyPlayersInjured,
+                InjuryImpactScore = t.InjuryImpactScore,
+                InjuredPlayerNames = t.InjuredPlayerNames,
+                LastSyncedAt = t.SnapshotDateUtc
+            })
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -264,6 +274,27 @@ public sealed class InjuryService(
         teamInjuries.LastSyncedAt = now;
         teamInjuries.NextSyncDue = now.AddHours(Math.Max(1, staleAfterHours));
         teamInjuries.InjuryImpactScore = CalculateInjuryImpact(teamInjuries);
+
+        var snapshotDate = now.Date;
+        var injurySnapshot = await context.TeamInjurySnapshots
+            .FirstOrDefaultAsync(
+                s => s.TeamId == teamId && s.SnapshotDateUtc == snapshotDate,
+                cancellationToken);
+
+        if (injurySnapshot is null)
+        {
+            injurySnapshot = new TeamInjurySnapshot
+            {
+                TeamId = teamId,
+                SnapshotDateUtc = snapshotDate
+            };
+            context.TeamInjurySnapshots.Add(injurySnapshot);
+        }
+
+        injurySnapshot.TotalInjured = teamInjuries.TotalInjured;
+        injurySnapshot.KeyPlayersInjured = teamInjuries.KeyPlayersInjured;
+        injurySnapshot.InjuryImpactScore = teamInjuries.InjuryImpactScore;
+        injurySnapshot.InjuredPlayerNames = teamInjuries.InjuredPlayerNames;
 
         await context.SaveChangesAsync(cancellationToken);
     }

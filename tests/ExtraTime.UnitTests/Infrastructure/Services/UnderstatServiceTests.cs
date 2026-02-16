@@ -48,6 +48,7 @@ public sealed class UnderstatServiceTests
         // Assert
         await Assert.That(synced.Count).IsEqualTo(2);
         await Assert.That(context.TeamXgStats.Count()).IsEqualTo(2);
+        await Assert.That(context.TeamXgSnapshots.Count()).IsEqualTo(2);
 
         var arsenalStats = context.TeamXgStats.Single(x => x.TeamId == arsenal.Id);
         await Assert.That(arsenalStats.XgFor).IsEqualTo(2.4);
@@ -65,22 +66,22 @@ public sealed class UnderstatServiceTests
 
         context.Teams.Add(team);
         context.Competitions.Add(competition);
-        context.TeamXgStats.AddRange(
-            new TeamXgStats
+        context.TeamXgSnapshots.AddRange(
+            new TeamXgSnapshot
             {
                 TeamId = team.Id,
                 CompetitionId = competition.Id,
                 Season = "2024",
-                LastSyncedAt = new DateTime(2025, 5, 10, 12, 0, 0, DateTimeKind.Utc),
-                XgFor = 30
+                SnapshotDateUtc = new DateTime(2025, 5, 10, 0, 0, 0, DateTimeKind.Utc),
+                XgPerMatch = 1.4
             },
-            new TeamXgStats
+            new TeamXgSnapshot
             {
                 TeamId = team.Id,
                 CompetitionId = competition.Id,
                 Season = "2025",
-                LastSyncedAt = new DateTime(2025, 9, 1, 12, 0, 0, DateTimeKind.Utc),
-                XgFor = 35
+                SnapshotDateUtc = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                XgPerMatch = 1.7
             });
         await context.SaveChangesAsync();
 
@@ -97,7 +98,7 @@ public sealed class UnderstatServiceTests
         // Assert
         await Assert.That(asOf).IsNotNull();
         await Assert.That(asOf!.Season).IsEqualTo("2024");
-        await Assert.That(asOf.XgFor).IsEqualTo(30d);
+        await Assert.That(asOf.XgPerMatch).IsEqualTo(1.4d);
     }
 
     [Test]

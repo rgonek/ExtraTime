@@ -62,6 +62,7 @@ public sealed class InjuryServiceTests
         await Assert.That(requestCount()).IsEqualTo(2);
         await Assert.That(context.PlayerInjuries.Count()).IsEqualTo(2);
         await Assert.That(context.TeamInjuries.Count()).IsEqualTo(2);
+        await Assert.That(context.TeamInjurySnapshots.Count()).IsEqualTo(2);
 
         var teamInjuries = await context.TeamInjuries.FirstAsync();
         await Assert.That(teamInjuries.TotalInjured).IsEqualTo(1);
@@ -110,11 +111,11 @@ public sealed class InjuryServiceTests
         await using var context = CreateContext();
         var team = Team.Create(10, "Arsenal", "Arsenal");
         context.Teams.Add(team);
-        context.TeamInjuries.Add(new TeamInjuries
+        context.TeamInjurySnapshots.Add(new TeamInjurySnapshot
         {
             TeamId = team.Id,
             TotalInjured = 1,
-            LastSyncedAt = new DateTime(2026, 2, 10, 12, 0, 0, DateTimeKind.Utc)
+            SnapshotDateUtc = new DateTime(2026, 2, 10, 0, 0, 0, DateTimeKind.Utc)
         });
         await context.SaveChangesAsync();
 
