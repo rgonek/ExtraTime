@@ -367,19 +367,19 @@ services.AddHttpClient("ClubElo", client =>
 
 ## Implementation Checklist
 
-- [ ] Create `TeamEloRating` entity
-- [ ] Create `TeamEloRatingConfiguration`
-- [ ] Add `TeamEloRatings` DbSet to context
+- [x] Create `TeamEloRating` entity
+- [x] Create `TeamEloRatingConfiguration`
+- [x] Add `TeamEloRatings` DbSet to context
 - [ ] Create `IEloRatingService` interface
 - [ ] Implement `EloRatingService` (CSV parse from clubelo.com)
 - [ ] Implement `SyncEloRatingsForDateAsync` and `BackfillEloRatingsAsync` for historical training windows
 - [ ] Ensure ML training paths use `GetTeamEloAtDateAsync` (not latest-only lookup)
 - [ ] Create `EloSyncBackgroundService`
-- [ ] Add `ClubElo` to `IntegrationType` enum
+- [x] Add `ClubElo` to `IntegrationType` enum
 - [ ] Add team name mapping for ClubElo names
 - [ ] Register services in DI
 - [ ] Configure HTTP client
-- [ ] Add database migration
+- [x] Add database migration
 - [ ] Test Elo sync
 
 ---

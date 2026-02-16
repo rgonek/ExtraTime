@@ -30,6 +30,7 @@ public interface IApplicationDbContext
     DbSet<MatchXgStats> MatchXgStats { get; }
     DbSet<MatchOdds> MatchOdds { get; }
     DbSet<MatchStats> MatchStats { get; }
+    DbSet<TeamEloRating> TeamEloRatings { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(
