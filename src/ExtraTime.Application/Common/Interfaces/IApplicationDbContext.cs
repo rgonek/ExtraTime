@@ -26,6 +26,8 @@ public interface IApplicationDbContext
     DbSet<TeamFormCache> TeamFormCaches { get; }
     DbSet<HeadToHead> HeadToHeads { get; }
     DbSet<IntegrationStatus> IntegrationStatuses { get; }
+    DbSet<TeamXgStats> TeamXgStats { get; }
+    DbSet<MatchXgStats> MatchXgStats { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(

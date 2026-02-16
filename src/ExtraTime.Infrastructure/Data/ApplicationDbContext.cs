@@ -33,6 +33,8 @@ public sealed class ApplicationDbContext(
     public DbSet<TeamFormCache> TeamFormCaches => Set<TeamFormCache>();
     public DbSet<HeadToHead> HeadToHeads => Set<HeadToHead>();
     public DbSet<IntegrationStatus> IntegrationStatuses => Set<IntegrationStatus>();
+    public DbSet<TeamXgStats> TeamXgStats => Set<TeamXgStats>();
+    public DbSet<MatchXgStats> MatchXgStats => Set<MatchXgStats>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
