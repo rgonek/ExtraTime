@@ -73,9 +73,13 @@ try
             await RunBotBettingAsync(scope.ServiceProvider, logger);
             break;
 
+        case "sync-lineups":
+            await RunSyncLineupsAsync(scope.ServiceProvider, logger);
+            break;
+
         default:
             logger.LogError("Unknown command: {Command}", command);
-            logger.LogError("Valid commands: sync-competitions, sync-teams, sync-matches, sync-standings, sync-all, calculate-bets, bot-betting");
+            logger.LogError("Valid commands: sync-competitions, sync-teams, sync-matches, sync-standings, sync-all, calculate-bets, bot-betting, sync-lineups");
             return 1;
     }
 
@@ -244,4 +248,14 @@ static async Task RunBotBettingAsync(IServiceProvider services, ILogger logger)
     var duration = DateTime.UtcNow - startTime;
     logger.LogInformation("");
     logger.LogInformation("Placed {Count} bets in {Duration:N2}s", betsPlaced, duration.TotalSeconds);
+}
+
+static async Task RunSyncLineupsAsync(IServiceProvider services, ILogger logger)
+{
+    logger.LogInformation("Starting lineup sync for upcoming matches...");
+
+    var lineupSyncService = services.GetRequiredService<ILineupSyncService>();
+    var synced = await lineupSyncService.SyncLineupsForUpcomingMatchesAsync(TimeSpan.FromHours(2));
+
+    logger.LogInformation("Synced lineups for {Count} matches", synced);
 }

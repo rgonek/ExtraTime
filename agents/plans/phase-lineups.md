@@ -853,10 +853,10 @@ services.AddScoped<ILineupDataProvider, ApiFootballLineupDataProvider>();
 - [x] **4.4** Register services in `DependencyInjection.cs`
 
 ### Functions
-- [ ] **5.1** Create `SyncLineupsFunction.cs` (timer-triggered, every 15 min)
+- [x] **5.1** Create `SyncLineupsFunction.cs` (timer-triggered, every 15 min)
 
 ### DevTriggers
-- [ ] **6.1** Add `sync-lineups` command to `DevTriggers/Program.cs`
+- [x] **6.1** Add `sync-lineups` command to `DevTriggers/Program.cs`
 
 ### Verification
 - [ ] **7.1** Build and run tests
