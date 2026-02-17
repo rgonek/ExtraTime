@@ -20,6 +20,8 @@ public interface IApplicationDbContext
     DbSet<LeagueBotMember> LeagueBotMembers { get; }
     DbSet<Bet> Bets { get; }
     DbSet<Bot> Bots { get; }
+    DbSet<MlModelVersion> MlModelVersions { get; }
+    DbSet<BotPredictionAccuracy> BotPredictionAccuracies { get; }
     DbSet<BetResult> BetResults { get; }
     DbSet<LeagueStanding> LeagueStandings { get; }
     DbSet<FootballStanding> FootballStandings { get; }

@@ -29,6 +29,8 @@ public sealed class ApplicationDbContext(
     public DbSet<BetResult> BetResults => Set<BetResult>();
     public DbSet<LeagueStanding> LeagueStandings => Set<LeagueStanding>();
     public DbSet<Bot> Bots => Set<Bot>();
+    public DbSet<MlModelVersion> MlModelVersions => Set<MlModelVersion>();
+    public DbSet<BotPredictionAccuracy> BotPredictionAccuracies => Set<BotPredictionAccuracy>();
     public DbSet<FootballStanding> FootballStandings => Set<FootballStanding>();
     public DbSet<TeamFormCache> TeamFormCaches => Set<TeamFormCache>();
     public DbSet<HeadToHead> HeadToHeads => Set<HeadToHead>();
