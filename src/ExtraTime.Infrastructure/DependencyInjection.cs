@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Application.Features.ML.Services;
 using ExtraTime.Application.Features.Bots.Services;
 using ExtraTime.Application.Features.Bots.Strategies;
 using ExtraTime.Infrastructure.Configuration;
@@ -207,6 +208,7 @@ public static class DependencyInjection
         services.AddScoped<BotSeeder>();
         services.AddScoped<ITeamFormCalculator, TeamFormCalculator>();
         services.AddScoped<IHeadToHeadService, HeadToHeadService>();
+        services.AddScoped<IMlFeatureExtractor, MlFeatureExtractor>();
         services.AddScoped<BotStrategyFactory>();
         services.AddScoped<IBotBettingService, BotBettingService>();
         // Background services removed - Hangfire handles recurring jobs in production
