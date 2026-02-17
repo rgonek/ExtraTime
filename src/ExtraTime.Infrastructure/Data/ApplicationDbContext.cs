@@ -44,6 +44,8 @@ public sealed class ApplicationDbContext(
     public DbSet<PlayerInjury> PlayerInjuries => Set<PlayerInjury>();
     public DbSet<TeamSuspensions> TeamSuspensions => Set<TeamSuspensions>();
     public DbSet<PlayerSuspension> PlayerSuspensions => Set<PlayerSuspension>();
+    public DbSet<MatchLineup> MatchLineups => Set<MatchLineup>();
+    public DbSet<TeamUsualLineup> TeamUsualLineups => Set<TeamUsualLineup>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

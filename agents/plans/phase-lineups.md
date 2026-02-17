@@ -830,15 +830,15 @@ services.AddScoped<ILineupDataProvider, ApiFootballLineupDataProvider>();
 ## Implementation Tasks
 
 ### Domain
-- [ ] **1.1** Create `MatchLineup` entity and `LineupPlayer` record at `src/ExtraTime.Domain/Entities/MatchLineup.cs`
-- [ ] **1.2** Create `TeamUsualLineup` entity and `UsualPlayer` record at `src/ExtraTime.Domain/Entities/TeamUsualLineup.cs`
-- [ ] **1.3** Add `ICollection<MatchLineup> Lineups` navigation to `Match.cs`
+- [x] **1.1** Create `MatchLineup` entity and `LineupPlayer` record at `src/ExtraTime.Domain/Entities/MatchLineup.cs`
+- [x] **1.2** Create `TeamUsualLineup` entity and `UsualPlayer` record at `src/ExtraTime.Domain/Entities/TeamUsualLineup.cs`
+- [x] **1.3** Add `ICollection<MatchLineup> Lineups` navigation to `Match.cs`
 
 ### Infrastructure - Database
-- [ ] **2.1** Create `MatchLineupConfiguration.cs`
-- [ ] **2.2** Create `TeamUsualLineupConfiguration.cs`
-- [ ] **2.3** Add `DbSet<MatchLineup>` and `DbSet<TeamUsualLineup>` to `IApplicationDbContext` and `ApplicationDbContext`
-- [ ] **2.4** Generate migration: `dotnet ef migrations add AddMatchLineupsAndTeamUsualLineups`
+- [x] **2.1** Create `MatchLineupConfiguration.cs`
+- [x] **2.2** Create `TeamUsualLineupConfiguration.cs`
+- [x] **2.3** Add `DbSet<MatchLineup>` and `DbSet<TeamUsualLineup>` to `IApplicationDbContext` and `ApplicationDbContext`
+- [x] **2.4** Generate migration: `dotnet ef migrations add AddMatchLineupsAndTeamUsualLineups`
 
 ### Application - Interfaces & DTOs
 - [ ] **3.1** Create `ILineupDataProvider` interface at `src/ExtraTime.Application/Common/Interfaces/ILineupDataProvider.cs`

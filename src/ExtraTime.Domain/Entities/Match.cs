@@ -33,6 +33,7 @@ public sealed class Match : BaseEntity
 
     public string? Venue { get; private set; }
     public DateTime LastSyncedAt { get; private set; }
+    public ICollection<MatchLineup> Lineups { get; private set; } = [];
 
     private Match() { } // Required for EF Core
 
