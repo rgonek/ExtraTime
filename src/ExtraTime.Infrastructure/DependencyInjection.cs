@@ -1,14 +1,22 @@
 using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Application.Features.ML.Services;
 using ExtraTime.Application.Features.Bots.Services;
 using ExtraTime.Application.Features.Bots.Strategies;
 using ExtraTime.Infrastructure.Configuration;
 using ExtraTime.Infrastructure.Data;
 using ExtraTime.Infrastructure.Services;
 using ExtraTime.Infrastructure.Services.Bots;
+using ExtraTime.Infrastructure.Services.ExternalData;
 using ExtraTime.Infrastructure.Services.Football;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,6 +98,57 @@ public static class DependencyInjection
             });
         }
 
+        var rateLimitingSection = configuration.GetSection(RateLimitingSettings.SectionName);
+        services.Configure<RateLimitingSettings>(rateLimitingSection);
+        var rateLimitingSettings = rateLimitingSection.Get<RateLimitingSettings>() ?? new RateLimitingSettings();
+
+        services.AddRateLimiter(options =>
+        {
+            if (!rateLimitingSettings.Enabled)
+            {
+                return;
+            }
+
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase) ||
+                    context.Request.Path.StartsWithSegments("/alive", StringComparison.OrdinalIgnoreCase) ||
+                    context.Request.Path.StartsWithSegments("/ready", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RateLimitPartition.GetNoLimiter("health-check");
+                }
+
+                var userId = context.User.FindFirstValue(JwtRegisteredClaimNames.Sub) ??
+                             context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var partitionKey = !string.IsNullOrWhiteSpace(userId)
+                    ? $"user:{userId}"
+                    : $"ip:{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}";
+
+                return RateLimitPartition.GetTokenBucketLimiter(partitionKey, _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = rateLimitingSettings.TokenLimit,
+                    TokensPerPeriod = rateLimitingSettings.TokensPerPeriod,
+                    ReplenishmentPeriod = TimeSpan.FromSeconds(rateLimitingSettings.ReplenishPeriodSeconds),
+                    AutoReplenishment = rateLimitingSettings.AutoReplenishment,
+                    QueueLimit = rateLimitingSettings.QueueLimit,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                });
+            });
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    context.HttpContext.Response.Headers.RetryAfter = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
+                }
+
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                await context.HttpContext.Response.WriteAsJsonAsync(
+                    new { error = "Too many requests. Please try again later." },
+                    cancellationToken);
+            };
+        });
+
         // Services
         services.AddHttpContextAccessor();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -100,10 +159,58 @@ public static class DependencyInjection
         services.AddScoped<IBetCalculator, BetCalculator>();
         services.AddScoped<IStandingsCalculator, StandingsCalculator>();
         services.AddScoped<IBetResultsService, BetResultsService>();
+        services.AddScoped<IIntegrationHealthService, IntegrationHealthService>();
+        services.AddScoped<IUnderstatService, UnderstatService>();
+        services.AddScoped<IExternalDataBackfillService, ExternalDataBackfillService>();
+        services.AddScoped<IEloRatingService, EloRatingService>();
+        services.AddScoped<IInjuryService, InjuryService>();
+        services.AddScoped<ISuspensionService, SuspensionService>();
+        services.AddScoped<IFplInjuryStatusProvider, FplInjuryStatusProvider>();
+        services.AddScoped<ILineupDataProvider, ApiLineupDataProvider>();
+        services.AddScoped<ILineupSyncService, LineupSyncService>();
+        services.AddScoped<ITeamUsualLineupService, TeamUsualLineupService>();
+        services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
+        services.Configure<FootballDataUkSettings>(configuration.GetSection(FootballDataUkSettings.SectionName));
+        services.Configure<ClubEloSettings>(configuration.GetSection(ClubEloSettings.SectionName));
+        services.Configure<ApiFootballSettings>(configuration.GetSection(ApiFootballSettings.SectionName));
+        services.AddHttpClient("Understat", client =>
+        {
+            client.BaseAddress = new Uri("https://understat.com");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddHttpClient("FootballDataUk", client =>
+        {
+            client.BaseAddress = new Uri("https://www.football-data.co.uk");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddHttpClient("ClubElo", client =>
+        {
+            client.BaseAddress = new Uri("http://api.clubelo.com");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddHttpClient("ApiFootball", client =>
+        {
+            client.BaseAddress = new Uri("https://api-football-v1.p.rapidapi.com");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+            client.DefaultRequestHeaders.Add("X-RapidAPI-Host", "api-football-v1.p.rapidapi.com");
+        });
+        services.AddHttpClient("Fpl", client =>
+        {
+            client.BaseAddress = new Uri("https://fantasy.premierleague.com");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("ExtraTime/1.0");
+        });
+        services.AddScoped<IOddsDataService, OddsDataService>();
+        services.AddHostedService<UnderstatSyncBackgroundService>();
+        services.AddHostedService<OddsSyncBackgroundService>();
+        services.AddHostedService<EloSyncBackgroundService>();
 
         // Bot Services
         services.AddScoped<BotSeeder>();
         services.AddScoped<ITeamFormCalculator, TeamFormCalculator>();
+        services.AddScoped<IHeadToHeadService, HeadToHeadService>();
+        services.AddScoped<IMlFeatureExtractor, MlFeatureExtractor>();
+        services.AddScoped<IMlPredictionService, MlPredictionService>();
+        services.AddScoped<PredictionAccuracyTracker>();
         services.AddScoped<BotStrategyFactory>();
         services.AddScoped<IBotBettingService, BotBettingService>();
         // Background services removed - Hangfire handles recurring jobs in production

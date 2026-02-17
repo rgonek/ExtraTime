@@ -207,6 +207,101 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.ToTable("Bots", (string)null);
                 });
 
+            modelBuilder.Entity("ExtraTime.Domain.Entities.BotPredictionAccuracy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("AvgPointsPerBet")
+                        .HasColumnType("float");
+
+                    b.Property<double>("AwayScoreMAE")
+                        .HasColumnType("float");
+
+                    b.Property<int>("BetsLost")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BetsWon")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("BotId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CalculationNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<double>("CorrectResultAccuracy")
+                        .HasColumnType("float");
+
+                    b.Property<int>("CorrectResults")
+                        .HasColumnType("int");
+
+                    b.Property<double>("ExactScoreAccuracy")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ExactScores")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GoalsOffBy1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GoalsOffBy2")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GoalsOffBy3Plus")
+                        .HasColumnType("int");
+
+                    b.Property<double>("HomeScoreMAE")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("MeanAbsoluteError")
+                        .HasColumnType("float");
+
+                    b.Property<string>("ModelVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("PeriodEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PeriodStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PeriodType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<double>("RootMeanSquaredError")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Strategy")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<double>("TotalPointsEarned")
+                        .HasColumnType("float");
+
+                    b.Property<int>("TotalPredictions")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Within1GoalAccuracy")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BotId", "PeriodType", "PeriodStart")
+                        .HasDatabaseName("IX_BotPredictionAccuracies_BotId_PeriodType_PeriodStart");
+
+                    b.ToTable("BotPredictionAccuracies", (string)null);
+                });
+
             modelBuilder.Entity("ExtraTime.Domain.Entities.Competition", b =>
                 {
                     b.Property<Guid>("Id")
@@ -351,6 +446,173 @@ namespace ExtraTime.Infrastructure.Migrations
                         .HasFilter("[Stage] IS NOT NULL AND [Group] IS NOT NULL");
 
                     b.ToTable("FootballStandings", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.HeadToHead", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BothTeamsScoredCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CompetitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Draws")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastMatchDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("LastMatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MatchesAnalyzed")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Over25Count")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecentDraws")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecentMatchesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecentTeam1Wins")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecentTeam2Wins")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Team1Goals")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Team1HomeConceded")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Team1HomeGoals")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Team1HomeMatches")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Team1HomeWins")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("Team1Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Team1Wins")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Team2Goals")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("Team2Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Team2Wins")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalMatches")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitionId");
+
+                    b.HasIndex("Team2Id");
+
+                    b.HasIndex("Team1Id", "Team2Id", "CompetitionId")
+                        .IsUnique();
+
+                    b.ToTable("HeadToHeads", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.IntegrationStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeSpan?>("AverageSyncDuration")
+                        .HasColumnType("time");
+
+                    b.Property<int>("ConsecutiveFailures")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DataFreshAsOf")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DisabledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisabledBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("DisabledReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Health")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("IntegrationName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsManuallyDisabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastAttemptedSync")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastErrorDetails")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("LastErrorMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("LastFailedSync")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastSuccessfulSync")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("StaleThreshold")
+                        .HasColumnType("time");
+
+                    b.Property<int>("SuccessfulSyncs24h")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalFailures24h")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IntegrationName")
+                        .IsUnique();
+
+                    b.ToTable("IntegrationStatuses", (string)null);
                 });
 
             modelBuilder.Entity("ExtraTime.Domain.Entities.League", b =>
@@ -600,6 +862,420 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.ToTable("Matches", (string)null);
                 });
 
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchLineup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Bench")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("CaptainName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CoachName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Formation")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("StartingXi")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("SyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("MatchId", "TeamId")
+                        .IsUnique();
+
+                    b.ToTable("MatchLineups", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchOdds", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("AwayWinOdds")
+                        .HasColumnType("float");
+
+                    b.Property<double>("AwayWinProbability")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BttsNoOdds")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("BttsYesOdds")
+                        .HasColumnType("float");
+
+                    b.Property<string>("DataSource")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<double>("DrawOdds")
+                        .HasColumnType("float");
+
+                    b.Property<double>("DrawProbability")
+                        .HasColumnType("float");
+
+                    b.Property<double>("FavoriteConfidence")
+                        .HasColumnType("float");
+
+                    b.Property<double>("HomeWinOdds")
+                        .HasColumnType("float");
+
+                    b.Property<double>("HomeWinProbability")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("ImportedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MarketFavorite")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double?>("Over25Odds")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Under25Odds")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId")
+                        .IsUnique();
+
+                    b.ToTable("MatchOdds", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchStats", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("AwayCorners")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayFouls")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayHalfTimeGoals")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayRedCards")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayShots")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayShotsOnTarget")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayYellowCards")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DataSource")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("HomeCorners")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeFouls")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeHalfTimeGoals")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeRedCards")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeShots")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeShotsOnTarget")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeYellowCards")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ImportedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Referee")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId")
+                        .IsUnique();
+
+                    b.ToTable("MatchStats", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchXgStats", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("ActualHomeWin")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("AwayShots")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AwayShotsOnTarget")
+                        .HasColumnType("int");
+
+                    b.Property<double>("AwayXg")
+                        .HasColumnType("float");
+
+                    b.Property<int>("HomeShots")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HomeShotsOnTarget")
+                        .HasColumnType("int");
+
+                    b.Property<double>("HomeXg")
+                        .HasColumnType("float");
+
+                    b.Property<bool>("HomeXgWin")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UnderstatMatchId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("XgMatchedResult")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId")
+                        .IsUnique();
+
+                    b.HasIndex("UnderstatMatchId")
+                        .IsUnique();
+
+                    b.ToTable("MatchXgStats", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MlModelVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ActivatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ActivationNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("AlgorithmUsed")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BlobPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<double>("CrossValidationMAE")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CrossValidationStdDev")
+                        .HasColumnType("float");
+
+                    b.Property<string>("FeatureImportanceJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HyperparametersJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("MeanAbsoluteError")
+                        .HasColumnType("float");
+
+                    b.Property<double>("MeanAbsolutePercentageError")
+                        .HasColumnType("float");
+
+                    b.Property<string>("ModelType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<double>("RootMeanSquaredError")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Rsquared")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("TrainedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TrainingDataRange")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("TrainingSamples")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Version")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MlModelVersions_Version");
+
+                    b.HasIndex("ModelType", "IsActive")
+                        .HasDatabaseName("IX_MlModelVersions_ModelType_IsActive");
+
+                    b.ToTable("MlModelVersions", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.PlayerInjury", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ExpectedReturn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExternalPlayerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("InjuryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InjurySeverity")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("InjuryType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDoubtful")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsKeyPlayer")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PlayerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId", "IsActive");
+
+                    b.ToTable("PlayerInjuries", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.PlayerSuspension", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ExpectedReturn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ExternalPlayerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsKeyPlayer")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PlayerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("SuspensionReason")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId", "IsActive");
+
+                    b.ToTable("PlayerSuspensions", (string)null);
+                });
+
             modelBuilder.Entity("ExtraTime.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -758,6 +1434,42 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.ToTable("Teams", (string)null);
                 });
 
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamEloRating", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClubEloName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EloRank")
+                        .HasColumnType("int");
+
+                    b.Property<double>("EloRating")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("RatingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RatingDate");
+
+                    b.HasIndex("TeamId", "RatingDate")
+                        .IsUnique();
+
+                    b.ToTable("TeamEloRatings", (string)null);
+                });
+
             modelBuilder.Entity("ExtraTime.Domain.Entities.TeamFormCache", b =>
                 {
                     b.Property<Guid>("Id")
@@ -854,6 +1566,304 @@ namespace ExtraTime.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("TeamFormCaches", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamInjuries", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("CaptainInjured")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Doubtful")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("FirstChoiceGkInjured")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("InjuredPlayerNames")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<double>("InjuryImpactScore")
+                        .HasColumnType("float");
+
+                    b.Property<int>("KeyPlayersInjured")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LongTermInjuries")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("NextSyncDue")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ShortTermInjuries")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("TopScorerInjured")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TotalInjured")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("TeamInjuries", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamInjurySnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("InjuredPlayerNames")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<double>("InjuryImpactScore")
+                        .HasColumnType("float");
+
+                    b.Property<int>("KeyPlayersInjured")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SnapshotDateUtc")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TotalInjured")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId", "SnapshotDateUtc")
+                        .IsUnique();
+
+                    b.ToTable("TeamInjurySnapshots", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamSuspensions", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CardSuspensions")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DisciplinarySuspensions")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KeyPlayersSuspended")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NextSyncDue")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SuspendedPlayerNames")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<double>("SuspensionImpactScore")
+                        .HasColumnType("float");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TotalSuspended")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("TeamSuspensions", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamUsualLineup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CaptainName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<int>("MatchesAnalyzed")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SeasonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UsualDefenders")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("UsualFormation")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("UsualForwards")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("UsualGoalkeepers")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("UsualMidfielders")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeasonId");
+
+                    b.HasIndex("TeamId", "SeasonId")
+                        .IsUnique();
+
+                    b.ToTable("TeamUsualLineups", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamXgSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompetitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("RecentXgPerMatch")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Season")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("SnapshotDateUtc")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("XgAgainstPerMatch")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgOverperformance")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgPerMatch")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitionId", "Season", "SnapshotDateUtc");
+
+                    b.HasIndex("TeamId", "CompetitionId", "Season", "SnapshotDateUtc")
+                        .IsUnique();
+
+                    b.ToTable("TeamXgSnapshots", (string)null);
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamXgStats", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompetitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("GoalsConceded")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GoalsScored")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MatchesPlayed")
+                        .HasColumnType("int");
+
+                    b.Property<double>("RecentXgAgainstPerMatch")
+                        .HasColumnType("float");
+
+                    b.Property<double>("RecentXgPerMatch")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Season")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UnderstatTeamId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("XgAgainst")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgAgainstPerMatch")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgDiff")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgFor")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgOverperformance")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgPerMatch")
+                        .HasColumnType("float");
+
+                    b.Property<double>("XgaOverperformance")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitionId", "Season");
+
+                    b.HasIndex("TeamId", "CompetitionId", "Season")
+                        .IsUnique();
+
+                    b.ToTable("TeamXgStats", (string)null);
                 });
 
             modelBuilder.Entity("ExtraTime.Domain.Entities.User", b =>
@@ -961,6 +1971,17 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ExtraTime.Domain.Entities.BotPredictionAccuracy", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Bot", "Bot")
+                        .WithMany()
+                        .HasForeignKey("BotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bot");
+                });
+
             modelBuilder.Entity("ExtraTime.Domain.Entities.CompetitionTeam", b =>
                 {
                     b.HasOne("ExtraTime.Domain.Entities.Competition", "Competition")
@@ -997,6 +2018,32 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.Navigation("Season");
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.HeadToHead", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Competition", "Competition")
+                        .WithMany()
+                        .HasForeignKey("CompetitionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team1")
+                        .WithMany()
+                        .HasForeignKey("Team1Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team2")
+                        .WithMany()
+                        .HasForeignKey("Team2Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Competition");
+
+                    b.Navigation("Team1");
+
+                    b.Navigation("Team2");
                 });
 
             modelBuilder.Entity("ExtraTime.Domain.Entities.League", b =>
@@ -1101,6 +2148,80 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.Navigation("Season");
                 });
 
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchLineup", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Match", "Match")
+                        .WithMany("Lineups")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchOdds", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Match", "Match")
+                        .WithOne()
+                        .HasForeignKey("ExtraTime.Domain.Entities.MatchOdds", "MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchStats", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Match", "Match")
+                        .WithOne()
+                        .HasForeignKey("ExtraTime.Domain.Entities.MatchStats", "MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.MatchXgStats", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Match", "Match")
+                        .WithMany()
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.PlayerInjury", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.PlayerSuspension", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("ExtraTime.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("ExtraTime.Domain.Entities.User", "User")
@@ -1149,7 +2270,108 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamEloRating", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("ExtraTime.Domain.Entities.TeamFormCache", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Competition", "Competition")
+                        .WithMany()
+                        .HasForeignKey("CompetitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Competition");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamInjuries", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithOne()
+                        .HasForeignKey("ExtraTime.Domain.Entities.TeamInjuries", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamInjurySnapshot", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamSuspensions", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithOne()
+                        .HasForeignKey("ExtraTime.Domain.Entities.TeamSuspensions", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamUsualLineup", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Season", "Season")
+                        .WithMany()
+                        .HasForeignKey("SeasonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Season");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamXgSnapshot", b =>
+                {
+                    b.HasOne("ExtraTime.Domain.Entities.Competition", "Competition")
+                        .WithMany()
+                        .HasForeignKey("CompetitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ExtraTime.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Competition");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.TeamXgStats", b =>
                 {
                     b.HasOne("ExtraTime.Domain.Entities.Competition", "Competition")
                         .WithMany()
@@ -1187,6 +2409,11 @@ namespace ExtraTime.Infrastructure.Migrations
                     b.Navigation("BotMembers");
 
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("ExtraTime.Domain.Entities.Match", b =>
+                {
+                    b.Navigation("Lineups");
                 });
 
             modelBuilder.Entity("ExtraTime.Domain.Entities.Season", b =>

@@ -20,10 +20,27 @@ public interface IApplicationDbContext
     DbSet<LeagueBotMember> LeagueBotMembers { get; }
     DbSet<Bet> Bets { get; }
     DbSet<Bot> Bots { get; }
+    DbSet<MlModelVersion> MlModelVersions { get; }
+    DbSet<BotPredictionAccuracy> BotPredictionAccuracies { get; }
     DbSet<BetResult> BetResults { get; }
     DbSet<LeagueStanding> LeagueStandings { get; }
     DbSet<FootballStanding> FootballStandings { get; }
     DbSet<TeamFormCache> TeamFormCaches { get; }
+    DbSet<HeadToHead> HeadToHeads { get; }
+    DbSet<IntegrationStatus> IntegrationStatuses { get; }
+    DbSet<TeamXgStats> TeamXgStats { get; }
+    DbSet<MatchXgStats> MatchXgStats { get; }
+    DbSet<MatchOdds> MatchOdds { get; }
+    DbSet<MatchStats> MatchStats { get; }
+    DbSet<TeamEloRating> TeamEloRatings { get; }
+    DbSet<TeamInjuries> TeamInjuries { get; }
+    DbSet<TeamXgSnapshot> TeamXgSnapshots { get; }
+    DbSet<TeamInjurySnapshot> TeamInjurySnapshots { get; }
+    DbSet<PlayerInjury> PlayerInjuries { get; }
+    DbSet<TeamSuspensions> TeamSuspensions { get; }
+    DbSet<PlayerSuspension> PlayerSuspensions { get; }
+    DbSet<MatchLineup> MatchLineups { get; }
+    DbSet<TeamUsualLineup> TeamUsualLineups { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     Task<T> ExecuteInTransactionAsync<T>(

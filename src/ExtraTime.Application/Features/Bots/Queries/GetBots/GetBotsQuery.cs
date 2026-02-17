@@ -1,9 +1,10 @@
 using ExtraTime.Application.Common;
-using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Bots.DTOs;
+using ExtraTime.Domain.Enums;
 using Mediator;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExtraTime.Application.Features.Bots.Queries.GetBots;
 
-public sealed record GetBotsQuery : IRequest<Result<List<BotDto>>>;
+public sealed record GetBotsQuery(
+    bool? IncludeInactive = false,
+    BotStrategy? Strategy = null) : IRequest<Result<List<BotDto>>>;

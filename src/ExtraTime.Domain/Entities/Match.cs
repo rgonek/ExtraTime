@@ -30,9 +30,21 @@ public sealed class Match : BaseEntity
     public int? AwayScore { get; private set; }
     public int? HomeHalfTimeScore { get; private set; }
     public int? AwayHalfTimeScore { get; private set; }
+    public bool IsValidForTraining =>
+        Status == MatchStatus.Finished &&
+        HomeScore.HasValue &&
+        AwayScore.HasValue &&
+        HomeScore.Value >= 0 &&
+        AwayScore.Value >= 0;
+    public int? MatchOutcome =>
+        !IsValidForTraining ? null :
+        HomeScore > AwayScore ? 0 :
+        HomeScore == AwayScore ? 1 :
+        2;
 
     public string? Venue { get; private set; }
     public DateTime LastSyncedAt { get; private set; }
+    public ICollection<MatchLineup> Lineups { get; private set; } = [];
 
     private Match() { } // Required for EF Core
 

@@ -528,10 +528,15 @@ public sealed class ValueObjectTests
         var config = new StatsAnalystConfig();
 
         // Assert
-        await Assert.That(config.FormWeight).IsEqualTo(0.35);
-        await Assert.That(config.HomeAdvantageWeight).IsEqualTo(0.25);
-        await Assert.That(config.GoalTrendWeight).IsEqualTo(0.25);
-        await Assert.That(config.StreakWeight).IsEqualTo(0.15);
+        await Assert.That(config.FormWeight).IsEqualTo(0.20);
+        await Assert.That(config.HomeAdvantageWeight).IsEqualTo(0.15);
+        await Assert.That(config.GoalTrendWeight).IsEqualTo(0.10);
+        await Assert.That(config.StreakWeight).IsEqualTo(0.05);
+        await Assert.That(config.XgWeight).IsEqualTo(0.20);
+        await Assert.That(config.XgDefensiveWeight).IsEqualTo(0.10);
+        await Assert.That(config.OddsWeight).IsEqualTo(0.05);
+        await Assert.That(config.InjuryWeight).IsEqualTo(0.05);
+        await Assert.That(config.EloWeight).IsEqualTo(0.00);
         await Assert.That(config.MatchesAnalyzed).IsEqualTo(5);
         await Assert.That(config.HighStakesBoost).IsTrue();
         await Assert.That(config.Style).IsEqualTo(PredictionStyle.Moderate);
@@ -544,7 +549,7 @@ public sealed class ValueObjectTests
         var config = StatsAnalystConfig.Balanced;
 
         // Assert
-        await Assert.That(config.FormWeight).IsEqualTo(0.35);
+        await Assert.That(config.FormWeight).IsEqualTo(0.20);
         await Assert.That(config.Style).IsEqualTo(PredictionStyle.Moderate);
     }
 
@@ -658,7 +663,7 @@ public sealed class ValueObjectTests
         var config = StatsAnalystConfig.FromJson(null);
 
         // Assert
-        await Assert.That(config.FormWeight).IsEqualTo(0.35); // Default value
+        await Assert.That(config.FormWeight).IsEqualTo(0.20); // Default value
     }
 
     [Test]
@@ -668,7 +673,7 @@ public sealed class ValueObjectTests
         var config = StatsAnalystConfig.FromJson("");
 
         // Assert
-        await Assert.That(config.FormWeight).IsEqualTo(0.35); // Default value
+        await Assert.That(config.FormWeight).IsEqualTo(0.20); // Default value
     }
 
     [Test]
@@ -678,7 +683,20 @@ public sealed class ValueObjectTests
         var config = StatsAnalystConfig.FromJson("{invalid json}");
 
         // Assert
-        await Assert.That(config.FormWeight).IsEqualTo(0.35); // Default value
+        await Assert.That(config.FormWeight).IsEqualTo(0.20); // Default value
+    }
+
+    [Test]
+    public async Task StatsAnalystConfig_FullAnalysisPreset_ReturnsExpectedExternalWeights()
+    {
+        // Act
+        var config = StatsAnalystConfig.FullAnalysis;
+
+        // Assert
+        await Assert.That(config.XgWeight).IsEqualTo(0.25);
+        await Assert.That(config.XgDefensiveWeight).IsEqualTo(0.15);
+        await Assert.That(config.OddsWeight).IsEqualTo(0.10);
+        await Assert.That(config.EloWeight).IsEqualTo(0.10);
     }
 
     #endregion

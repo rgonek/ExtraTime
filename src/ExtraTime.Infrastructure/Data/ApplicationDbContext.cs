@@ -29,8 +29,25 @@ public sealed class ApplicationDbContext(
     public DbSet<BetResult> BetResults => Set<BetResult>();
     public DbSet<LeagueStanding> LeagueStandings => Set<LeagueStanding>();
     public DbSet<Bot> Bots => Set<Bot>();
+    public DbSet<MlModelVersion> MlModelVersions => Set<MlModelVersion>();
+    public DbSet<BotPredictionAccuracy> BotPredictionAccuracies => Set<BotPredictionAccuracy>();
     public DbSet<FootballStanding> FootballStandings => Set<FootballStanding>();
     public DbSet<TeamFormCache> TeamFormCaches => Set<TeamFormCache>();
+    public DbSet<HeadToHead> HeadToHeads => Set<HeadToHead>();
+    public DbSet<IntegrationStatus> IntegrationStatuses => Set<IntegrationStatus>();
+    public DbSet<TeamXgStats> TeamXgStats => Set<TeamXgStats>();
+    public DbSet<MatchXgStats> MatchXgStats => Set<MatchXgStats>();
+    public DbSet<MatchOdds> MatchOdds => Set<MatchOdds>();
+    public DbSet<MatchStats> MatchStats => Set<MatchStats>();
+    public DbSet<TeamEloRating> TeamEloRatings => Set<TeamEloRating>();
+    public DbSet<TeamInjuries> TeamInjuries => Set<TeamInjuries>();
+    public DbSet<TeamXgSnapshot> TeamXgSnapshots => Set<TeamXgSnapshot>();
+    public DbSet<TeamInjurySnapshot> TeamInjurySnapshots => Set<TeamInjurySnapshot>();
+    public DbSet<PlayerInjury> PlayerInjuries => Set<PlayerInjury>();
+    public DbSet<TeamSuspensions> TeamSuspensions => Set<TeamSuspensions>();
+    public DbSet<PlayerSuspension> PlayerSuspensions => Set<PlayerSuspension>();
+    public DbSet<MatchLineup> MatchLineups => Set<MatchLineup>();
+    public DbSet<TeamUsualLineup> TeamUsualLineups => Set<TeamUsualLineup>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

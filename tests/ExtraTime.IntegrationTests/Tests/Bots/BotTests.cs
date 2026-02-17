@@ -2,7 +2,10 @@ using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Application.Features.Bots.Commands.RemoveBotFromLeague;
 using ExtraTime.Application.Features.Bots.Commands.AddBotToLeague;
 using ExtraTime.Application.Features.Bots.Commands.CreateBot;
+using ExtraTime.Application.Features.Bots.Commands.DeleteBot;
 using ExtraTime.Application.Features.Bots.Commands.PlaceBotBets;
+using ExtraTime.Application.Features.Bots.Commands.UpdateBot;
+using ExtraTime.Application.Features.Bots.Queries.GetBotConfigurationPresets;
 using ExtraTime.Application.Features.Bots.Queries.GetBots;
 using ExtraTime.Application.Features.Bots.Queries.GetLeagueBots;
 using ExtraTime.Application.Features.Bots.Services;
@@ -116,7 +119,8 @@ public sealed class BotTests : IntegrationTestBase
             BotStrategy.DrawPredictor,
             BotStrategy.HighScorer,
             BotStrategy.UnderdogSupporter,
-            BotStrategy.StatsAnalyst
+            BotStrategy.StatsAnalyst,
+            BotStrategy.MachineLearning
         };
 
         foreach (var strategy in strategies)
@@ -137,6 +141,199 @@ public sealed class BotTests : IntegrationTestBase
         // Verify all bots created
         var botCount = await Context.Bots.CountAsync();
         await Assert.That(botCount).IsEqualTo(strategies.Length);
+    }
+
+    [Test]
+    public async Task UpdateBot_ValidData_UpdatesBotAndUser()
+    {
+        // Arrange
+        var (bot, user) = await CreateBotWithUserAsync("Old Name", BotStrategy.Random);
+        var handler = new UpdateBotCommandHandler(Context);
+        var command = new UpdateBotCommand(
+            bot.Id,
+            "New Name",
+            "https://example.com/new-avatar.png",
+            BotStrategy.StatsAnalyst,
+            "{\"preset\":\"full-analysis\"}",
+            false);
+
+        // Act
+        var result = await handler.Handle(command, default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        var updatedBot = await Context.Bots.FirstAsync(b => b.Id == bot.Id);
+        var updatedUser = await Context.Users.FirstAsync(u => u.Id == user.Id);
+        await Assert.That(updatedBot.Name).IsEqualTo("New Name");
+        await Assert.That(updatedBot.AvatarUrl).IsEqualTo("https://example.com/new-avatar.png");
+        await Assert.That(updatedBot.Strategy).IsEqualTo(BotStrategy.StatsAnalyst);
+        await Assert.That(updatedBot.Configuration).IsEqualTo("{\"preset\":\"full-analysis\"}");
+        await Assert.That(updatedBot.IsActive).IsFalse();
+        await Assert.That(updatedUser.Username).IsEqualTo("New Name");
+    }
+
+    [Test]
+    public async Task UpdateBot_DuplicateName_ReturnsFailure()
+    {
+        // Arrange
+        var (firstBot, _) = await CreateBotWithUserAsync("Bot One");
+        var (secondBot, _) = await CreateBotWithUserAsync("Bot Two");
+        var handler = new UpdateBotCommandHandler(Context);
+
+        // Act
+        var result = await handler.Handle(
+            new UpdateBotCommand(secondBot.Id, firstBot.Name, null, null, null, null),
+            default);
+
+        // Assert
+        await Assert.That(result.IsFailure).IsTrue();
+        await Assert.That(result.Error).Contains("already exists");
+    }
+
+    [Test]
+    public async Task DeleteBot_WithoutBets_RemovesBotAndUser()
+    {
+        // Arrange
+        var (bot, user) = await CreateBotWithUserAsync("DeleteMe");
+        var handler = new DeleteBotCommandHandler(Context);
+
+        // Act
+        var result = await handler.Handle(new DeleteBotCommand(bot.Id), default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        var deletedBot = await Context.Bots.FirstOrDefaultAsync(b => b.Id == bot.Id);
+        var deletedUser = await Context.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
+        await Assert.That(deletedBot).IsNull();
+        await Assert.That(deletedUser).IsNull();
+    }
+
+    [Test]
+    public async Task DeleteBot_WithHistoricalBets_DeactivatesBot()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var competition = new CompetitionBuilder().Build();
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
+        Context.Teams.AddRange(homeTeam, awayTeam);
+
+        var match = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
+            .Build();
+        Context.Matches.Add(match);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .Build();
+        Context.Leagues.Add(league);
+
+        var (bot, user) = await CreateBotWithUserAsync("KeepHistory");
+        var bet = Bet.Place(league.Id, user.Id, match.Id, 2, 1);
+        Context.Bets.Add(bet);
+        await Context.SaveChangesAsync();
+
+        var handler = new DeleteBotCommandHandler(Context);
+
+        // Act
+        var result = await handler.Handle(new DeleteBotCommand(bot.Id), default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        var updatedBot = await Context.Bots.FirstOrDefaultAsync(b => b.Id == bot.Id);
+        var existingUser = await Context.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
+        await Assert.That(updatedBot).IsNotNull();
+        await Assert.That(updatedBot!.IsActive).IsFalse();
+        await Assert.That(existingUser).IsNotNull();
+    }
+
+    [Test]
+    public async Task GetBots_WithFiltersAndStats_ReturnsExpectedData()
+    {
+        // Arrange
+        var ownerId = Guid.NewGuid();
+        var owner = new UserBuilder().WithId(ownerId).Build();
+        Context.Users.Add(owner);
+
+        var competition = new CompetitionBuilder().Build();
+        var homeTeam = new TeamBuilder().Build();
+        var awayTeam = new TeamBuilder().Build();
+        var thirdTeam = new TeamBuilder().Build();
+        Context.Competitions.Add(competition);
+        Context.Teams.AddRange(homeTeam, awayTeam, thirdTeam);
+
+        var matchOne = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(homeTeam.Id, awayTeam.Id)
+            .Build();
+        var matchTwo = new MatchBuilder()
+            .WithCompetitionId(competition.Id)
+            .WithTeams(thirdTeam.Id, homeTeam.Id)
+            .Build();
+        Context.Matches.AddRange(matchOne, matchTwo);
+
+        var league = new LeagueBuilder()
+            .WithOwnerId(ownerId)
+            .WithBotsEnabled(true)
+            .Build();
+        Context.Leagues.Add(league);
+
+        var (statsBot, statsUser) = await CreateBotWithUserAsync("Stats Bot", BotStrategy.StatsAnalyst);
+        var (inactiveBot, _) = await CreateBotWithUserAsync("Inactive Bot", BotStrategy.Random);
+        inactiveBot.Deactivate();
+
+        var trackedLeague = await Context.Leagues.Include(l => l.BotMembers).FirstAsync(l => l.Id == league.Id);
+        trackedLeague.AddBot(statsBot.Id);
+
+        var betOne = Bet.Place(league.Id, statsUser.Id, matchOne.Id, 2, 1);
+        var betTwo = Bet.Place(league.Id, statsUser.Id, matchTwo.Id, 1, 1);
+        Context.Bets.AddRange(betOne, betTwo);
+        Context.BetResults.Add(BetResult.Create(betOne.Id, 3, true, true));
+        await Context.SaveChangesAsync();
+
+        var handler = new GetBotsQueryHandler(Context);
+
+        // Act
+        var activeBots = await handler.Handle(new GetBotsQuery(), default);
+        var analystBots = await handler.Handle(
+            new GetBotsQuery(IncludeInactive: true, Strategy: BotStrategy.StatsAnalyst),
+            default);
+
+        // Assert
+        await Assert.That(activeBots.IsSuccess).IsTrue();
+        await Assert.That(activeBots.Value!.Any(b => b.Name == "Inactive Bot")).IsFalse();
+        await Assert.That(analystBots.IsSuccess).IsTrue();
+        await Assert.That(analystBots.Value).HasSingleItem();
+
+        var stats = analystBots.Value![0].Stats;
+        await Assert.That(stats).IsNotNull();
+        await Assert.That(stats!.TotalBetsPlaced).IsEqualTo(2);
+        await Assert.That(stats.LeaguesJoined).IsEqualTo(1);
+        await Assert.That(stats.AveragePointsPerBet).IsEqualTo(3);
+        await Assert.That(stats.ExactPredictions).IsEqualTo(1);
+        await Assert.That(stats.CorrectResults).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task GetBotConfigurationPresets_ReturnsExternalDataPresets()
+    {
+        // Arrange
+        var handler = new GetBotConfigurationPresetsQueryHandler();
+
+        // Act
+        var result = await handler.Handle(new GetBotConfigurationPresetsQuery(), default);
+
+        // Assert
+        await Assert.That(result.IsSuccess).IsTrue();
+        await Assert.That(result.Value).IsNotNull();
+        await Assert.That(result.Value!.Count).IsEqualTo(10);
+        await Assert.That(result.Value.Any(x => x.Name == "xG Expert")).IsTrue();
+        await Assert.That(result.Value.Any(x => x.Name == "Market Follower")).IsTrue();
     }
 
     [Test]

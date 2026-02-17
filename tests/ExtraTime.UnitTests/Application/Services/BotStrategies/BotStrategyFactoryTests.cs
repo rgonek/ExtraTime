@@ -1,4 +1,5 @@
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Application.Features.ML.Services;
 using ExtraTime.Application.Features.Bots.Strategies;
 using ExtraTime.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,17 +10,20 @@ namespace ExtraTime.UnitTests.Application.Services.BotStrategies;
 public sealed class BotStrategyFactoryTests
 {
     private ITeamFormCalculator _formCalculator = null!;
+    private IMlPredictionService _mlPredictionService = null!;
 
     [Before(Test)]
     public void Setup()
     {
         _formCalculator = Substitute.For<ITeamFormCalculator>();
+        _mlPredictionService = Substitute.For<IMlPredictionService>();
     }
 
     private IServiceProvider CreateServiceProvider()
     {
         var services = new ServiceCollection();
         services.AddSingleton(_formCalculator);
+        services.AddSingleton(_mlPredictionService);
         return services.BuildServiceProvider();
     }
 
@@ -114,6 +118,18 @@ public sealed class BotStrategyFactoryTests
     }
 
     [Test]
+    public async Task GetStrategy_MachineLearningStrategy_ReturnsMachineLearningInstance()
+    {
+        var serviceProvider = CreateServiceProvider();
+        var factory = new BotStrategyFactory(serviceProvider);
+
+        var strategy = factory.GetStrategy(BotStrategy.MachineLearning);
+
+        await Assert.That(strategy).IsTypeOf<MachineLearningStrategy>();
+        await Assert.That(strategy.StrategyType).IsEqualTo(BotStrategy.MachineLearning);
+    }
+
+    [Test]
     public async Task GetStrategy_AllStrategies_ReturnsCorrectTypes()
     {
         // Arrange
@@ -181,6 +197,7 @@ public sealed class BotStrategyFactoryTests
         // Arrange - Create a new factory with fresh DI
         var services = new ServiceCollection();
         services.AddSingleton(Substitute.For<ITeamFormCalculator>());
+        services.AddSingleton(Substitute.For<IMlPredictionService>());
         var serviceProvider = services.BuildServiceProvider();
 
         // Act

@@ -120,6 +120,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 // Map Aspire default endpoints (health checks, etc.)
@@ -129,7 +130,11 @@ app.MapDefaultEndpoints();
 app.MapHealthEndpoints();
 app.MapAuthEndpoints();
 app.MapAdminEndpoints();
+app.MapAdminIntegrationEndpoints();
+app.MapAdminExternalDataEndpoints();
+app.MapAdminMlEndpoints();
 app.MapFootballEndpoints();
+app.MapHeadToHeadEndpoints();
 app.MapFootballSyncEndpoints();
 app.MapLeagueEndpoints();
 app.MapBotEndpoints();

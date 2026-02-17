@@ -108,7 +108,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<ExtraTim
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    { "UseInMemoryDatabase", "true" }
+                    { "UseInMemoryDatabase", "true" },
+                    { "RateLimiting:Enabled", "false" }
                 });
             }
             else if (Container != null)
@@ -119,7 +120,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<ExtraTim
                     // Standard connection string for non-Aspire scenarios
                     { "ConnectionStrings:DefaultConnection", connectionString },
                     // Aspire uses this connection string name
-                    { "ConnectionStrings:extratime", connectionString }
+                    { "ConnectionStrings:extratime", connectionString },
+                    { "RateLimiting:Enabled", "false" }
                 });
             }
         });

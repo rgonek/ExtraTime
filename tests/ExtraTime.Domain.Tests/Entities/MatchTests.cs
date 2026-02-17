@@ -282,4 +282,39 @@ public sealed class MatchTests
         // Assert
         await Assert.That(isOpen).IsTrue();
     }
+
+    [Test]
+    public async Task IsValidForTraining_FinishedWithScores_ReturnsTrue()
+    {
+        var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Finished);
+        match.UpdateScore(2, 1);
+
+        await Assert.That(match.IsValidForTraining).IsTrue();
+    }
+
+    [Test]
+    public async Task IsValidForTraining_NotFinished_ReturnsFalse()
+    {
+        var match = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Scheduled);
+        match.UpdateScore(2, 1);
+
+        await Assert.That(match.IsValidForTraining).IsFalse();
+    }
+
+    [Test]
+    public async Task MatchOutcome_WithFinishedScores_ReturnsExpectedValue()
+    {
+        var homeWin = Match.Create(123, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Finished);
+        homeWin.UpdateScore(2, 1);
+
+        var draw = Match.Create(124, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Finished);
+        draw.UpdateScore(1, 1);
+
+        var awayWin = Match.Create(125, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Clock.UtcNow, MatchStatus.Finished);
+        awayWin.UpdateScore(0, 1);
+
+        await Assert.That(homeWin.MatchOutcome).IsEqualTo(0);
+        await Assert.That(draw.MatchOutcome).IsEqualTo(1);
+        await Assert.That(awayWin.MatchOutcome).IsEqualTo(2);
+    }
 }

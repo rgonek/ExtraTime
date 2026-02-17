@@ -97,6 +97,11 @@ public sealed class BotBettingService(
                     (homeScore, awayScore) = await statsStrategy.GeneratePredictionAsync(
                         match, bot.Configuration, cancellationToken);
                 }
+                else if (strategy is MachineLearningStrategy machineLearningStrategy)
+                {
+                    (homeScore, awayScore) = await machineLearningStrategy.GeneratePredictionAsync(
+                        match, bot.Configuration, cancellationToken);
+                }
                 else
                 {
                     (homeScore, awayScore) = strategy.GeneratePrediction(match, bot.Configuration);

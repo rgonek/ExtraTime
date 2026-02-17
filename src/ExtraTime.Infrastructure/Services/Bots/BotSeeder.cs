@@ -26,6 +26,13 @@ public sealed class BotSeeder(IApplicationDbContext context, IPasswordHasher pas
             CreateBot("Goal Hunter", BotStrategy.StatsAnalyst, StatsAnalystConfig.GoalFocused.ToJson(), "🎯"),
             CreateBot("Safe Steve", BotStrategy.StatsAnalyst, StatsAnalystConfig.Conservative.ToJson(), "🛡️"),
             CreateBot("Chaos Carl", BotStrategy.StatsAnalyst, StatsAnalystConfig.Chaotic.ToJson(), "🌪️"),
+            CreateBot("Data Scientist", BotStrategy.StatsAnalyst, StatsAnalystConfig.FullAnalysis.ToJson(), "🧪"),
+            CreateBot("xG Expert", BotStrategy.StatsAnalyst, StatsAnalystConfig.XgFocused.ToJson(), "📊"),
+            CreateBot("Market Follower", BotStrategy.StatsAnalyst, StatsAnalystConfig.MarketFollower.ToJson(), "💰"),
+            CreateBot("Injury Tracker", BotStrategy.StatsAnalyst, StatsAnalystConfig.InjuryAware.ToJson(), "🏥"),
+            CreateBot("ML Conservative", BotStrategy.MachineLearning, """{"riskProfile":"conservative"}""", "🤖"),
+            CreateBot("ML Balanced", BotStrategy.MachineLearning, """{"riskProfile":"balanced"}""", "🧠"),
+            CreateBot("ML Aggressive", BotStrategy.MachineLearning, """{"riskProfile":"aggressive"}""", "🚀"),
         };
 
         foreach (var (user, bot) in bots)
@@ -39,7 +46,7 @@ public sealed class BotSeeder(IApplicationDbContext context, IPasswordHasher pas
 
     private (User user, Bot bot) CreateBot(string name, BotStrategy strategy, string? configuration, string avatarEmoji)
     {
-        var email = $"bot_{name.ToLower().Replace(" ", "_")}@extratime.local";
+        var email = $"bot_{name.ToLowerInvariant().Replace(" ", "_")}@extratime.local";
         var user = User.Register(email, name, passwordHasher.Hash(Guid.NewGuid().ToString()));
         user.MarkAsBot();
 

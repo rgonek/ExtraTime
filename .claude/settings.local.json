@@ -81,7 +81,9 @@
       "Bash(TEST_MODE=InMemory dotnet test:*)",
       "Bash(Get-ChildItem -Path \"D:\\\\Dev\\\\ExtraTime\\\\tests\" -Recurse -Directory)",
       "Bash($env:TEST_MODE=\"SqlServer\")",
-      "Bash(TEST_MODE=SqlServer dotnet test:*)"
+      "Bash(TEST_MODE=SqlServer dotnet test:*)",
+      "Bash(Get-ChildItem \"D:\\\\Dev\\\\ExtraTime\\\\src\\\\ExtraTime.Domain\\\\Entities\" -Filter \"*.cs\")",
+      "Bash(Select-String:*)"
     ]
   }
 }

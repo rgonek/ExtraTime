@@ -1,11 +1,8 @@
-using ExtraTime.Application.Common.Interfaces;
-using ExtraTime.Application.Features.Bots.DTOs;
 using ExtraTime.Application.Features.Bots.Queries.GetBots;
 using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using ExtraTime.UnitTests.Common;
 using ExtraTime.UnitTests.TestData;
-using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
 namespace ExtraTime.UnitTests.Application.Features.Bots.Handlers;
@@ -22,140 +19,108 @@ public sealed class GetBotsQueryHandlerTests : HandlerTestBase
     [Test]
     public async Task Handle_NoBots_ReturnsEmptyList()
     {
-        // Arrange
-        var mockBots = CreateMockDbSet(new List<Bot>().AsQueryable());
-        Context.Bots.Returns(mockBots);
+        SetupDbSets([], [], []);
 
-        var query = new GetBotsQuery();
+        var result = await _handler.Handle(new GetBotsQuery(), CancellationToken);
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken);
-
-        // Assert
         await Assert.That(result.IsSuccess).IsTrue();
         await Assert.That(result.Value).IsEmpty();
     }
 
     [Test]
-    public async Task Handle_WithBots_ReturnsAllBots()
+    public async Task Handle_IncludeInactiveFalse_ReturnsOnlyActiveBots()
     {
-        // Arrange
         var bots = new List<Bot>
         {
-            new BotBuilder().WithId(Guid.NewGuid()).WithName("Bot1").WithStrategy(BotStrategy.Random).Build(),
-            new BotBuilder().WithId(Guid.NewGuid()).WithName("Bot2").WithStrategy(BotStrategy.HomeFavorer).Build(),
-            new BotBuilder().WithId(Guid.NewGuid()).WithName("Bot3").WithStrategy(BotStrategy.StatsAnalyst).Build()
+            new BotBuilder().WithName("ActiveBot").WithIsActive(true).Build(),
+            new BotBuilder().WithName("InactiveBot").WithIsActive(false).Build()
         };
 
-        var mockBots = CreateMockDbSet(bots.AsQueryable());
-        Context.Bots.Returns(mockBots);
+        SetupDbSets(bots, [], []);
 
-        var query = new GetBotsQuery();
+        var result = await _handler.Handle(new GetBotsQuery(), CancellationToken);
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken);
-
-        // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value!.Count).IsEqualTo(3);
-        await Assert.That(result.Value[0].Name).IsEqualTo("Bot1");
-        await Assert.That(result.Value[1].Name).IsEqualTo("Bot2");
-        await Assert.That(result.Value[2].Name).IsEqualTo("Bot3");
+        await Assert.That(result.Value).HasSingleItem();
+        await Assert.That(result.Value![0].Name).IsEqualTo("ActiveBot");
     }
 
     [Test]
-    public async Task Handle_BotsWithDifferentStrategies_ReturnsCorrectStrategyNames()
+    public async Task Handle_StrategyFilter_ReturnsOnlyMatchingBots()
     {
-        // Arrange
         var bots = new List<Bot>
         {
             new BotBuilder().WithName("RandomBot").WithStrategy(BotStrategy.Random).Build(),
-            new BotBuilder().WithName("HomeBot").WithStrategy(BotStrategy.HomeFavorer).Build(),
-            new BotBuilder().WithName("UnderdogBot").WithStrategy(BotStrategy.UnderdogSupporter).Build(),
-            new BotBuilder().WithName("DrawBot").WithStrategy(BotStrategy.DrawPredictor).Build(),
-            new BotBuilder().WithName("ScorerBot").WithStrategy(BotStrategy.HighScorer).Build(),
-            new BotBuilder().WithName("AnalystBot").WithStrategy(BotStrategy.StatsAnalyst).Build()
+            new BotBuilder().WithName("StatsBot").WithStrategy(BotStrategy.StatsAnalyst).Build(),
+            new BotBuilder().WithName("HomeBot").WithStrategy(BotStrategy.HomeFavorer).Build()
         };
 
-        var mockBots = CreateMockDbSet(bots.AsQueryable());
-        Context.Bots.Returns(mockBots);
+        SetupDbSets(bots, [], []);
 
-        var query = new GetBotsQuery();
+        var result = await _handler.Handle(
+            new GetBotsQuery(IncludeInactive: true, Strategy: BotStrategy.StatsAnalyst),
+            CancellationToken);
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken);
-
-        // Assert
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value!.Count).IsEqualTo(6);
-
-        foreach (var botDto in result.Value)
-        {
-            var originalBot = bots.First(b => b.Name == botDto.Name);
-            await Assert.That(botDto.Strategy).IsEqualTo(originalBot.Strategy.ToString());
-        }
+        await Assert.That(result.Value).HasSingleItem();
+        await Assert.That(result.Value![0].Name).IsEqualTo("StatsBot");
+        await Assert.That(result.Value[0].Strategy).IsEqualTo("StatsAnalyst");
     }
 
     [Test]
-    public async Task Handle_BotsWithAvatarUrls_ReturnsAvatarUrls()
+    public async Task Handle_WithBetData_ReturnsCalculatedStats()
     {
-        // Arrange
-        var bots = new List<Bot>
-        {
-            new BotBuilder()
-                .WithName("BotWithAvatar")
-                .WithAvatarUrl("https://example.com/avatar.png")
-                .Build(),
-            new BotBuilder()
-                .WithName("BotWithoutAvatar")
-                .WithAvatarUrl(null)
-                .Build()
-        };
+        var userId = Guid.NewGuid();
+        var botId = Guid.NewGuid();
+        var bot = new BotBuilder()
+            .WithId(botId)
+            .WithUserId(userId)
+            .WithName("StatsBot")
+            .Build();
 
-        var mockBots = CreateMockDbSet(bots.AsQueryable());
-        Context.Bots.Returns(mockBots);
+        var betWithResult = new BetBuilder()
+            .WithUserId(userId)
+            .Build();
+        var resultEntity = BetResult.Create(betWithResult.Id, 3, true, true);
+        typeof(Bet).GetProperty(nameof(Bet.Result))?.SetValue(betWithResult, resultEntity);
 
-        var query = new GetBotsQuery();
+        var betWithoutResult = new BetBuilder()
+            .WithUserId(userId)
+            .Build();
 
-        // Act
-        var result = await _handler.Handle(query, CancellationToken);
+        var leagueMembership = new LeagueBotMemberBuilder()
+            .WithBotId(botId)
+            .Build();
 
-        // Assert
+        SetupDbSets([bot], [betWithResult, betWithoutResult], [leagueMembership]);
+
+        var result = await _handler.Handle(
+            new GetBotsQuery(IncludeInactive: true),
+            CancellationToken);
+
         await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value!.Count).IsEqualTo(2);
-        await Assert.That(result.Value[0].AvatarUrl).IsEqualTo("https://example.com/avatar.png");
-        await Assert.That(result.Value[1].AvatarUrl).IsNull();
+        await Assert.That(result.Value).HasSingleItem();
+
+        var stats = result.Value![0].Stats;
+        await Assert.That(stats).IsNotNull();
+        await Assert.That(stats!.TotalBetsPlaced).IsEqualTo(2);
+        await Assert.That(stats.LeaguesJoined).IsEqualTo(1);
+        await Assert.That(stats.AveragePointsPerBet).IsEqualTo(3);
+        await Assert.That(stats.ExactPredictions).IsEqualTo(1);
+        await Assert.That(stats.CorrectResults).IsEqualTo(1);
     }
 
-    [Test]
-    public async Task Handle_BotsWithLastBetPlacedAt_ReturnsCorrectDates()
+    private void SetupDbSets(
+        List<Bot> bots,
+        List<Bet> bets,
+        List<LeagueBotMember> leagueBotMembers)
     {
-        // Arrange
-        var lastBetDate = DateTime.UtcNow.AddDays(-1);
-        var bots = new List<Bot>
-        {
-            new BotBuilder()
-                .WithName("ActiveBot")
-                .WithLastBetPlacedAt(lastBetDate)
-                .Build(),
-            new BotBuilder()
-                .WithName("InactiveBot")
-                .WithLastBetPlacedAt(null)
-                .Build()
-        };
+        var botSet = CreateMockDbSet(bots.AsQueryable());
+        var betSet = CreateMockDbSet(bets.AsQueryable());
+        var leagueBotMemberSet = CreateMockDbSet(leagueBotMembers.AsQueryable());
 
-        var mockBots = CreateMockDbSet(bots.AsQueryable());
-        Context.Bots.Returns(mockBots);
-
-        var query = new GetBotsQuery();
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken);
-
-        // Assert
-        await Assert.That(result.IsSuccess).IsTrue();
-        await Assert.That(result.Value!.Count).IsEqualTo(2);
-        await Assert.That(result.Value[0].LastBetPlacedAt).IsEqualTo(lastBetDate);
-        await Assert.That(result.Value[1].LastBetPlacedAt).IsNull();
+        Context.Bots.Returns(botSet);
+        Context.Bets.Returns(betSet);
+        Context.LeagueBotMembers.Returns(leagueBotMemberSet);
     }
 }

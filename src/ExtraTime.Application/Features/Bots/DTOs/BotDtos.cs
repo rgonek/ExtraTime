@@ -7,7 +7,16 @@ public sealed record BotDto(
     string Strategy,
     bool IsActive,
     DateTime CreatedAt,
-    DateTime? LastBetPlacedAt);
+    DateTime? LastBetPlacedAt,
+    string? Configuration = null,
+    BotStatsDto? Stats = null);
+
+public sealed record BotStatsDto(
+    int TotalBetsPlaced,
+    int LeaguesJoined,
+    double AveragePointsPerBet,
+    int ExactPredictions,
+    int CorrectResults);
 
 public sealed record BotSummaryDto(
     Guid Id,
@@ -25,7 +34,15 @@ public sealed record LeagueBotDto(
 public sealed record CreateBotRequest(
     string Name,
     string? AvatarUrl,
-    string Strategy);
+    string Strategy,
+    Dictionary<string, object>? Configuration = null);
+
+public sealed record UpdateBotRequest(
+    string? Name,
+    string? AvatarUrl,
+    string? Strategy,
+    Dictionary<string, object>? Configuration,
+    bool? IsActive);
 
 public sealed record AddBotToLeagueRequest(Guid BotId);
 
@@ -40,3 +57,28 @@ public sealed record CreateStatsAnalystBotRequest(
     bool HighStakesBoost = true,
     string Style = "Moderate",
     double RandomVariance = 0.1);
+
+public sealed record BotConfigurationDto(
+    double FormWeight,
+    double HomeAdvantageWeight,
+    double GoalTrendWeight,
+    double StreakWeight,
+    double XgWeight,
+    double XgDefensiveWeight,
+    double OddsWeight,
+    double InjuryWeight,
+    double LineupAnalysisWeight,
+    int MatchesAnalyzed,
+    bool HighStakesBoost,
+    string Style,
+    double RandomVariance,
+    bool UseXgData,
+    bool UseOddsData,
+    bool UseInjuryData,
+    bool UseLineupData,
+    bool UseEloData);
+
+public sealed record ConfigurationPresetDto(
+    string Name,
+    string Description,
+    BotConfigurationDto Configuration);

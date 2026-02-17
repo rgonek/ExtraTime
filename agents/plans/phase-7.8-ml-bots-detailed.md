@@ -7,6 +7,18 @@ Implement machine learning-based betting bots using ML.NET with multi-output reg
 
 **Prerequisites**: Phase 7 (Basic Bots) and Phase 7.5 (StatsAnalyst) complete
 
+## Implementation Progress
+
+- [x] Part 1: Domain Layer - New Entities
+- [x] Part 2: Application Layer - ML Feature Extraction
+- [x] Part 3: Trainer Console Application
+- [x] Part 4: Prediction Service
+- [x] Part 5: Bot Strategy Integration
+- [x] Part 6: Azure Function for Predictions
+- [x] Part 7: Admin Dashboard
+- [x] Part 8: Frontend Components
+- [x] Part 9: Integration & Testing
+
 ---
 
 ## Architecture Overview
@@ -370,6 +382,41 @@ public sealed class MatchFeatures
     public float Month { get; set; }                    // 1-12
     public float DaysSinceLastMatchHome { get; set; }   // Rest days
     public float DaysSinceLastMatchAway { get; set; }
+
+    // === xG FEATURES (Understat) ===
+
+    public float HomeXgPerMatch { get; set; }          // Team's xG per match this season
+    public float HomeXgAgainstPerMatch { get; set; }   // Team's xGA per match
+    public float HomeXgOverperformance { get; set; }   // Goals - xG (positive = overperforming)
+    public float HomeRecentXgPerMatch { get; set; }    // xG per match last 5 games
+
+    public float AwayXgPerMatch { get; set; }
+    public float AwayXgAgainstPerMatch { get; set; }
+    public float AwayXgOverperformance { get; set; }
+    public float AwayRecentXgPerMatch { get; set; }
+
+    // === ELO RATING FEATURES (ClubElo) ===
+
+    public float HomeEloRating { get; set; }           // e.g., 1843
+    public float AwayEloRating { get; set; }           // e.g., 1720
+    public float EloDifference { get; set; }           // Home - Away
+
+    // === MATCH STATS FEATURES (Football-Data.co.uk CSV) ===
+
+    public float HomeShotsPerMatch { get; set; }       // Season avg
+    public float HomeShotsOnTargetPerMatch { get; set; }
+    public float HomeSOTRatio { get; set; }            // Shots on target / total shots
+
+    public float AwayShotsPerMatch { get; set; }
+    public float AwayShotsOnTargetPerMatch { get; set; }
+    public float AwaySOTRatio { get; set; }
+
+    // === INJURY FEATURES (API-Football, optional) ===
+
+    public float HomeInjuryImpactScore { get; set; }   // 0-100
+    public float HomeKeyPlayersInjured { get; set; }   // Count
+    public float AwayInjuryImpactScore { get; set; }
+    public float AwayKeyPlayersInjured { get; set; }
 }
 ```
 
@@ -526,7 +573,19 @@ public sealed class MlFeatureExtractor(
         
         // Temporal features
         PopulateTemporalFeatures(features, match);
-        
+
+        // xG features (Phase 9.5 - Understat)
+        await PopulateXgFeaturesAsync(features, match, cancellationToken);
+
+        // Elo features (Phase 9.5 - ClubElo)
+        await PopulateEloFeaturesAsync(features, match, cancellationToken);
+
+        // Shot stats features (Phase 9.5 - Football-Data.co.uk)
+        await PopulateShotStatsFeaturesAsync(features, match, cancellationToken);
+
+        // Injury features (Phase 9.5 - API-Football, optional)
+        await PopulateInjuryFeaturesAsync(features, match, cancellationToken);
+
         return features;
     }
     
@@ -1908,7 +1967,7 @@ public class MLBotIntegrationTests : TestBase
 - Run comparison tests
 - Deploy to production
 
-**Total: ~31 hours**
+**Total: ~35 hours**
 
 ---
 
@@ -1926,7 +1985,7 @@ public class MLBotIntegrationTests : TestBase
 
 6. **Comprehensive Tracking**: Detailed accuracy metrics per strategy for comparison
 
-7. **Feature Engineering**: 40+ features including form, H2H, league context, and odds
+7. **Feature Engineering**: ~67 features including form, H2H, league context, odds, xG, Elo, shot stats, and injuries
 
 8. **Conservative Scaling**: Clamp predictions to 0-5 range and apply personality modifiers
 
