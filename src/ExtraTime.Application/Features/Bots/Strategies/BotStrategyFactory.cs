@@ -1,4 +1,5 @@
 using ExtraTime.Application.Common.Interfaces;
+using ExtraTime.Application.Features.ML.Services;
 using ExtraTime.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,10 @@ public sealed class BotStrategyFactory
                 weatherContextService: _serviceProvider.GetService<IWeatherContextService>(),
                 refereeProfileService: _serviceProvider.GetService<IRefereeProfileService>(),
                 eloService: _serviceProvider.GetService<IEloRatingService>(),
-                logger: _serviceProvider.GetService<ILogger<StatsAnalystStrategy>>()) }
+                logger: _serviceProvider.GetService<ILogger<StatsAnalystStrategy>>()) },
+            { BotStrategy.MachineLearning, () => new MachineLearningStrategy(
+                _serviceProvider.GetRequiredService<IMlPredictionService>(),
+                _serviceProvider.GetService<ILogger<MachineLearningStrategy>>()) }
         };
     }
 

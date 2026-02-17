@@ -119,7 +119,8 @@ public sealed class BotTests : IntegrationTestBase
             BotStrategy.DrawPredictor,
             BotStrategy.HighScorer,
             BotStrategy.UnderdogSupporter,
-            BotStrategy.StatsAnalyst
+            BotStrategy.StatsAnalyst,
+            BotStrategy.MachineLearning
         };
 
         foreach (var strategy in strategies)
