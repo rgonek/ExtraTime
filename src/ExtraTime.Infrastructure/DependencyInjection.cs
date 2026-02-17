@@ -167,6 +167,7 @@ public static class DependencyInjection
         services.AddScoped<IFplInjuryStatusProvider, FplInjuryStatusProvider>();
         services.AddScoped<ILineupDataProvider, ApiLineupDataProvider>();
         services.AddScoped<ILineupSyncService, LineupSyncService>();
+        services.AddScoped<ITeamUsualLineupService, TeamUsualLineupService>();
         services.Configure<UnderstatSettings>(configuration.GetSection(UnderstatSettings.SectionName));
         services.Configure<FootballDataUkSettings>(configuration.GetSection(FootballDataUkSettings.SectionName));
         services.Configure<ClubEloSettings>(configuration.GetSection(ClubEloSettings.SectionName));

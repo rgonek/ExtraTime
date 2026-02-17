@@ -841,16 +841,16 @@ services.AddScoped<ILineupDataProvider, ApiFootballLineupDataProvider>();
 - [x] **2.4** Generate migration: `dotnet ef migrations add AddMatchLineupsAndTeamUsualLineups`
 
 ### Application - Interfaces & DTOs
-- [ ] **3.1** Create `ILineupDataProvider` interface at `src/ExtraTime.Application/Common/Interfaces/ILineupDataProvider.cs`
-- [ ] **3.2** Create `ILineupSyncService` interface at `src/ExtraTime.Application/Common/Interfaces/ILineupSyncService.cs`
-- [ ] **3.3** Create `ITeamUsualLineupService` interface at `src/ExtraTime.Application/Common/Interfaces/ITeamUsualLineupService.cs`
-- [ ] **3.4** Create `LineupDtos.cs` at `src/ExtraTime.Application/Features/Football/DTOs/LineupDtos.cs`
+- [x] **3.1** Create `ILineupDataProvider` interface at `src/ExtraTime.Application/Common/Interfaces/ILineupDataProvider.cs`
+- [x] **3.2** Create `ILineupSyncService` interface at `src/ExtraTime.Application/Common/Interfaces/ILineupSyncService.cs`
+- [x] **3.3** Create `ITeamUsualLineupService` interface at `src/ExtraTime.Application/Common/Interfaces/ITeamUsualLineupService.cs`
+- [x] **3.4** Create `LineupDtos.cs` at `src/ExtraTime.Application/Features/Football/DTOs/LineupDtos.cs`
 
 ### Infrastructure - Services
-- [ ] **4.1** Create `LineupSyncService.cs`
-- [ ] **4.2** Create `TeamUsualLineupService.cs`
-- [ ] **4.3** Create `NullLineupDataProvider.cs` (stub)
-- [ ] **4.4** Register services in `DependencyInjection.cs`
+- [x] **4.1** Create `LineupSyncService.cs`
+- [x] **4.2** Create `TeamUsualLineupService.cs`
+- [x] **4.3** Create `NullLineupDataProvider.cs` (stub)
+- [x] **4.4** Register services in `DependencyInjection.cs`
 
 ### Functions
 - [ ] **5.1** Create `SyncLineupsFunction.cs` (timer-triggered, every 15 min)

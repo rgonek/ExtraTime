@@ -1,8 +1,10 @@
 using ExtraTime.Application.Common.Interfaces;
 using ExtraTime.Domain.Common;
+using ExtraTime.Domain.Entities;
 using ExtraTime.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace ExtraTime.Infrastructure.Services.Football;
 
@@ -41,12 +43,10 @@ public sealed class LineupSyncService(
             return false;
         }
 
-        logger.LogDebug(
-            "Fetched lineup context for match {MatchId}: home XI {HomeCount}, away XI {AwayCount}",
-            matchId,
-            lineup.HomeTeam.StartingXi.Count,
-            lineup.AwayTeam.StartingXi.Count);
+        await UpsertLineupAsync(match.Id, match.HomeTeamId, lineup.HomeTeam, cancellationToken);
+        await UpsertLineupAsync(match.Id, match.AwayTeamId, lineup.AwayTeam, cancellationToken);
 
+        await context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
@@ -60,6 +60,7 @@ public sealed class LineupSyncService(
         var matchIds = await context.Matches
             .Where(m => m.MatchDateUtc >= now && m.MatchDateUtc <= cutoff)
             .Where(m => m.Status == MatchStatus.Scheduled || m.Status == MatchStatus.Timed)
+            .Where(m => !context.MatchLineups.Any(ml => ml.MatchId == m.Id))
             .Select(m => m.Id)
             .ToListAsync(cancellationToken);
 
@@ -73,5 +74,36 @@ public sealed class LineupSyncService(
         }
 
         return syncedCount;
+    }
+
+    private async Task UpsertLineupAsync(
+        Guid matchId,
+        Guid teamId,
+        TeamLineupData data,
+        CancellationToken cancellationToken)
+    {
+        var startingXi = JsonSerializer.Serialize(
+            data.StartingXi.Select(p => new LineupPlayer(p.Id, p.Name, p.Position, p.ShirtNumber)));
+        var bench = JsonSerializer.Serialize(
+            data.Bench.Select(p => new LineupPlayer(p.Id, p.Name, p.Position, p.ShirtNumber)));
+
+        var existing = await context.MatchLineups
+            .FirstOrDefaultAsync(ml => ml.MatchId == matchId && ml.TeamId == teamId, cancellationToken);
+
+        if (existing is not null)
+        {
+            existing.Update(data.Formation, data.CoachName, startingXi, bench, data.CaptainName);
+            return;
+        }
+
+        var lineup = MatchLineup.Create(
+            matchId,
+            teamId,
+            data.Formation,
+            data.CoachName,
+            startingXi,
+            bench,
+            data.CaptainName);
+        context.MatchLineups.Add(lineup);
     }
 }
