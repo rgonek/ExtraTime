@@ -27,6 +27,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.ML" />
     <PackageReference Include="Refit.HttpClientFactory" />
   </ItemGroup>
 

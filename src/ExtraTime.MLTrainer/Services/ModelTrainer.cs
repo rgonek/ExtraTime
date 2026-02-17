@@ -14,6 +14,7 @@ public sealed class ModelTrainer(
     IApplicationDbContext context,
     ILogger<ModelTrainer> logger)
 {
+    private const int FeatureVectorSize = 76;
     private readonly MLContext _mlContext = new(seed: 42);
 
     public async Task<TrainingResult> TrainAsync(
@@ -80,11 +81,19 @@ public sealed class ModelTrainer(
 
     public static float[] BuildFeatureVector(MatchFeatures features)
     {
-        return typeof(MatchFeatures)
+        var vector = typeof(MatchFeatures)
             .GetProperties()
             .Where(property => property.PropertyType == typeof(float))
             .Select(property => (float)(property.GetValue(features) ?? 0f))
             .ToArray();
+
+        if (vector.Length != FeatureVectorSize)
+        {
+            throw new InvalidOperationException(
+                $"ML feature vector length mismatch. Expected {FeatureVectorSize} but got {vector.Length}.");
+        }
+
+        return vector;
     }
 
     private (ITransformer Model, RegressionMetrics Metrics, DataViewSchema Schema) TrainSingleTarget(
@@ -162,7 +171,7 @@ public sealed class ModelTrainer(
 
     private sealed class TrainingRow
     {
-        [VectorType]
+        [VectorType(FeatureVectorSize)]
         public required float[] Features { get; init; }
 
         public float HomeScore { get; init; }
