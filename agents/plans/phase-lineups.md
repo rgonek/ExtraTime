@@ -859,8 +859,8 @@ services.AddScoped<ILineupDataProvider, ApiFootballLineupDataProvider>();
 - [x] **6.1** Add `sync-lineups` command to `DevTriggers/Program.cs`
 
 ### Verification
-- [ ] **7.1** Build and run tests
-- [ ] **7.2** Run `sync-lineups` dev trigger (should complete with 0 synced using NullProvider)
+- [x] **7.1** Build and run tests
+- [x] **7.2** Run `sync-lineups` dev trigger (should complete with 0 synced using NullProvider)
 
 ---
 
