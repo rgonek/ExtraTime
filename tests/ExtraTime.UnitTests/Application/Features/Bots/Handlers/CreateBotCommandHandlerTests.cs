@@ -89,7 +89,8 @@ public sealed class CreateBotCommandHandlerTests : HandlerTestBase
             BotStrategy.UnderdogSupporter,
             BotStrategy.DrawPredictor,
             BotStrategy.HighScorer,
-            BotStrategy.StatsAnalyst
+            BotStrategy.StatsAnalyst,
+            BotStrategy.MachineLearning
         };
 
         foreach (var strategy in strategies)

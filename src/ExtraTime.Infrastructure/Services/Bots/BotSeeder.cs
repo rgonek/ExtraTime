@@ -30,6 +30,9 @@ public sealed class BotSeeder(IApplicationDbContext context, IPasswordHasher pas
             CreateBot("xG Expert", BotStrategy.StatsAnalyst, StatsAnalystConfig.XgFocused.ToJson(), "📊"),
             CreateBot("Market Follower", BotStrategy.StatsAnalyst, StatsAnalystConfig.MarketFollower.ToJson(), "💰"),
             CreateBot("Injury Tracker", BotStrategy.StatsAnalyst, StatsAnalystConfig.InjuryAware.ToJson(), "🏥"),
+            CreateBot("ML Conservative", BotStrategy.MachineLearning, """{"riskProfile":"conservative"}""", "🤖"),
+            CreateBot("ML Balanced", BotStrategy.MachineLearning, """{"riskProfile":"balanced"}""", "🧠"),
+            CreateBot("ML Aggressive", BotStrategy.MachineLearning, """{"riskProfile":"aggressive"}""", "🚀"),
         };
 
         foreach (var (user, bot) in bots)
