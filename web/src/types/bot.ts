@@ -70,14 +70,14 @@ export interface CreateBotRequest {
   name: string;
   avatarUrl?: string | null;
   strategy: BotStrategy;
-  configuration?: Record<string, unknown> | null;
+  configuration?: BotConfigurationDto | Record<string, unknown> | null;
 }
 
 export interface UpdateBotRequest {
   name?: string;
   avatarUrl?: string | null;
   strategy?: BotStrategy;
-  configuration?: Record<string, unknown> | null;
+  configuration?: BotConfigurationDto | Record<string, unknown> | null;
   isActive?: boolean;
 }
 
