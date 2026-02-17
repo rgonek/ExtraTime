@@ -132,6 +132,7 @@ app.MapAuthEndpoints();
 app.MapAdminEndpoints();
 app.MapAdminIntegrationEndpoints();
 app.MapAdminExternalDataEndpoints();
+app.MapAdminMlEndpoints();
 app.MapFootballEndpoints();
 app.MapHeadToHeadEndpoints();
 app.MapFootballSyncEndpoints();

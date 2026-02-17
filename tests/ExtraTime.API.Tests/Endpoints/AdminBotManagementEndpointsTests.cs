@@ -82,4 +82,23 @@ public sealed class AdminBotManagementEndpointsTests : ApiTestBase
 
         await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
     }
+
+    [Test]
+    public async Task AdminMlEndpoints_NonAdminUser_ReturnsForbidden()
+    {
+        var token = await GetAuthTokenAsync("adminmlnonadmin@example.com");
+        SetAuthHeader(token);
+
+        var response = await Client.GetAsync("/api/admin/ml/models");
+
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Forbidden);
+    }
+
+    [Test]
+    public async Task AdminMlEndpoints_Unauthenticated_ReturnsUnauthorized()
+    {
+        var response = await Client.GetAsync("/api/admin/ml/models");
+
+        await Assert.That(response.StatusCode).IsEqualTo(HttpStatusCode.Unauthorized);
+    }
 }
