@@ -77,3 +77,9 @@ export type {
   IntegrationStatus,
   DataAvailability,
 } from './integration';
+
+// ML Admin types
+export type {
+  MlModelVersionDto,
+  MlStrategyAccuracyDto,
+} from './ml';

@@ -32,6 +32,11 @@ const strategyInfo: Record<BotStrategy, { icon: string; label: string; descripti
     icon: '🧠',
     label: 'Stats Analyst',
     description: 'Uses statistical analysis'
+  },
+  MachineLearning: {
+    icon: '🤖',
+    label: 'Machine Learning',
+    description: 'Uses trained ML score predictions'
   }
 };
 

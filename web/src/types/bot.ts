@@ -5,7 +5,8 @@ export type BotStrategy =
   | 'UnderdogSupporter'
   | 'DrawPredictor'
   | 'HighScorer'
-  | 'StatsAnalyst';
+  | 'StatsAnalyst'
+  | 'MachineLearning';
 
 export interface StatsAnalystConfig {
   formWeight: number;

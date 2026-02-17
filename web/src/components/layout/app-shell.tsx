@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Trophy, LayoutDashboard, Menu, X, LogOut, Bot, ShieldCheck } from 'lucide-react';
+import { Trophy, LayoutDashboard, Menu, X, LogOut, Bot, ShieldCheck, BrainCircuit } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ export function AppShell({ children }: AppShellProps) {
         ...baseNavItems,
         { href: '/admin/bots', label: 'Bots', icon: Bot },
         { href: '/admin/integrations', label: 'Integrations', icon: ShieldCheck },
+        { href: '/admin/ml-models', label: 'ML Models', icon: BrainCircuit },
       ]
     : baseNavItems;
 

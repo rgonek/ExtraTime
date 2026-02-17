@@ -35,6 +35,7 @@ const STRATEGIES: BotStrategy[] = [
   'DrawPredictor',
   'HighScorer',
   'StatsAnalyst',
+  'MachineLearning',
 ];
 
 export function CreateBotModal({ open, onOpenChange }: CreateBotModalProps) {
