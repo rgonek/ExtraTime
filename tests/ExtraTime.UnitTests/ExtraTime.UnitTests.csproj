@@ -27,5 +27,6 @@
     <ProjectReference Include="..\..\src\ExtraTime.Application\ExtraTime.Application.csproj" />
     <ProjectReference Include="..\..\src\ExtraTime.Infrastructure\ExtraTime.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\ExtraTime.Functions\ExtraTime.Functions.csproj" />
+    <ProjectReference Include="..\..\src\ExtraTime.MLTrainer\ExtraTime.MLTrainer.csproj" />
   </ItemGroup>
 </Project>

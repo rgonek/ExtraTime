@@ -12,6 +12,7 @@
     <Project Path="src/ExtraTime.Domain/ExtraTime.Domain.csproj" />
     <Project Path="src/ExtraTime.Functions/ExtraTime.Functions.csproj" />
     <Project Path="src/ExtraTime.Infrastructure/ExtraTime.Infrastructure.csproj" />
+    <Project Path="src/ExtraTime.MLTrainer/ExtraTime.MLTrainer.csproj" />
     <Project Path="src/ExtraTime.MigrationService/ExtraTime.MigrationService.csproj" />
     <Project Path="src/ExtraTime.ServiceDefaults/ExtraTime.ServiceDefaults.csproj" />
   </Folder>

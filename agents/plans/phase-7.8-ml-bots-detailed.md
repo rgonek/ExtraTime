@@ -11,7 +11,7 @@ Implement machine learning-based betting bots using ML.NET with multi-output reg
 
 - [x] Part 1: Domain Layer - New Entities
 - [x] Part 2: Application Layer - ML Feature Extraction
-- [ ] Part 3: Trainer Console Application
+- [x] Part 3: Trainer Console Application
 - [ ] Part 4: Prediction Service
 - [ ] Part 5: Bot Strategy Integration
 - [ ] Part 6: Azure Function for Predictions
